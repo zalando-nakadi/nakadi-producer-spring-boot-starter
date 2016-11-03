@@ -13,11 +13,11 @@
         <version>1.4.1.RELEASE</version>
     </parent>
 
-    <artifactId>tarbela-publisher-spring-boot-starter</artifactId>
-    <groupId>de.zalando.wholesale.tarbelapublisher</groupId>
+    <artifactId>tarbela-events-spring-boot-starter</artifactId>
+    <groupId>de.zalando.wholesale.tarbelaevents</groupId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>Tarbela Publisher: Spring Boot Starter</name>
-    <description>Spring Boot Auto Configuration for Tarbela publisher</description>
+    <name>Tarbela Event Producer: Spring Boot Starter</name>
+    <description>Spring Boot Auto Configuration for Tarbela event producer</description>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -148,8 +148,8 @@
                         <configuration>
                             <apiFile>${project.basedir}/src/main/resources/api/swagger_event-producer-api.yaml</apiFile>
                             <language>springinterfacesResponseEntityNoSwaggerAnnotations</language>
-                            <apiPackage>de.zalando.wholesale.tarbelapublisher.api.event.controller</apiPackage>
-                            <modelPackage>de.zalando.wholesale.tarbelapublisher.api.event.model</modelPackage>
+                            <apiPackage>de.zalando.wholesale.tarbelaevents.api.event.controller</apiPackage>
+                            <modelPackage>de.zalando.wholesale.tarbelaevents.api.event.model</modelPackage>
                             <additionalProperties>
                                 <modelNameSuffix>DTO</modelNameSuffix>
                             </additionalProperties>

@@ -1,0 +1,41 @@
+spring:
+  oauth2:
+    application:
+      scope:
+        read: "#oauth2.hasScope('tarbela-publisher.read')"
+        write.event_log: "#oauth2.hasScope('tarbela-publisher.event_log_write')"
+  datasource.maxActive: 7
+  spring.jackson.default-property-inclusion: non_null
+  jpa:
+    show-sql: true
+
+# Http traffic logging configuration
+logbook:
+  filter.enabled: true
+  format.style: json
+  obfuscate:
+    headers:
+      - Authorization
+      - X-Secret
+    parameters:
+      - access_token
+  write:
+    category: http.traffic
+    level: INFO
+
+flyway.locations: classpath:database/migrations
+
+logging.level:
+  org.springframework.web: 'DEBUG'
+logging.pattern:
+  console: "%date {%level} [%thread] [%X{X-FLOW-ID}] [%logger] %message%n"
+  file: "%date {%level} [%thread] [%X{X-FLOW-ID}] [%logger] %message%n"
+
+tracer:
+  traces:
+    X-Flow-ID: flow-id
+
+tarbela:
+  event_type: wholesale.some-publisher-change-event
+  data_type: tarbela:some-publisher
+  sinkId: zalando-nakadi

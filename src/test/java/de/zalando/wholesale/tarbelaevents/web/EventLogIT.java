@@ -65,7 +65,7 @@ public class EventLogIT extends BaseMockedExternalCommunicationIT {
             MockPayload mockPayload = Fixture.mockPayload(i+1, mockedCode+i, true,
                     Fixture.mockSubClass("some info"+i), Fixture.mockSubList(2, "some detail"+i));
             mockPayloads.add(mockPayload);
-            eventLogService.fireCreateEvent(mockPayload, PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, "SOME_FLOW_ID");
+            eventLogService.fireCreateEvent(mockPayload, "SOME_FLOW_ID");
         }
 
         // make listOfItems return predefined list

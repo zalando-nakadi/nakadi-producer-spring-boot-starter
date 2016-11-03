@@ -18,6 +18,7 @@ import de.zalando.wholesale.tarbelaevents.service.exception.UnknownEventIdExcept
 import de.zalando.wholesale.tarbelaevents.service.exception.ValidationException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
@@ -47,23 +48,31 @@ public class EventLogServiceImpl implements EventLogService {
     @Autowired
     private EventLogMapper eventLogMapper;
 
+    @Value("${tarbela.event_type}")
+    private String eventType;
+
+    @Value("${tarbela.data_type}")
+    private String dataType;
+
+    @Value("${tarbela.sinkId}")
+    private String sinkId;
+
     @Override
     @Transactional
-    public void fireCreateEvent(final Object payload, final String eventType, final String dataType, final String flowId) {
-        final EventLog eventLog = createEventLog(EventDataOperation.CREATE, payload, eventType, dataType, flowId);
+    public void fireCreateEvent(final Object payload, final String flowId) {
+        final EventLog eventLog = createEventLog(EventDataOperation.CREATE, payload, flowId);
         eventLogRepository.save(eventLog);
     }
 
     @Override
     @Transactional
-    public void fireUpdateEvent(final Object payload, final String eventType, final String dataType, final String flowId) {
-        final EventLog eventLog = createEventLog(EventDataOperation.UPDATE, payload, eventType, dataType, flowId);
+    public void fireUpdateEvent(final Object payload, final String flowId) {
+        final EventLog eventLog = createEventLog(EventDataOperation.UPDATE, payload, flowId);
         eventLogRepository.save(eventLog);
     }
 
     @VisibleForTesting
-    EventLog createEventLog(final EventDataOperation dataOp, final Object payload,
-                            final String eventType, final String dataType, final String flowId) {
+    EventLog createEventLog(final EventDataOperation dataOp, final Object payload, final String flowId) {
         final EventLog eventLog = new EventLog();
         eventLog.setStatus(EventStatus.NEW.toString());
         eventLog.setEventType(eventType);
@@ -80,8 +89,7 @@ public class EventLogServiceImpl implements EventLogService {
     }
 
     @Override
-    public BunchOfEventsDTO searchEvents(final String cursor, final String status, final Integer limit,
-                                         final String eventType, final String sinkId) {
+    public BunchOfEventsDTO searchEvents(final String cursor, final String status, final Integer limit) {
 
         final List<EventLog> events = eventLogRepository.search(convertCursorToInteger(cursor),
                 status, limit == null ? DEFAULT_LIMIT : limit);
@@ -166,10 +174,11 @@ public class EventLogServiceImpl implements EventLogService {
 
     @Override
     @Transactional
-    public void createSnapshotEvents(Collection<?> snapshotItems, final String eventType, final String dataType, final String flowId) {
+    public void createSnapshotEvents(Collection<?> snapshotItems, final String flowId) {
 
+        // TODO: replace snapshotItems with TarbelaSnapshotProvider dependency
         final List<EventLog> snapshotEvents = snapshotItems.stream()
-                .map(item -> createEventLog(EventDataOperation.SNAPSHOT, item, eventType, dataType, flowId))
+                .map(item -> createEventLog(EventDataOperation.SNAPSHOT, item, flowId))
                 .collect(Collectors.toList());
 
         eventLogRepository.save(snapshotEvents);
@@ -185,4 +194,17 @@ public class EventLogServiceImpl implements EventLogService {
         }
 
     }
+
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
+    }
+
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
+    }
+
+    public void setSinkId(String sinkId) {
+        this.sinkId = sinkId;
+    }
+
 }

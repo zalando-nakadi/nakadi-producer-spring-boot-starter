@@ -30,15 +30,6 @@ public class EventController {
 
     private FlowIdComponent flowIdComponent;
 
-    @Value("${tarbela.event_type}")
-    private String eventType;
-
-    @Value("${tarbela.data_type}")
-    private String dataType;
-
-    @Value("${tarbela.sinkId}")
-    private String sinkId;
-
     @Autowired
     public EventController(final EventLogService eventLogService, final TarbelaSnapshotProvider<?> tarbelaSnapshotProvider, FlowIdComponent flowIdComponent) {
         this.eventLogService = eventLogService;
@@ -52,7 +43,7 @@ public class EventController {
             @RequestParam(value = "status", required = false) final String status,
             @RequestParam(value = "limit", required = false) final Integer limit) {
 
-        final BunchOfEventsDTO events = eventLogService.searchEvents(cursor, status, limit, eventType, sinkId);
+        final BunchOfEventsDTO events = eventLogService.searchEvents(cursor, status, limit);
         return ResponseEntity.status(HttpStatus.OK).body(events);
     }
 
@@ -69,7 +60,7 @@ public class EventController {
     @RequestMapping(value = "/snapshots", method = RequestMethod.POST, produces = CONTENT_TYPE_PROBLEM)
     public ResponseEntity<Void> eventsSnapshotPost() {
 
-        eventLogService.createSnapshotEvents(tarbelaSnapshotProvider.getSnapshot(), eventType, dataType, flowIdComponent.getXFlowIdValue());
+        eventLogService.createSnapshotEvents(tarbelaSnapshotProvider.getSnapshot(), flowIdComponent.getXFlowIdValue());
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

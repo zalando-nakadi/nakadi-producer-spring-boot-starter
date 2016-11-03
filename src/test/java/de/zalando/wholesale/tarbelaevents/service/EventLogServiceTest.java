@@ -94,6 +94,11 @@ public class EventLogServiceTest {
 
     @Before
     public void setUp() throws Exception {
+
+        eventLogService.setDataType(PUBLISHER_DATA_TYPE);
+        eventLogService.setEventType(PUBLISHER_EVENT_TYPE);
+        eventLogService.setSinkId(SINK_ID);
+
         mockPayload = Fixture.mockPayload(1, "mockedcode", true,
                 Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
 
@@ -107,7 +112,7 @@ public class EventLogServiceTest {
         traceId = "TRACE_ID";
         when(flowIdComponent.getXFlowIdValue()).thenReturn(traceId);
 
-        events = newArrayList();
+        events = newArrayList(); // TODO: put here eventLog
 
         bunchOfEventsDTO = new BunchOfEventsDTO();
     }
@@ -115,7 +120,7 @@ public class EventLogServiceTest {
     @Test
     public void testFireCreateEvent() throws Exception {
         final ArgumentCaptor<EventLog> argumentCaptor = ArgumentCaptor.forClass(EventLog.class);
-        eventLogService.fireCreateEvent(mockPayload, PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, traceId);
+        eventLogService.fireCreateEvent(mockPayload, traceId);
         verify(eventLogRepository, times(1)).save(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue().getDataOp(), is(EventDataOperation.CREATE.toString()));
     }
@@ -123,7 +128,7 @@ public class EventLogServiceTest {
     @Test
     public void testFireUpdateEvent() throws Exception {
         final ArgumentCaptor<EventLog> argumentCaptor = ArgumentCaptor.forClass(EventLog.class);
-        eventLogService.fireUpdateEvent(mockPayload, PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, traceId);
+        eventLogService.fireUpdateEvent(mockPayload, traceId);
         verify(eventLogRepository, times(1)).save(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue().getDataOp(), is(EventDataOperation.UPDATE.toString()));
     }
@@ -131,7 +136,7 @@ public class EventLogServiceTest {
     @Test
     public void testCreateWarehouseEventLog() throws Exception {
         final EventLog eventLog = eventLogService.createEventLog(
-                EventDataOperation.UPDATE, mockPayload, PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, traceId);
+                EventDataOperation.UPDATE, mockPayload, traceId);
         assertThat(eventLog.getEventBodyData(), is(EVENT_BODY_DATA));
         assertThat(eventLog.getDataOp(), is(EventDataOperation.UPDATE.toString()));
         assertThat(eventLog.getEventType(), is(PUBLISHER_EVENT_TYPE));
@@ -148,7 +153,7 @@ public class EventLogServiceTest {
                 .thenReturn(bunchOfEventsDTO);
 
         final BunchOfEventsDTO result = eventLogService.searchEvents(String.valueOf(CURSOR),
-                EventStatus.NEW.toString(), LIMIT, PUBLISHER_EVENT_TYPE, SINK_ID);
+                EventStatus.NEW.toString(), LIMIT);
         assertThat(result, is(bunchOfEventsDTO));
     }
 
@@ -159,14 +164,14 @@ public class EventLogServiceTest {
                 .thenReturn(bunchOfEventsDTO);
 
         final BunchOfEventsDTO result = eventLogService.searchEvents(String.valueOf(CURSOR),
-                EventStatus.NEW.toString(), null, PUBLISHER_EVENT_TYPE, SINK_ID);
+                EventStatus.NEW.toString(), null);
 
         assertThat(result, is(bunchOfEventsDTO));
     }
 
     @Test(expected = InvalidCursorException.class)
     public void testSearchEventsWithInvalidCursor() throws Exception {
-        eventLogService.searchEvents("a1", EventStatus.NEW.toString(), DEFAULT_LIMIT, PUBLISHER_EVENT_TYPE, SINK_ID);
+        eventLogService.searchEvents("a1", EventStatus.NEW.toString(), DEFAULT_LIMIT);
     }
 
     @Test
@@ -294,7 +299,7 @@ public class EventLogServiceTest {
 
         final List<?> mockPayloadList = Collections.singletonList(mockPayload);
 
-        eventLogService.createSnapshotEvents(mockPayloadList, PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, traceId);
+        eventLogService.createSnapshotEvents(mockPayloadList, traceId);
 
         verify(eventLogRepository).save(listEventLogCaptor.capture());
 

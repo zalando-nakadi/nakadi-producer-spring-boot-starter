@@ -10,16 +10,15 @@ import javax.transaction.Transactional;
 public interface EventLogService {
 
     @Transactional
-    void fireCreateEvent(Object payload, String eventType, String dataType, String flowId);
+    void fireCreateEvent(Object payload, String flowId);
 
     @Transactional
-    void fireUpdateEvent(Object payload, String eventType, String dataType, String flowId);
+    void fireUpdateEvent(Object payload, String flowId);
 
     /**
      * Searches for events for given cursor, status and limit.
      */
-    BunchOfEventsDTO searchEvents(String cursor, String status, Integer limit,
-                                  String eventType, String sinkId);
+    BunchOfEventsDTO searchEvents(String cursor, String status, Integer limit);
 
     /**
      * Updates the event logs.
@@ -30,5 +29,5 @@ public interface EventLogService {
      * Creates snapshot event logs for all objects.
      */
     @Transactional
-    void createSnapshotEvents(Collection<?> snapshotItems, String eventType, String dataType, String flowId);
+    void createSnapshotEvents(Collection<?> snapshotItems, String flowId);
 }

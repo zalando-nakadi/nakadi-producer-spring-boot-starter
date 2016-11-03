@@ -103,8 +103,7 @@ public class EventControllerTest {
 
     @Test
     public void testGetEvents() throws Exception {
-        when(eventLogService.searchEvents(eq(CURSOR), eq(EventStatus.NEW.name()), eq(LIMIT),
-                anyString(), anyString())).thenReturn(eventsDTO);
+        when(eventLogService.searchEvents(eq(CURSOR), eq(EventStatus.NEW.name()), eq(LIMIT))).thenReturn(eventsDTO);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/events")
                 .param("cursor", CURSOR)
@@ -121,7 +120,7 @@ public class EventControllerTest {
     @Test
     public void testGetEventsInvalidCursor() throws Exception {
         final String invalidCursor = "ABC";
-        when(eventLogService.searchEvents(eq(invalidCursor), anyString(), anyInt(), anyString(), anyString()))
+        when(eventLogService.searchEvents(eq(invalidCursor), anyString(), anyInt()))
                 .thenThrow(new InvalidCursorException(invalidCursor));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/events")
@@ -214,7 +213,7 @@ public class EventControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.post("/events/snapshots")).andExpect(status().isCreated());
 
-        verify(eventLogService).createSnapshotEvents(any(), any(), any(), any());
+        verify(eventLogService).createSnapshotEvents(any(), any());
     }
 
     @Test

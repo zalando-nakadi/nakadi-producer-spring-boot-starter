@@ -9,6 +9,10 @@ The goal of this Spring Boot starter is to simplify the integration between even
 
 ## Installation
 
+Build and install the library into your local Maven repository:
+
+    ./mvnw clean install
+
 Add the following dependency into the pom.xml of your Spring-Boot application
 
 ```xml
@@ -108,3 +112,9 @@ public interface TarbelaSnapshotProvider<T> {
 ```
 
 The method will be used by `EventLogService` to create the snapshot events of the whole Publisher's state.
+
+## Build
+
+Build with unit tests and integration tests:
+
+    ./mvnw clean install

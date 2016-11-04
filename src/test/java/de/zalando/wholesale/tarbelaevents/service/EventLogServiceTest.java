@@ -2,6 +2,7 @@ package de.zalando.wholesale.tarbelaevents.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.zalando.wholesale.tarbelaevents.TarbelaProperties;
 import de.zalando.wholesale.tarbelaevents.api.event.model.BunchOfEventUpdatesDTO;
 import de.zalando.wholesale.tarbelaevents.api.event.model.BunchOfEventsDTO;
 import de.zalando.wholesale.tarbelaevents.api.event.model.EventUpdateDTO;
@@ -60,6 +61,9 @@ public class EventLogServiceTest {
     @Mock
     private FlowIdComponent flowIdComponent;
 
+    @Mock
+    private TarbelaProperties tarbelaProperties;
+
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -95,9 +99,9 @@ public class EventLogServiceTest {
     @Before
     public void setUp() throws Exception {
 
-        eventLogService.setDataType(PUBLISHER_DATA_TYPE);
-        eventLogService.setEventType(PUBLISHER_EVENT_TYPE);
-        eventLogService.setSinkId(SINK_ID);
+        when(tarbelaProperties.getDataType()).thenReturn(PUBLISHER_DATA_TYPE);
+        when(tarbelaProperties.getEventType()).thenReturn(PUBLISHER_EVENT_TYPE);
+        when(tarbelaProperties.getSinkId()).thenReturn(SINK_ID);
 
         mockPayload = Fixture.mockPayload(1, "mockedcode", true,
                 Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));

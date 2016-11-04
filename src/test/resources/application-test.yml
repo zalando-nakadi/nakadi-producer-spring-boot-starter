@@ -36,6 +36,6 @@ tracer:
     X-Flow-ID: flow-id
 
 tarbela:
-  event_type: wholesale.some-publisher-change-event
-  data_type: tarbela:some-publisher
-  sinkId: zalando-nakadi
+  event-type: wholesale.some-publisher-change-event
+  data-type: tarbela:some-publisher
+  sink-id: zalando-nakadi

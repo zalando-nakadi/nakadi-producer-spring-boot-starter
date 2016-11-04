@@ -1,6 +1,7 @@
 package de.zalando.wholesale.tarbelaevents;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -10,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @EnableJpaAuditing
 @Slf4j
+@EnableConfigurationProperties(TarbelaProperties.class)
 public class TarbelaEventsAutoConfiguration {
 
     // TODO: create default configuration

@@ -52,8 +52,6 @@ public class EventLogIT extends BaseMockedExternalCommunicationIT {
     private static final String[] ALL_SCOPES_EXCEPT_EVENT_LOG_WRITE = {
             UID_SCOPE, READ_SCOPE
     };
-    @Value("${tarbela.sinkId}")
-    private String sinkId;
 
     @Before
     public void setup() {

@@ -29,5 +29,5 @@ public interface EventLogService {
      * Creates snapshot event logs for all objects.
      */
     @Transactional
-    void createSnapshotEvents(Collection<?> snapshotItems, String flowId);
+    void createSnapshotEvents(String flowId);
 }

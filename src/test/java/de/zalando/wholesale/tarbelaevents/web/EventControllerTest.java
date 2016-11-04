@@ -2,7 +2,6 @@ package de.zalando.wholesale.tarbelaevents.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.zalando.wholesale.tarbelaevents.TarbelaSnapshotProvider;
 import de.zalando.wholesale.tarbelaevents.TarbelaSnapshotProviderNotImplemented;
 import de.zalando.wholesale.tarbelaevents.api.event.model.BunchOfEventUpdatesDTO;
 import de.zalando.wholesale.tarbelaevents.api.event.model.BunchOfEventsDTO;
@@ -15,8 +14,6 @@ import de.zalando.wholesale.tarbelaevents.service.exception.InvalidCursorExcepti
 import de.zalando.wholesale.tarbelaevents.service.exception.InvalidEventIdException;
 import de.zalando.wholesale.tarbelaevents.service.exception.UnknownEventIdException;
 import de.zalando.wholesale.tarbelaevents.service.exception.ValidationException;
-import de.zalando.wholesale.tarbelaevents.util.Fixture;
-import de.zalando.wholesale.tarbelaevents.util.MockPayload;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -73,8 +70,6 @@ public class EventControllerTest {
     @Mock
     private FlowIdComponent flowIdComponent;
 
-    @Mock
-    private TarbelaSnapshotProvider<MockPayload> tarbelaSnapshotProvider;
     private static final String FLOW_ID_VALUE = "A_FUNKY_TRACER_VALUE";
 
     @Before
@@ -83,9 +78,8 @@ public class EventControllerTest {
 
         when(flowIdComponent.getXFlowIdKey()).thenReturn("X-Flow-ID");
         when(flowIdComponent.getXFlowIdValue()).thenReturn(FLOW_ID_VALUE);
-        when(tarbelaSnapshotProvider.getSnapshot()).thenReturn(Fixture.mockPayloadList(6));
 
-        final EventController eventController = new EventController(eventLogService, tarbelaSnapshotProvider, flowIdComponent);
+        final EventController eventController = new EventController(eventLogService, flowIdComponent);
         mockMvc = MockMvcBuilders.standaloneSetup(eventController).setControllerAdvice(new EventExceptionHandlerAdvice(flowIdComponent))
                                  .build();
 
@@ -213,13 +207,13 @@ public class EventControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.post("/events/snapshots")).andExpect(status().isCreated());
 
-        verify(eventLogService).createSnapshotEvents(any(), any());
+        verify(eventLogService).createSnapshotEvents(any());
     }
 
     @Test
     public void testSnapshotNotImplemented() throws Exception {
 
-        doThrow(new TarbelaSnapshotProviderNotImplemented()).when(tarbelaSnapshotProvider).getSnapshot();
+        doThrow(new TarbelaSnapshotProviderNotImplemented()).when(eventLogService).createSnapshotEvents(any());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/events/snapshots")
                 .contentType(CONTENT_TYPE_EVENT_LIST_UPDATE)

@@ -1,13 +1,11 @@
 package de.zalando.wholesale.tarbelaevents.web;
 
 
-import de.zalando.wholesale.tarbelaevents.TarbelaSnapshotProvider;
 import de.zalando.wholesale.tarbelaevents.api.event.model.BunchOfEventUpdatesDTO;
 import de.zalando.wholesale.tarbelaevents.api.event.model.BunchOfEventsDTO;
 import de.zalando.wholesale.tarbelaevents.service.EventLogService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -26,14 +24,11 @@ public class EventController {
 
     private EventLogService eventLogService;
 
-    private TarbelaSnapshotProvider<?> tarbelaSnapshotProvider;
-
     private FlowIdComponent flowIdComponent;
 
     @Autowired
-    public EventController(final EventLogService eventLogService, final TarbelaSnapshotProvider<?> tarbelaSnapshotProvider, FlowIdComponent flowIdComponent) {
+    public EventController(final EventLogService eventLogService, FlowIdComponent flowIdComponent) {
         this.eventLogService = eventLogService;
-        this.tarbelaSnapshotProvider = tarbelaSnapshotProvider;
         this.flowIdComponent = flowIdComponent;
     }
 
@@ -60,7 +55,7 @@ public class EventController {
     @RequestMapping(value = "/snapshots", method = RequestMethod.POST, produces = CONTENT_TYPE_PROBLEM)
     public ResponseEntity<Void> eventsSnapshotPost() {
 
-        eventLogService.createSnapshotEvents(tarbelaSnapshotProvider.getSnapshot(), flowIdComponent.getXFlowIdValue());
+        eventLogService.createSnapshotEvents(flowIdComponent.getXFlowIdValue());
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

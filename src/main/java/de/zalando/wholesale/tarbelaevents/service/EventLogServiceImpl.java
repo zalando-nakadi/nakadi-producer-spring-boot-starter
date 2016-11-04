@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.zalando.wholesale.tarbelaevents.TarbelaProperties;
+import de.zalando.wholesale.tarbelaevents.TarbelaSnapshotProvider;
 import de.zalando.wholesale.tarbelaevents.api.event.model.BunchOfEventUpdatesDTO;
 import de.zalando.wholesale.tarbelaevents.api.event.model.BunchOfEventsDTO;
 import de.zalando.wholesale.tarbelaevents.persistance.entity.EventDataOperation;
@@ -50,6 +51,9 @@ public class EventLogServiceImpl implements EventLogService {
 
     @Autowired
     private TarbelaProperties tarbelaProperties;
+
+    @Autowired
+    private TarbelaSnapshotProvider<?> tarbelaSnapshotProvider;
 
     @Override
     @Transactional
@@ -168,9 +172,10 @@ public class EventLogServiceImpl implements EventLogService {
 
     @Override
     @Transactional
-    public void createSnapshotEvents(Collection<?> snapshotItems, final String flowId) {
+    public void createSnapshotEvents(final String flowId) {
 
-        // TODO: replace snapshotItems with TarbelaSnapshotProvider dependency
+        Collection<?> snapshotItems = tarbelaSnapshotProvider.getSnapshot();
+
         final List<EventLog> snapshotEvents = snapshotItems.stream()
                 .map(item -> createEventLog(EventDataOperation.SNAPSHOT, item, flowId))
                 .collect(Collectors.toList());

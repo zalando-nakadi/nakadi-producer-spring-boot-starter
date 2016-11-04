@@ -3,6 +3,7 @@ package de.zalando.wholesale.tarbelaevents.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.zalando.wholesale.tarbelaevents.TarbelaProperties;
+import de.zalando.wholesale.tarbelaevents.TarbelaSnapshotProvider;
 import de.zalando.wholesale.tarbelaevents.api.event.model.BunchOfEventUpdatesDTO;
 import de.zalando.wholesale.tarbelaevents.api.event.model.BunchOfEventsDTO;
 import de.zalando.wholesale.tarbelaevents.api.event.model.EventUpdateDTO;
@@ -64,6 +65,9 @@ public class EventLogServiceTest {
     @Mock
     private TarbelaProperties tarbelaProperties;
 
+    @Mock
+    private TarbelaSnapshotProvider tarbelaSnapshotProvider;
+
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -116,7 +120,7 @@ public class EventLogServiceTest {
         traceId = "TRACE_ID";
         when(flowIdComponent.getXFlowIdValue()).thenReturn(traceId);
 
-        events = newArrayList(); // TODO: put here eventLog
+        events = newArrayList(eventLog);
 
         bunchOfEventsDTO = new BunchOfEventsDTO();
     }
@@ -303,7 +307,9 @@ public class EventLogServiceTest {
 
         final List<?> mockPayloadList = Collections.singletonList(mockPayload);
 
-        eventLogService.createSnapshotEvents(mockPayloadList, traceId);
+        when(tarbelaSnapshotProvider.getSnapshot()).thenReturn(mockPayloadList);
+
+        eventLogService.createSnapshotEvents(traceId);
 
         verify(eventLogRepository).save(listEventLogCaptor.capture());
 

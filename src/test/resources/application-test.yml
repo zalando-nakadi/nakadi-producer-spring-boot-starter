@@ -2,35 +2,19 @@ spring:
   oauth2:
     application:
       scope:
-        read: "#oauth2.hasScope('tarbela-publisher.read')"
-        write.event_log: "#oauth2.hasScope('tarbela-publisher.event_log_write')"
-  datasource.maxActive: 7
-  spring.jackson.default-property-inclusion: non_null
+        read.tarbela_event_log: "#oauth2.hasScope('tarbela-producer.read')"
+        write.tarbela_event_log: "#oauth2.hasScope('tarbela-producer.event_log_write')"
+  jackson.default-property-inclusion: non_null
   jpa:
     show-sql: true
 
-# Http traffic logging configuration
-logbook:
-  filter.enabled: true
-  format.style: json
-  obfuscate:
-    headers:
-      - Authorization
-      - X-Secret
-    parameters:
-      - access_token
-  write:
-    category: http.traffic
-    level: INFO
-
-flyway.locations: classpath:database/migrations
+#todo: make the location present in flyway config by default
+flyway.locations: classpath:db_tarbela/migrations
 
 logging.level:
   org.springframework.web: 'DEBUG'
-logging.pattern:
-  console: "%date {%level} [%thread] [%X{X-FLOW-ID}] [%logger] %message%n"
-  file: "%date {%level} [%thread] [%X{X-FLOW-ID}] [%logger] %message%n"
 
+#todo: make this also not neccesary to configure explicitly
 tracer:
   traces:
     X-Flow-ID: flow-id

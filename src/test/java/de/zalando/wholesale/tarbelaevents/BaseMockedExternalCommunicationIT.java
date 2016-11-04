@@ -31,8 +31,8 @@ import static com.jayway.restassured.RestAssured.given;
 )
 public abstract class BaseMockedExternalCommunicationIT {
     protected static final String UID_SCOPE = "uid";
-    protected static final String READ_SCOPE = "tarbela-publisher.read";
-    protected static final String EVENT_LOG_WRITE_SCOPE = "tarbela-publisher.event_log_write";
+    protected static final String READ_SCOPE = "tarbela-producer.read";
+    protected static final String EVENT_LOG_WRITE_SCOPE = "tarbela-producer.event_log_write";
 
     private static final String[] ALL_KNOWN_SCOPES = {
         UID_SCOPE, READ_SCOPE, EVENT_LOG_WRITE_SCOPE

@@ -21,10 +21,10 @@ import lombok.extern.slf4j.Slf4j;
 @EnableResourceServer
 public class TarbelaEventsResourceServerConfiguration extends ResourceServerConfigurerAdapter {
 
-    @Value("${spring.oauth2.application.scope.read}")
+    @Value("${spring.oauth2.application.scope.read.tarbela_event_log}")
     private String oauthScopeRead;
 
-    @Value("${spring.oauth2.application.scope.write.event_log}")
+    @Value("${spring.oauth2.application.scope.write.tarbela_event_log}")
     private String oauthScopeWriteEventLog;
 
     @Value("${server.port}")

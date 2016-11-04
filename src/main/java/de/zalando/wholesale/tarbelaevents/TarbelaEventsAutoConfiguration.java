@@ -14,8 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 @EnableConfigurationProperties(TarbelaProperties.class)
 public class TarbelaEventsAutoConfiguration {
 
-    // TODO: create default configuration
-
     @Bean
     @ConditionalOnMissingBean(TarbelaSnapshotProvider.class)
     public TarbelaSnapshotProvider<?> tarbelaSnapshotProvider() {

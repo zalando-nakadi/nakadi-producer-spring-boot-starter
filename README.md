@@ -1,4 +1,4 @@
-# tarbela-events-spring-boot-starter
+# tarbela-producer-spring-boot-starter
 Tarbela event producer API implementation as a Spring boot starter 
 
 :rocket:
@@ -18,7 +18,7 @@ Add the following dependency into the pom.xml of your Spring-Boot application
 ```xml
 <dependency>
     <groupId>de.zalando.wholesale.tarbelaevents</groupId>
-    <artifactId>tarbela-events-spring-boot-starter</artifactId>
+    <artifactId>tarbela-producer-spring-boot-starter</artifactId>
     <version>${tarbela-events.version}</version>
 </dependency>
 ```

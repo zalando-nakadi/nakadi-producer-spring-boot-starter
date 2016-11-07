@@ -13,7 +13,7 @@
         <version>1.4.1.RELEASE</version>
     </parent>
 
-    <artifactId>tarbela-events-spring-boot-starter</artifactId>
+    <artifactId>tarbela-producer-spring-boot-starter</artifactId>
     <groupId>de.zalando.wholesale.tarbelaevents</groupId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Tarbela Event Producer: Spring Boot Starter</name>

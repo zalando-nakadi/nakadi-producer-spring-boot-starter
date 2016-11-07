@@ -28,7 +28,14 @@ Add the following dependency into the pom.xml of your Spring-Boot application
 
 ### Prerequisites
 
-* Spring Boot 1.4.1
+This library tested with Spring Boot 1.4.1 and relies on existing PostgreSQL DataSource configured
+
+This library also uses:
+
+* flyway-core 4.0.3
+* querydsl-jpa 4.1.4
+* Zalando's stups-spring-oauth2-server 1.0.15-GH42-1
+* Zalando's tracer-spring-boot-starter 0.11.2
 
 ## Configuration
 

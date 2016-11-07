@@ -7,6 +7,9 @@ Tarbela is a reliable generic event publisher [according to documentation](https
 
 The goal of this Spring Boot starter is to simplify the integration between event producer and Tarbela publisher.
 
+The important thing is that the new events are stored in the same database (and using the same JDBC connections and transactions) as the actual data we want to store (thereby making the distributed-transaction problem go away).
+
+
 ## Installation
 
 Build and install the library into your local Maven repository:
@@ -96,8 +99,28 @@ endpoint | description
 
 The typical use case for this library is to publish events like creating or updating of some objects.
 
-In order to store events use `EventLogService` service methods `fireCreateEvent` and `fireUpdateEvent`.
-Usually it makes sense to use these methods in one transaction with corresponding object creation or mutation.
+In order to store events you can autowire `EventLogWriter` service and use its methods: `fireCreateEvent` and `fireUpdateEvent`.
+
+Example of using `fireCreateEvent`:
+
+```java
+@Service
+public class SomeYourService {
+
+    @Autowire
+    private EventLogWriter eventLogWriter 
+    
+    @Transactional
+    public void createObject(MyObject data, String flowId) {
+        ... here we store an object in a database table
+       
+        // and then in the same transaction we save the event about this object creation
+        eventLogWriter.fireCreateEvent(data, flowId);
+    }
+}
+```
+
+It makes sense to use these methods in one transaction with corresponding object creation or mutation. This way we get rid of distributed-transaction problem as mentioned earlier.
 
 **Important:** In order `POST /events/snapshots` to works your application should implement the `TarbelaSnapshotProvider` interface.
 This interface defines only one method:

@@ -37,7 +37,7 @@ import static com.google.common.collect.Lists.newArrayList;
 
 @Service
 @Slf4j
-public class EventLogServiceImpl implements EventLogService {
+public class EventLogServiceImpl implements EventLogWriter, EventLogService {
 
     public static final int DEFAULT_LIMIT = 10;
     @Autowired

@@ -8,7 +8,7 @@ import de.zalando.wholesale.tarbelaevents.api.event.model.EventUpdateDTO;
 import de.zalando.wholesale.tarbelaevents.persistance.entity.EventDataOperation;
 import de.zalando.wholesale.tarbelaevents.persistance.entity.EventStatus;
 import de.zalando.wholesale.tarbelaevents.persistance.repository.EventLogRepository;
-import de.zalando.wholesale.tarbelaevents.service.EventLogService;
+import de.zalando.wholesale.tarbelaevents.service.EventLogWriter;
 import de.zalando.wholesale.tarbelaevents.util.Fixture;
 import de.zalando.wholesale.tarbelaevents.util.MockPayload;
 
@@ -17,7 +17,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +24,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.jayway.restassured.RestAssured.given;
-import static de.zalando.wholesale.tarbelaevents.util.Fixture.PUBLISHER_DATA_TYPE;
 import static de.zalando.wholesale.tarbelaevents.util.Fixture.PUBLISHER_EVENT_TYPE;
 import static de.zalando.wholesale.tarbelaevents.util.Fixture.SINK_ID;
 import static de.zalando.wholesale.tarbelaevents.web.EventController.CONTENT_TYPE_EVENT_LIST;
@@ -43,7 +41,7 @@ public class EventLogIT extends BaseMockedExternalCommunicationIT {
     private String mockedCode;
 
     @Autowired
-    private EventLogService eventLogService;
+    private EventLogWriter eventLogWriter;
 
     private static final String[] ALL_SCOPES_EXCEPT_READ = {
             UID_SCOPE, EVENT_LOG_WRITE_SCOPE
@@ -63,7 +61,7 @@ public class EventLogIT extends BaseMockedExternalCommunicationIT {
             MockPayload mockPayload = Fixture.mockPayload(i+1, mockedCode+i, true,
                     Fixture.mockSubClass("some info"+i), Fixture.mockSubList(2, "some detail"+i));
             mockPayloads.add(mockPayload);
-            eventLogService.fireCreateEvent(mockPayload, "SOME_FLOW_ID");
+            eventLogWriter.fireCreateEvent(mockPayload, "SOME_FLOW_ID");
         }
 
         // make listOfItems return predefined list

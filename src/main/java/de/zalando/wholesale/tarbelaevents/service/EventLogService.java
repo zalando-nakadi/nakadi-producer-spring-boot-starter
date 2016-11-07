@@ -3,17 +3,9 @@ package de.zalando.wholesale.tarbelaevents.service;
 import de.zalando.wholesale.tarbelaevents.api.event.model.BunchOfEventUpdatesDTO;
 import de.zalando.wholesale.tarbelaevents.api.event.model.BunchOfEventsDTO;
 
-import java.util.Collection;
-
 import javax.transaction.Transactional;
 
 public interface EventLogService {
-
-    @Transactional
-    void fireCreateEvent(Object payload, String flowId);
-
-    @Transactional
-    void fireUpdateEvent(Object payload, String flowId);
 
     /**
      * Searches for events for given cursor, status and limit.

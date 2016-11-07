@@ -35,7 +35,7 @@ This library also uses:
 * flyway-core 4.0.3
 * querydsl-jpa 4.1.4
 * Zalando's stups-spring-oauth2-server 1.0.15-GH42-1
-* Zalando's tracer-spring-boot-starter 0.11.2
+* (Optional) Zalando's tracer-spring-boot-starter 0.11.2 
 
 ## Configuration
 
@@ -83,9 +83,9 @@ Make sure that `classpath:db_tarbela/migrations` present in a `flyway.locations`
 
     flyway.locations: classpath:db_tarbela/migrations
 
-This library uses tracer-spring-boot-starter library that provides a support of `X-Flow-ID` header.
+This library supports tracer-spring-boot-starter (another library from Zalando) that provides a support of `X-Flow-ID` header.
 
-This part is also needs to be configured:
+In order to use it you should provide the library as a dependency in your project and configure it:
 
     tracer:
       traces:

@@ -14,10 +14,10 @@ flyway.locations: classpath:db_tarbela/migrations
 logging.level:
   org.springframework.web: 'DEBUG'
 
-#todo: make this also not neccesary to configure explicitly
-tracer:
-  traces:
-    X-Flow-ID: flow-id
+# optional tracer configeration
+#tracer:
+#  traces:
+#    X-Flow-ID: flow-id
 
 tarbela:
   event-type: wholesale.some-publisher-change-event

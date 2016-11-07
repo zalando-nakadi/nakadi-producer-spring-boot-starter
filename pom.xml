@@ -63,6 +63,7 @@
             <groupId>org.zalando</groupId>
             <artifactId>tracer-spring-boot-starter</artifactId>
             <version>0.11.2</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>

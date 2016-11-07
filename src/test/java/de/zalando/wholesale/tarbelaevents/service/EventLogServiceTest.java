@@ -52,6 +52,7 @@ public class EventLogServiceTest {
 
     public static final int CURSOR = 0;
     public static final int LIMIT = 5;
+    public static final int SNAPSHOT_BATCH_SIZE = 5;
 
     @Mock
     private EventLogRepository eventLogRepository;
@@ -106,6 +107,7 @@ public class EventLogServiceTest {
         when(tarbelaProperties.getDataType()).thenReturn(PUBLISHER_DATA_TYPE);
         when(tarbelaProperties.getEventType()).thenReturn(PUBLISHER_EVENT_TYPE);
         when(tarbelaProperties.getSinkId()).thenReturn(SINK_ID);
+        when(tarbelaProperties.getSnapshotBatchSize()).thenReturn(SNAPSHOT_BATCH_SIZE);
 
         mockPayload = Fixture.mockPayload(1, "mockedcode", true,
                 Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
@@ -307,7 +309,7 @@ public class EventLogServiceTest {
 
         final List<?> mockPayloadList = Collections.singletonList(mockPayload);
 
-        when(tarbelaSnapshotProvider.getSnapshot()).thenReturn(mockPayloadList);
+        when(tarbelaSnapshotProvider.getSnapshot()).thenReturn(mockPayloadList.stream());
 
         eventLogService.createSnapshotEvents(traceId);
 
@@ -320,5 +322,30 @@ public class EventLogServiceTest {
         assertThat(snapshotEventLog.getDataOp(), is(EventDataOperation.SNAPSHOT.toString()));
         assertThat(snapshotEventLog.getStatus(), is(EventStatus.NEW.toString()));
         assertThat(snapshotEventLog.getEventBodyData(), is(EVENT_BODY_DATA));
+    }
+
+    @Test
+    public void testSnapshotSavedInBatches() {
+
+        final List<?> mockPayloadList = Fixture.mockPayloadList(5);
+
+        // when snapshot returns 5 item stream
+        when(tarbelaSnapshotProvider.getSnapshot()).thenReturn(mockPayloadList.stream());
+        // and the size of a batch is 3
+        when(tarbelaProperties.getSnapshotBatchSize()).thenReturn(3);
+
+        // create a snapshot
+        eventLogService.createSnapshotEvents(traceId);
+
+        // verify that that save got called twice
+        verify(eventLogRepository, times(2)).save(listEventLogCaptor.capture());
+
+        // verify that stream was split in two batches
+        assertThat(listEventLogCaptor.getAllValues().size(), is(2));
+        // verify that size of the first batch is 3
+        assertThat(listEventLogCaptor.getAllValues().get(0).size(), is(3));
+        // verify that size of the last batch is 2
+        assertThat(listEventLogCaptor.getAllValues().get(1).size(), is(2));
+
     }
 }

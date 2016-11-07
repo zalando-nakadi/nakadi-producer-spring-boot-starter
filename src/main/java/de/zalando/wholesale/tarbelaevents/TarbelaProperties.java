@@ -16,4 +16,6 @@ public class TarbelaProperties {
 
     private String sinkId;
 
+    private Integer snapshotBatchSize = 25;
+
 }

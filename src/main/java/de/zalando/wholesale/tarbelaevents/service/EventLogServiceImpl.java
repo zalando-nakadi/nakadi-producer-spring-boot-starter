@@ -1,6 +1,7 @@
 package de.zalando.wholesale.tarbelaevents.service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,10 +24,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.transaction.Transactional;
 
@@ -174,13 +175,16 @@ public class EventLogServiceImpl implements EventLogWriter, EventLogService {
     @Transactional
     public void createSnapshotEvents(final String flowId) {
 
-        Collection<?> snapshotItems = tarbelaSnapshotProvider.getSnapshot();
+        Stream<?> snapshotItemsStream = tarbelaSnapshotProvider.getSnapshot();
 
-        final List<EventLog> snapshotEvents = snapshotItems.stream()
-                .map(item -> createEventLog(EventDataOperation.SNAPSHOT, item, flowId))
-                .collect(Collectors.toList());
+        Iterators.partition(snapshotItemsStream.iterator(), tarbelaProperties.getSnapshotBatchSize())
+                .forEachRemaining(batch -> {
+                    final List<EventLog> events = batch.stream()
+                            .map(item -> createEventLog(EventDataOperation.SNAPSHOT, item, flowId))
+                            .collect(Collectors.toList());
+                    eventLogRepository.save(events);
+                });
 
-        eventLogRepository.save(snapshotEvents);
         eventLogRepository.flush();
     }
 

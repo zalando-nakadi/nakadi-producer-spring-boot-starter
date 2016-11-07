@@ -134,14 +134,34 @@ This interface defines only one method:
 
 
 ```java
+/**
+ * The <code>TarbelaSnapshotProvider</code> interface should be implemented by any
+ * Tarbela Event Producer that wants to support snapshot events feature. The
+ * class must define a method of no arguments called <code>getSnapshot</code>.
+ * <p>
+ *
+ * @param <T> the type of elements of the stream returned by <code>getSnapshot</code>
+ */
 public interface TarbelaSnapshotProvider<T> {
 
-    Collection<T> getSnapshot();
+    /**
+     * Returns a stream consisting of elements for creating a snapshot of events.
+     * @return stream of elements to create a snapshot from
+     */
+    Stream<T> getSnapshot();
 
 }
 ```
 
-The method will be used by `EventLogService` to create the snapshot events of the whole Publisher's state.
+The method will be used by `EventLogService` to create snapshot events of the whole Publisher's state.
+
+`EventLogService` will take batches of elements from the stream returned by `getSnapshot()` method and save those batches sequentially in tarbela_event_log table.
+ 
+The default size of the batch is 25 and it can be adjusted via `tarbela.snapshot-batch-size` property:
+
+    tarbela:
+      snapshot-batch-size: 100
+
 
 ## Build
 

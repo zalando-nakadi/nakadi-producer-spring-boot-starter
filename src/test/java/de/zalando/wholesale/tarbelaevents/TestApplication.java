@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 import java.util.Collection;
+import java.util.stream.Stream;
 
 @SpringBootApplication
 @EnableTarbelaEvents
@@ -15,15 +16,12 @@ public class TestApplication {
 
     private static volatile Collection<MockPayload> list = Fixture.mockPayloadList(6);
 
+    /**
+     * Test implementation of the TarbelaSnapshotProvider interface for integration tests
+     */
     @Bean
-    public TarbelaSnapshotProvider<?> tarbelaSnapshotProvider() {
-
-        return new TarbelaSnapshotProvider<MockPayload>() {
-            @Override
-            public Collection<MockPayload> getSnapshot() {
-                return list;
-            }
-        };
+    public TarbelaSnapshotProvider<MockPayload> tarbelaSnapshotProvider() {
+        return () -> list.stream();
     }
 
     public static void setList(Collection<MockPayload> newList) {

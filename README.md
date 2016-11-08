@@ -5,7 +5,7 @@ Tarbela event producer API implementation as a Spring boot starter
 
 Tarbela is a reliable generic event publisher [according to documentation](https://libraries.io/github/zalando-incubator/tarbela)
 
-The goal of this Spring Boot starter is to simplify the integration between event producer and Tarbela publisher.
+The goal of this Spring Boot starter is to simplify the integration between event producer and Tarbela publisher reducing boiler plate code.
 
 The important thing is that the new events are stored in the same database (and using the same JDBC connections and transactions) as the actual data we want to store (thereby making the distributed-transaction problem go away).
 
@@ -14,7 +14,9 @@ The important thing is that the new events are stored in the same database (and 
 
 Build and install the library into your local Maven repository:
 
-    ./mvnw clean install
+```sh
+./mvnw clean install
+```
 
 Add the following dependency into the pom.xml of your Spring-Boot application
 
@@ -41,7 +43,7 @@ This library also uses:
 
 Use `@EnableTarbelaEvents` annotation to activate spring boot starter auto configuration
 
-```
+```java
 @SpringBootApplication
 @EnableTarbelaEvents
 public class Application {
@@ -57,12 +59,16 @@ This will configure:
 * EventLogService service for writing events into the table 
 * controller listening `/events` endpoint that will publish the events for Tarbela
 
-Configure event type, event data type and sinkId in application properties:
+### Tarbela sinkId
 
-    tarbela:
-      event-type: wholesale.some-publisher-change-event
-      data-type: tarbela:some-publisher
-      sink-id: zalando-nakadi
+Configure Tarbela Sink identifier in application properties:
+
+```yaml
+tarbela:
+  sink-id: zalando-nakadi
+```
+
+### Security
 
 Web endpoints this library provides are secured with oauth2 (spring-security-oauth2 library).
 
@@ -70,27 +76,36 @@ In order the security to work you need to configure oauth2 scopes to access endp
 
 Example configuration:
 
-    spring:
-      oauth2:
-        application:
-          scope:
-            read.tarbela_event_log: "#oauth2.hasScope('tarbela-producer.read')"
-            write.tarbela_event_log: "#oauth2.hasScope('tarbela-producer.event_log_write')"
+```yaml
+spring:
+  oauth2:
+    application:
+      scope:
+        read.tarbela_event_log: "#oauth2.hasScope('tarbela-producer.read')"
+        write.tarbela_event_log: "#oauth2.hasScope('tarbela-producer.event_log_write')"
+```
+
+### Database
 
 Another important thing to configure is a flyway migrations directory.
 
 Make sure that `classpath:db_tarbela/migrations` present in a `flyway.locations` property:
 
-    flyway.locations: classpath:db_tarbela/migrations
+```yaml
+flyway.locations: classpath:db_tarbela/migrations
+```
+
+### X-Flow-ID (Optional)
 
 This library supports tracer-spring-boot-starter (another library from Zalando) that provides a support of `X-Flow-ID` header.
 
 In order to use it you should provide the library as a dependency in your project and configure it:
 
-    tracer:
-      traces:
-        X-Flow-ID: flow-id
-
+```yaml
+tracer:
+  traces:
+    X-Flow-ID: flow-id
+```
 
 ## Using 
 
@@ -102,7 +117,9 @@ endpoint | description
 -------- | -----------
 `GET /events` | Using this endpoint Tarbela retrieves some of the new events. The response will support pagination by a next link, using a cursor, assuming there are actually more events.
 `PATCH /events` | Using this endpoint Tarbela updates the publishing statuses of some events. This is used to inform the producer when a event was successfully delivered to the event sink or when it couldn't be delivered.
-`POST /events/snapshots` | Using this endpoint Tarbela makes producer to create a snapshot events at the producer's site so that Tarbela could request the whole state of the publisher from scratch
+`POST /events/snapshots/{event_type}` | Using this endpoint Tarbela makes producer to create a snapshot events at the producer's site so that Tarbela could request the whole state of the publisher from scratch
+
+### Creating events
 
 The typical use case for this library is to publish events like creating or updating of some objects.
 
@@ -118,50 +135,64 @@ public class SomeYourService {
     private EventLogWriter eventLogWriter 
     
     @Transactional
-    public void createObject(MyObject data, String flowId) {
+    public void createObject(Warehouse data, String flowId) {
+        
+        ...
         ... here we store an object in a database table
+        ...
        
+        // compose an event payload
+        EventPayload eventPayload = EventPayloadImpl.builder()
+                .data(data)
+                .eventType("wholesale.warehouse-change-event")
+                .dataType("wholesale:warehouse")
+                .build();
+
         // and then in the same transaction we save the event about this object creation
-        eventLogWriter.fireCreateEvent(data, flowId);
+        eventLogWriter.fireCreateEvent(eventPayload, flowId);
     }
 }
 ```
 
+**Note:** `flowId` is an optional parameter that will be saved with the event to make it traceable. It could be a value of an X-Flow-ID header.
+
+**Note:** `EventPayload` is an event payload structure that should contain following information:
+
+* **eventType** - predefined event type sting name that will be attached to each `EventDTO`'s `channel` object as a `topicName` property
+* **dataType** - predefined data type string name that will be attached to each `EventDTO`'s `event_payload` object as a `data_type` property
+* **data** - event data payload itself that will be attached to each `EventDTO`'s `event_payload` object as a `data` property
+
 It makes sense to use these methods in one transaction with corresponding object creation or mutation. This way we get rid of distributed-transaction problem as mentioned earlier.
 
-**Important:** In order `POST /events/snapshots` to works your application should implement the `TarbelaSnapshotProvider` interface.
-This interface defines only one method:
+### Event snapshots
 
+**Important:** In order `POST /events/snapshots/{event_type}` to work your application should implement the `TarbelaSnapshotProvider` interface.
 
 ```java
-/**
- * The <code>TarbelaSnapshotProvider</code> interface should be implemented by any
- * Tarbela Event Producer that wants to support snapshot events feature. The
- * class must define a method of no arguments called <code>getSnapshot</code>.
- * <p>
- *
- * @param <T> the type of elements of the stream returned by <code>getSnapshot</code>
- */
-public interface TarbelaSnapshotProvider<T> {
+public interface TarbelaSnapshotProvider {
 
     /**
-     * Returns a stream consisting of elements for creating a snapshot of events.
+     * Returns a stream consisting of elements for creating a snapshot of events
+     * of given type (event type is an event channel topic name).
      * @return stream of elements to create a snapshot from
      */
-    Stream<T> getSnapshot();
+    Stream<EventPayload> getSnapshot(@NotNull String eventType);
 
 }
 ```
 
+If you will not implement and define the `TarbelaSnapshotProvider` as a Spring Bean the library will configure a fake `TarbelaSnapshotProvider` which will throw TarbelaSnapshotProviderNotImplementedException upon the any `POST /events/snapshots/*` request
+
 The method will be used by `EventLogService` to create snapshot events of the whole Publisher's state.
 
-`EventLogService` will take batches of elements from the stream returned by `getSnapshot()` method and save those batches sequentially in tarbela_event_log table.
+`EventLogService` will take batches of elements from the stream returned by `getSnapshot` method and save those batches sequentially in tarbela_event_log table.
  
 The default size of the batch is 25 and it can be adjusted via `tarbela.snapshot-batch-size` property:
 
-    tarbela:
-      snapshot-batch-size: 100
-
+```yaml
+tarbela:
+  snapshot-batch-size: 100
+```
 
 ## Build
 

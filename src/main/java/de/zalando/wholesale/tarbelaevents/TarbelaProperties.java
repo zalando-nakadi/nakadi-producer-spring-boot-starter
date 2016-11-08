@@ -10,10 +10,6 @@ import lombok.Setter;
 @ConfigurationProperties(prefix = "tarbela")
 public class TarbelaProperties {
 
-    private String eventType;
-
-    private String dataType;
-
     private String sinkId;
 
     private Integer snapshotBatchSize = 25;

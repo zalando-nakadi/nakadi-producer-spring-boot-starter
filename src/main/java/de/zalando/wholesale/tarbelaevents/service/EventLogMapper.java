@@ -37,7 +37,7 @@ public class EventLogMapper {
     private ObjectMapper objectMapper;
 
     public BunchOfEventsDTO mapToDTO(final List<EventLog> events, final String status,
-                                     final Integer limit, final String eventType, final String sinkId) {
+                                     final Integer limit, final String sinkId) {
         final BunchOfEventsDTO bunchOfEventsDTO = new BunchOfEventsDTO();
 
         final BunchofEventsLinksDTO nextLink = extractNextLink(events, status, limit);
@@ -52,7 +52,7 @@ public class EventLogMapper {
                       eventDTO.setDeliveryStatus(event.getStatus());
 
                       final EventChannelDTO channel = new EventChannelDTO();
-                      channel.setTopicName(eventType);
+                      channel.setTopicName(event.getEventType());
                       channel.setSinkIdentifier(sinkId);
                       eventDTO.setChannel(channel);
 

@@ -15,6 +15,7 @@ import de.zalando.wholesale.tarbelaevents.service.exception.InvalidCursorExcepti
 import de.zalando.wholesale.tarbelaevents.service.exception.InvalidEventIdException;
 import de.zalando.wholesale.tarbelaevents.service.exception.UnknownEventIdException;
 import de.zalando.wholesale.tarbelaevents.service.exception.ValidationException;
+import de.zalando.wholesale.tarbelaevents.service.model.EventPayload;
 import de.zalando.wholesale.tarbelaevents.util.Fixture;
 import de.zalando.wholesale.tarbelaevents.util.MockPayload;
 import de.zalando.wholesale.tarbelaevents.web.FlowIdComponent;
@@ -34,6 +35,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static de.zalando.wholesale.tarbelaevents.service.EventLogServiceImpl.DEFAULT_LIMIT;
@@ -80,6 +82,8 @@ public class EventLogServiceTest {
 
     private MockPayload mockPayload;
 
+    private EventPayload eventPayload;
+
     @Rule
     public final ExpectedException expectedException = ExpectedException.none();
 
@@ -104,13 +108,13 @@ public class EventLogServiceTest {
     @Before
     public void setUp() throws Exception {
 
-        when(tarbelaProperties.getDataType()).thenReturn(PUBLISHER_DATA_TYPE);
-        when(tarbelaProperties.getEventType()).thenReturn(PUBLISHER_EVENT_TYPE);
         when(tarbelaProperties.getSinkId()).thenReturn(SINK_ID);
         when(tarbelaProperties.getSnapshotBatchSize()).thenReturn(SNAPSHOT_BATCH_SIZE);
 
         mockPayload = Fixture.mockPayload(1, "mockedcode", true,
                 Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
+
+        eventPayload = Fixture.mockEventPayload(mockPayload);
 
         final Random rand = new Random();
         eventLog = EventLog.builder().id(rand.nextInt()).eventBodyData(EVENT_BODY_DATA)
@@ -130,7 +134,7 @@ public class EventLogServiceTest {
     @Test
     public void testFireCreateEvent() throws Exception {
         final ArgumentCaptor<EventLog> argumentCaptor = ArgumentCaptor.forClass(EventLog.class);
-        eventLogService.fireCreateEvent(mockPayload, traceId);
+        eventLogService.fireCreateEvent(eventPayload, traceId);
         verify(eventLogRepository, times(1)).save(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue().getDataOp(), is(EventDataOperation.CREATE.toString()));
     }
@@ -138,7 +142,7 @@ public class EventLogServiceTest {
     @Test
     public void testFireUpdateEvent() throws Exception {
         final ArgumentCaptor<EventLog> argumentCaptor = ArgumentCaptor.forClass(EventLog.class);
-        eventLogService.fireUpdateEvent(mockPayload, traceId);
+        eventLogService.fireUpdateEvent(eventPayload, traceId);
         verify(eventLogRepository, times(1)).save(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue().getDataOp(), is(EventDataOperation.UPDATE.toString()));
     }
@@ -146,7 +150,7 @@ public class EventLogServiceTest {
     @Test
     public void testCreateWarehouseEventLog() throws Exception {
         final EventLog eventLog = eventLogService.createEventLog(
-                EventDataOperation.UPDATE, mockPayload, traceId);
+                EventDataOperation.UPDATE, eventPayload, traceId);
         assertThat(eventLog.getEventBodyData(), is(EVENT_BODY_DATA));
         assertThat(eventLog.getDataOp(), is(EventDataOperation.UPDATE.toString()));
         assertThat(eventLog.getEventType(), is(PUBLISHER_EVENT_TYPE));
@@ -159,7 +163,7 @@ public class EventLogServiceTest {
     public void testSearchEvents() throws Exception {
         when(eventLogRepository.search(CURSOR, EventStatus.NEW.toString(), LIMIT)).thenReturn(events);
 
-        when(eventLogMapper.mapToDTO(events, EventStatus.NEW.toString(), LIMIT, PUBLISHER_EVENT_TYPE, SINK_ID))
+        when(eventLogMapper.mapToDTO(events, EventStatus.NEW.toString(), LIMIT, SINK_ID))
                 .thenReturn(bunchOfEventsDTO);
 
         final BunchOfEventsDTO result = eventLogService.searchEvents(String.valueOf(CURSOR),
@@ -170,7 +174,7 @@ public class EventLogServiceTest {
     @Test
     public void testSearchEventsWithoutLimit() throws Exception {
         when(eventLogRepository.search(CURSOR, EventStatus.NEW.name(), DEFAULT_LIMIT)).thenReturn(events);
-        when(eventLogMapper.mapToDTO(events, EventStatus.NEW.name(), null, PUBLISHER_EVENT_TYPE, SINK_ID))
+        when(eventLogMapper.mapToDTO(events, EventStatus.NEW.name(), null, SINK_ID))
                 .thenReturn(bunchOfEventsDTO);
 
         final BunchOfEventsDTO result = eventLogService.searchEvents(String.valueOf(CURSOR),
@@ -307,11 +311,11 @@ public class EventLogServiceTest {
     @Test
     public void testCreateSnapshotEvents() {
 
-        final List<?> mockPayloadList = Collections.singletonList(mockPayload);
+        final List<EventPayload> eventPayloads = Collections.singletonList(eventPayload);
 
-        when(tarbelaSnapshotProvider.getSnapshot()).thenReturn(mockPayloadList.stream());
+        when(tarbelaSnapshotProvider.getSnapshot(PUBLISHER_EVENT_TYPE)).thenReturn(eventPayloads.stream());
 
-        eventLogService.createSnapshotEvents(traceId);
+        eventLogService.createSnapshotEvents(PUBLISHER_EVENT_TYPE, traceId);
 
         verify(eventLogRepository).save(listEventLogCaptor.capture());
 
@@ -327,15 +331,18 @@ public class EventLogServiceTest {
     @Test
     public void testSnapshotSavedInBatches() {
 
-        final List<?> mockPayloadList = Fixture.mockPayloadList(5);
+        final List<MockPayload> mockPayloadList = Fixture.mockPayloadList(5);
+
+        final Stream<EventPayload> eventPayloadsStream = mockPayloadList.stream()
+                .map(Fixture::mockEventPayload);
 
         // when snapshot returns 5 item stream
-        when(tarbelaSnapshotProvider.getSnapshot()).thenReturn(mockPayloadList.stream());
+        when(tarbelaSnapshotProvider.getSnapshot(PUBLISHER_EVENT_TYPE)).thenReturn(eventPayloadsStream);
         // and the size of a batch is 3
         when(tarbelaProperties.getSnapshotBatchSize()).thenReturn(3);
 
         // create a snapshot
-        eventLogService.createSnapshotEvents(traceId);
+        eventLogService.createSnapshotEvents(PUBLISHER_EVENT_TYPE, traceId);
 
         // verify that that save got called twice
         verify(eventLogRepository, times(2)).save(listEventLogCaptor.capture());
@@ -348,4 +355,6 @@ public class EventLogServiceTest {
         assertThat(listEventLogCaptor.getAllValues().get(1).size(), is(2));
 
     }
+
+    // todo: write tests for snapshots of different types
 }

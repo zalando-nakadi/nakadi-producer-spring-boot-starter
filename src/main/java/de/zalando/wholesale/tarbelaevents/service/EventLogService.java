@@ -18,8 +18,8 @@ public interface EventLogService {
     void updateEvents(BunchOfEventUpdatesDTO updates);
 
     /**
-     * Creates snapshot event logs for all objects.
+     * Creates snapshot event logs of given type.
      */
     @Transactional
-    void createSnapshotEvents(String flowId);
+    void createSnapshotEvents(String eventType, String flowId);
 }

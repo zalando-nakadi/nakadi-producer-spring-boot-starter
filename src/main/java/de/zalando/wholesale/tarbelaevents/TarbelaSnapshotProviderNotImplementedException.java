@@ -1,6 +1,6 @@
 package de.zalando.wholesale.tarbelaevents;
 
-public class TarbelaSnapshotProviderNotImplemented extends RuntimeException {
+public class TarbelaSnapshotProviderNotImplementedException extends RuntimeException {
 
     @Override
     public String getMessage() {

@@ -20,6 +20,4 @@ logging.level:
 #    X-Flow-ID: flow-id
 
 tarbela:
-  event-type: wholesale.some-publisher-change-event
-  data-type: tarbela:some-publisher
   sink-id: zalando-nakadi

@@ -9,6 +9,8 @@ import de.zalando.wholesale.tarbelaevents.persistance.entity.EventDataOperation;
 import de.zalando.wholesale.tarbelaevents.persistance.entity.EventStatus;
 import de.zalando.wholesale.tarbelaevents.persistance.repository.EventLogRepository;
 import de.zalando.wholesale.tarbelaevents.service.EventLogWriter;
+import de.zalando.wholesale.tarbelaevents.service.model.EventPayload;
+import de.zalando.wholesale.tarbelaevents.service.model.EventPayloadImpl;
 import de.zalando.wholesale.tarbelaevents.util.Fixture;
 import de.zalando.wholesale.tarbelaevents.util.MockPayload;
 
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.jayway.restassured.RestAssured.given;
+import static de.zalando.wholesale.tarbelaevents.util.Fixture.PUBLISHER_DATA_TYPE;
 import static de.zalando.wholesale.tarbelaevents.util.Fixture.PUBLISHER_EVENT_TYPE;
 import static de.zalando.wholesale.tarbelaevents.util.Fixture.SINK_ID;
 import static de.zalando.wholesale.tarbelaevents.web.EventController.CONTENT_TYPE_EVENT_LIST;
@@ -61,7 +64,8 @@ public class EventLogIT extends BaseMockedExternalCommunicationIT {
             MockPayload mockPayload = Fixture.mockPayload(i+1, mockedCode+i, true,
                     Fixture.mockSubClass("some info"+i), Fixture.mockSubList(2, "some detail"+i));
             mockPayloads.add(mockPayload);
-            eventLogWriter.fireCreateEvent(mockPayload, "SOME_FLOW_ID");
+            EventPayload eventPayload = Fixture.mockEventPayload(mockPayload);
+            eventLogWriter.fireCreateEvent(eventPayload, "SOME_FLOW_ID");
         }
 
         // make listOfItems return predefined list
@@ -99,6 +103,7 @@ public class EventLogIT extends BaseMockedExternalCommunicationIT {
                         "events", hasSize(5),
                         "events[0].delivery_status", is(EventStatus.NEW.name()),
                         "events[0].event_payload.data_op", is("C"),
+                        "events[0].event_payload.data_type", is(PUBLISHER_DATA_TYPE),
                         "events[0].event_payload.data.id", is(mockPayload.getId()),
                         "events[0].event_payload.data.code", is(mockedCode+"0"),
                         "events[0].event_payload.data.more.info", is(mockPayload.getMore().getInfo()),
@@ -171,7 +176,7 @@ public class EventLogIT extends BaseMockedExternalCommunicationIT {
 
         //J-
         given(anAuthenticatedRequestWithScopes(EVENT_LOG_WRITE_SCOPE))
-                .when().post("/events/snapshots")
+                .when().post("/events/snapshots/" + PUBLISHER_EVENT_TYPE)
                 .then().assertThat().statusCode(201);
 
         final BunchOfEventsDTO bunchOfEventsDTO = given(anAuthorizedRequest())
@@ -192,4 +197,6 @@ public class EventLogIT extends BaseMockedExternalCommunicationIT {
             assertThat(eventPayload.get("data_op")).isEqualTo(EventDataOperation.SNAPSHOT.toString());
         });
     }
+
+    // todo: write tests for snapshots of different types
 }

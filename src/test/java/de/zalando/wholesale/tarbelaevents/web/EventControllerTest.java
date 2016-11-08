@@ -2,7 +2,7 @@ package de.zalando.wholesale.tarbelaevents.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.zalando.wholesale.tarbelaevents.TarbelaSnapshotProviderNotImplemented;
+import de.zalando.wholesale.tarbelaevents.TarbelaSnapshotProviderNotImplementedException;
 import de.zalando.wholesale.tarbelaevents.api.event.model.BunchOfEventUpdatesDTO;
 import de.zalando.wholesale.tarbelaevents.api.event.model.BunchOfEventsDTO;
 import de.zalando.wholesale.tarbelaevents.api.event.model.BunchofEventsLinksDTO;
@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static de.zalando.wholesale.tarbelaevents.util.Fixture.PUBLISHER_EVENT_TYPE;
 import static de.zalando.wholesale.tarbelaevents.web.EventController.CONTENT_TYPE_EVENT_LIST;
 import static de.zalando.wholesale.tarbelaevents.web.EventController.CONTENT_TYPE_EVENT_LIST_UPDATE;
 import static de.zalando.wholesale.tarbelaevents.web.EventController.CONTENT_TYPE_PROBLEM;
@@ -41,6 +42,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.matches;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -205,17 +207,17 @@ public class EventControllerTest {
     @Test
     public void testCreateSnapshotEvents() throws Exception {
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/events/snapshots")).andExpect(status().isCreated());
+        mockMvc.perform(MockMvcRequestBuilders.post("/events/snapshots/" + PUBLISHER_EVENT_TYPE)).andExpect(status().isCreated());
 
-        verify(eventLogService).createSnapshotEvents(any());
+        verify(eventLogService).createSnapshotEvents(matches(PUBLISHER_EVENT_TYPE), any());
     }
 
     @Test
     public void testSnapshotNotImplemented() throws Exception {
 
-        doThrow(new TarbelaSnapshotProviderNotImplemented()).when(eventLogService).createSnapshotEvents(any());
+        doThrow(new TarbelaSnapshotProviderNotImplementedException()).when(eventLogService).createSnapshotEvents(any(), any());
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/events/snapshots")
+        mockMvc.perform(MockMvcRequestBuilders.post("/events/snapshots/" + PUBLISHER_EVENT_TYPE)
                 .contentType(CONTENT_TYPE_EVENT_LIST_UPDATE)
                 .content(mapper.writeValueAsString(new BunchOfEventUpdatesDTO())))
                 .andExpect(status().is(501))
@@ -228,4 +230,5 @@ public class EventControllerTest {
                 .andExpect(jsonPath("instance", startsWith("X-Flow-ID")));
     }
 
+    // todo: write tests for snapshots of different types
 }

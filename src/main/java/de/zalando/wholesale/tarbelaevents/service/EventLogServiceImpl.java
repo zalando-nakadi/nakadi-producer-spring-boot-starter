@@ -19,6 +19,7 @@ import de.zalando.wholesale.tarbelaevents.service.exception.InvalidCursorExcepti
 import de.zalando.wholesale.tarbelaevents.service.exception.InvalidEventIdException;
 import de.zalando.wholesale.tarbelaevents.service.exception.UnknownEventIdException;
 import de.zalando.wholesale.tarbelaevents.service.exception.ValidationException;
+import de.zalando.wholesale.tarbelaevents.service.model.EventPayload;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,35 +55,35 @@ public class EventLogServiceImpl implements EventLogWriter, EventLogService {
     private TarbelaProperties tarbelaProperties;
 
     @Autowired
-    private TarbelaSnapshotProvider<?> tarbelaSnapshotProvider;
+    private TarbelaSnapshotProvider tarbelaSnapshotProvider;
 
     @Override
     @Transactional
-    public void fireCreateEvent(final Object payload, final String flowId) {
+    public void fireCreateEvent(final EventPayload payload, final String flowId) {
         final EventLog eventLog = createEventLog(EventDataOperation.CREATE, payload, flowId);
         eventLogRepository.save(eventLog);
     }
 
     @Override
     @Transactional
-    public void fireUpdateEvent(final Object payload, final String flowId) {
+    public void fireUpdateEvent(final EventPayload payload, final String flowId) {
         final EventLog eventLog = createEventLog(EventDataOperation.UPDATE, payload, flowId);
         eventLogRepository.save(eventLog);
     }
 
     @VisibleForTesting
-    EventLog createEventLog(final EventDataOperation dataOp, final Object payload, final String flowId) {
+    EventLog createEventLog(final EventDataOperation dataOp, final EventPayload eventPayload, final String flowId) {
         final EventLog eventLog = new EventLog();
         eventLog.setStatus(EventStatus.NEW.toString());
-        eventLog.setEventType(tarbelaProperties.getEventType());
+        eventLog.setEventType(eventPayload.getEventType());
         try {
-            eventLog.setEventBodyData(objectMapper.writeValueAsString(payload));
+            eventLog.setEventBodyData(objectMapper.writeValueAsString(eventPayload.getData()));
         } catch (final JsonProcessingException e) {
-            throw new IllegalStateException("could not map object to json: " + payload.toString(), e);
+            throw new IllegalStateException("could not map object to json: " + eventPayload.getData().toString(), e);
         }
 
         eventLog.setDataOp(dataOp.toString());
-        eventLog.setDataType(tarbelaProperties.getDataType());
+        eventLog.setDataType(eventPayload.getDataType());
         eventLog.setFlowId(flowId);
         return eventLog;
     }
@@ -93,7 +94,7 @@ public class EventLogServiceImpl implements EventLogWriter, EventLogService {
         final List<EventLog> events = eventLogRepository.search(convertCursorToInteger(cursor),
                 status, limit == null ? DEFAULT_LIMIT : limit);
 
-        return eventLogMapper.mapToDTO(events, status, limit, tarbelaProperties.getEventType(), tarbelaProperties.getSinkId());
+        return eventLogMapper.mapToDTO(events, status, limit, tarbelaProperties.getSinkId());
     }
 
     @Override
@@ -173,9 +174,9 @@ public class EventLogServiceImpl implements EventLogWriter, EventLogService {
 
     @Override
     @Transactional
-    public void createSnapshotEvents(final String flowId) {
+    public void createSnapshotEvents(final String eventType, final String flowId) {
 
-        Stream<?> snapshotItemsStream = tarbelaSnapshotProvider.getSnapshot();
+        Stream<EventPayload> snapshotItemsStream = tarbelaSnapshotProvider.getSnapshot(eventType);
 
         Iterators.partition(snapshotItemsStream.iterator(), tarbelaProperties.getSnapshotBatchSize())
                 .forEachRemaining(batch -> {

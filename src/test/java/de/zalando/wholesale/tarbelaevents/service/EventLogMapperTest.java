@@ -47,6 +47,7 @@ public class EventLogMapperTest {
         ("{'code':'WH-DE-EF','name':'Erfurt','legacy_warehouse_code':'3'}").replace('\'', '"');
     private EventLog eventLog1;
     private EventLog eventLog2;
+    private EventLog eventLog3;
 
     @Before
     public void setUp() {
@@ -74,21 +75,29 @@ public class EventLogMapperTest {
                                      .dataType(PUBLISHER_DATA_TYPE)
                                      .dataOp(EventDataOperation.CREATE.toString()).status(EventStatus.ERROR.toString())
                                      .flowId("FLOW_ID_2").errorCount(0).build();
+
+        eventLog3 = EventLog.builder().eventBodyData(EVENT_BODY_DATA).id(5)
+                                     .eventType("another:event-type")
+                                     .created(Instant.now())
+                                     .dataType("another:data-type")
+                                     .dataOp(EventDataOperation.CREATE.toString()).status(EventStatus.ERROR.toString())
+                                     .flowId("FLOW_ID_3").errorCount(0).build();
     }
 
     @Test
     public void testMapToDTO() throws JsonProcessingException {
-        final BunchOfEventsDTO result = eventLogMapper.mapToDTO(newArrayList(eventLog1, eventLog2),
-                EventStatus.NEW.name(), LIMIT, PUBLISHER_EVENT_TYPE, SINK_ID);
+        final BunchOfEventsDTO result = eventLogMapper.mapToDTO(newArrayList(eventLog1, eventLog2, eventLog3),
+                EventStatus.NEW.name(), LIMIT, SINK_ID);
 
         final String nextLink = result.getLinks().getNext().getHref();
         assertThat(nextLink).contains(String.valueOf(LIMIT));
         assertThat(nextLink).contains(EventStatus.NEW.name());
         assertThat(nextLink).contains(String.valueOf(eventLog2.getId()));
 
-        assertThat(result.getEvents()).hasSize(2);
+        assertThat(result.getEvents()).hasSize(3);
         compareEventDTOWithEvent(result.getEvents().get(0), eventLog1);
         compareEventDTOWithEvent(result.getEvents().get(1), eventLog2);
+        compareEventDTOWithEvent(result.getEvents().get(2), eventLog3);
     }
 
     private void compareEventDTOWithEvent(final EventDTO eventDTO, final EventLog eventLog)
@@ -97,7 +106,7 @@ public class EventLogMapperTest {
         assertThat(eventDTO.getDeliveryStatus()).isEqualTo(eventLog.getStatus());
 
         assertThat(eventDTO.getChannel().getSinkIdentifier()).isEqualTo(SINK_ID);
-        assertThat(eventDTO.getChannel().getTopicName()).isEqualTo(PUBLISHER_EVENT_TYPE);
+        assertThat(eventDTO.getChannel().getTopicName()).isEqualTo(eventLog.getEventType());
 
         final NakadiEvent nakadiEvent = (NakadiEvent) eventDTO.getEventPayload();
 
@@ -112,7 +121,7 @@ public class EventLogMapperTest {
     @Test
     public void testMapToDTOWithEmptyList() {
         final BunchOfEventsDTO result = eventLogMapper.mapToDTO(emptyList(), EventStatus.NEW.toString(),
-                LIMIT, PUBLISHER_EVENT_TYPE, SINK_ID);
+                LIMIT, SINK_ID);
         assertThat(result.getLinks()).isNull();
         assertThat(result.getEvents().isEmpty()).isTrue();
     }

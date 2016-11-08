@@ -6,18 +6,6 @@
   }
 ],"properties": [
   {
-    "name": "tarbela.event-type",
-    "type": "java.lang.String",
-    "description": "The name of the topic/channel/event type/... in the event sink. For Nakadi, this is the \"event type\".",
-    "sourceType": "de.zalando.wholesale.tarbelaevents.TarbelaProperties"
-  },
-  {
-    "name": "tarbela.data-type",
-    "type": "java.lang.String",
-    "description": "Event data type name",
-    "sourceType": "de.zalando.wholesale.tarbelaevents.TarbelaProperties"
-  },
-  {
     "name": "tarbela.sink-id",
     "type": "java.lang.String",
     "description": "An identifier for the event sink. This identifier needs to be configured in Tarbela's configuration.",

@@ -2,7 +2,7 @@ package de.zalando.wholesale.tarbelaevents.web;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 
-import de.zalando.wholesale.tarbelaevents.TarbelaSnapshotProviderNotImplemented;
+import de.zalando.wholesale.tarbelaevents.TarbelaSnapshotProviderNotImplementedException;
 import de.zalando.wholesale.tarbelaevents.api.event.model.ProblemDTO;
 import de.zalando.wholesale.tarbelaevents.service.exception.InvalidCursorException;
 import de.zalando.wholesale.tarbelaevents.service.exception.InvalidEventIdException;
@@ -69,7 +69,7 @@ public class EventExceptionHandlerAdvice {
 
     @ExceptionHandler
     @ResponseBody
-    public ResponseEntity<ProblemDTO> onTarbelaSnapshotProviderNotImplemented(final TarbelaSnapshotProviderNotImplemented exception) {
+    public ResponseEntity<ProblemDTO> onTarbelaSnapshotProviderNotImplemented(final TarbelaSnapshotProviderNotImplementedException exception) {
         final ProblemDTO error = getErrorForNotImplemented("Snapshot not implemented", exception.getMessage());
         return getErrorResponseEntity(HttpStatus.NOT_IMPLEMENTED, error);
     }

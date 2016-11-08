@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -52,10 +53,11 @@ public class EventController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @RequestMapping(value = "/snapshots", method = RequestMethod.POST, produces = CONTENT_TYPE_PROBLEM)
-    public ResponseEntity<Void> eventsSnapshotPost() {
+    @RequestMapping(value = "/snapshots/{event_type:.+}", method = RequestMethod.POST, produces = CONTENT_TYPE_PROBLEM)
+    public ResponseEntity<Void> eventsSnapshotPost(
+            @PathVariable(value = "event_type") final String eventType) {
 
-        eventLogService.createSnapshotEvents(flowIdComponent.getXFlowIdValue());
+        eventLogService.createSnapshotEvents(eventType, flowIdComponent.getXFlowIdValue());
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

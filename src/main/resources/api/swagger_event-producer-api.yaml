@@ -93,12 +93,13 @@ paths:
           schema:
             $ref: '#/definitions/Problem'
         # other 4xx/5xx responses are possible too.
-  /events/snapshots:
+  /events/snapshots/{event_type}:
     parameters:
       - $ref: '#/parameters/Flow-Id'
+      - $ref: '#/parameters/event_type'
     post:
       description:
-        Creates snapshot events at the producer's site.
+        Creates snapshot events of given data type at the producer's site.
       responses:
         '201':
           description: OK, Creation is done.
@@ -112,6 +113,12 @@ parameters:
     in: header
     type: string
     required: false
+  event_type:
+    type: string
+    in: path
+    name: event_type
+    required: true
+    description: the type of events we want to create a snapshot of. (event type is an event channel topic name)
 
 definitions:
   DeliveryStatus:

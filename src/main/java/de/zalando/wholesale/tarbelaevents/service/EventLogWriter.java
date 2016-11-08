@@ -1,5 +1,7 @@
 package de.zalando.wholesale.tarbelaevents.service;
 
+import de.zalando.wholesale.tarbelaevents.service.model.EventPayload;
+
 import javax.transaction.Transactional;
 
 public interface EventLogWriter {
@@ -14,7 +16,7 @@ public interface EventLogWriter {
      * @param flowId Optional parameter to provide an X-Flow-ID value
      */
     @Transactional
-    void fireCreateEvent(Object payload, String flowId);
+    void fireCreateEvent(EventPayload payload, String flowId);
 
     /**
      * Suppose you want to update some object in a database and also you want to fire an event
@@ -26,6 +28,6 @@ public interface EventLogWriter {
      * @param flowId Optional parameter to provide an X-Flow-ID value
      */
     @Transactional
-    void fireUpdateEvent(Object payload, String flowId);
+    void fireUpdateEvent(EventPayload payload, String flowId);
 
 }

@@ -21,10 +21,10 @@ public class TarbelaEventsAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(TarbelaSnapshotProvider.class)
-    public TarbelaSnapshotProvider<?> tarbelaSnapshotProvider() {
-        log.error("TarbelaSnapshotProvider interface should be implemented by the service in order to /events/snapshots work");
-        return () -> {
-            throw new TarbelaSnapshotProviderNotImplemented();
+    public TarbelaSnapshotProvider tarbelaSnapshotProvider() {
+        log.error("TarbelaSnapshotProvider interface should be implemented by the service in order to /events/snapshots/{event_type} work");
+        return eventType -> {
+            throw new TarbelaSnapshotProviderNotImplementedException();
         };
     }
 

@@ -1,21 +1,23 @@
 package de.zalando.wholesale.tarbelaevents;
 
+import de.zalando.wholesale.tarbelaevents.service.model.EventPayload;
+
 import java.util.stream.Stream;
 
+import javax.validation.constraints.NotNull;
+
 /**
- * The <code>TarbelaSnapshotProvider</code> interface should be implemented by any
+ * The {@code TarbelaSnapshotProvider} interface should be implemented by any
  * Tarbela Event Producer that wants to support snapshot events feature. The
- * class must define a method of no arguments called <code>getSnapshot</code>.
- * <p>
- *
- * @param <T> the type of elements of the stream returned by <code>getSnapshot</code>
+ * class must define a method of no arguments called {@code getSnapshot}.
  */
-public interface TarbelaSnapshotProvider<T> {
+public interface TarbelaSnapshotProvider {
 
     /**
-     * Returns a stream consisting of elements for creating a snapshot of events.
+     * Returns a stream consisting of elements for creating a snapshot of events
+     * of given type (event type is an event channel topic name).
      * @return stream of elements to create a snapshot from
      */
-    Stream<T> getSnapshot();
+    Stream<EventPayload> getSnapshot(@NotNull String eventType);
 
 }

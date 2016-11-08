@@ -1,5 +1,8 @@
 package de.zalando.wholesale.tarbelaevents.util;
 
+import de.zalando.wholesale.tarbelaevents.service.model.EventPayload;
+import de.zalando.wholesale.tarbelaevents.service.model.EventPayloadImpl;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +11,14 @@ public class Fixture {
     public static final String PUBLISHER_EVENT_TYPE = "wholesale.some-publisher-change-event";
     public static final String PUBLISHER_DATA_TYPE = "tarbela:some-publisher";
     public static final String SINK_ID = "zalando-nakadi";
+
+    public static EventPayload mockEventPayload(MockPayload mockPayload) {
+        return EventPayloadImpl.builder()
+                .data(mockPayload)
+                .eventType(PUBLISHER_EVENT_TYPE)
+                .dataType(PUBLISHER_DATA_TYPE)
+                .build();
+    }
 
     public static MockPayload mockPayload(Integer id, String code, Boolean isActive,
                                           MockPayload.SubClass more, List<MockPayload.SubListItem> items) {

@@ -89,10 +89,18 @@ spring:
 
 Another important thing to configure is a flyway migrations directory.
 
-Make sure that `classpath:db_tarbela/migrations` present in a `flyway.locations` property:
+Make sure that `classpath:db_tarbela/migrations` is present in a `flyway.locations` property:
 
 ```yaml
 flyway.locations: classpath:db_tarbela/migrations
+```
+
+If you have you own `flyway.locations` property configured then just extend it with `, classpath:db_tarbela/migrations` (with a comma).
+
+Example:
+
+```yaml
+flyway.locations: classpath:my_db/migrations, classpath:db_tarbela/migrations
 ```
 
 ### X-Flow-ID (Optional)

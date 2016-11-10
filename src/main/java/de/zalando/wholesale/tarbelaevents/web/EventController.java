@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class EventController {
 
     public static final String CONTENT_TYPE_PROBLEM = "application/problem+json";
+    public static final String CONTENT_TYPE_X_PROBLEM = "application/x.problem+json";
     public static final String CONTENT_TYPE_EVENT_LIST = "application/x.tarbela.event-list+json";
     public static final String CONTENT_TYPE_EVENT_LIST_UPDATE = "application/x.tarbela.event-list-update+json";
 
@@ -33,7 +34,7 @@ public class EventController {
         this.flowIdComponent = flowIdComponent;
     }
 
-    @RequestMapping(method = RequestMethod.GET, produces = {CONTENT_TYPE_EVENT_LIST, CONTENT_TYPE_PROBLEM})
+    @RequestMapping(method = RequestMethod.GET, produces = {CONTENT_TYPE_EVENT_LIST, CONTENT_TYPE_PROBLEM, CONTENT_TYPE_X_PROBLEM})
     public ResponseEntity<BunchOfEventsDTO> eventsGet(
             @RequestParam(value = "cursor", required = false) final String cursor,
             @RequestParam(value = "status", required = false) final String status,
@@ -44,7 +45,7 @@ public class EventController {
     }
 
     @RequestMapping(
-        method = RequestMethod.PATCH, consumes = CONTENT_TYPE_EVENT_LIST_UPDATE, produces = CONTENT_TYPE_PROBLEM
+        method = RequestMethod.PATCH, consumes = CONTENT_TYPE_EVENT_LIST_UPDATE, produces = {CONTENT_TYPE_PROBLEM, CONTENT_TYPE_X_PROBLEM}
     )
     public ResponseEntity<Void> eventsPatch(@RequestBody final BunchOfEventUpdatesDTO updates) {
 
@@ -53,7 +54,7 @@ public class EventController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @RequestMapping(value = "/snapshots/{event_type:.+}", method = RequestMethod.POST, produces = CONTENT_TYPE_PROBLEM)
+    @RequestMapping(value = "/snapshots/{event_type:.+}", method = RequestMethod.POST, produces = {CONTENT_TYPE_PROBLEM, CONTENT_TYPE_X_PROBLEM})
     public ResponseEntity<Void> eventsSnapshotPost(
             @PathVariable(value = "event_type") final String eventType) {
 

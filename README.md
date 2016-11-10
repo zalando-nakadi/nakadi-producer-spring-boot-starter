@@ -22,9 +22,9 @@ Add the following dependency into the pom.xml of your Spring-Boot application
 
 ```xml
 <dependency>
-    <groupId>de.zalando.wholesale.tarbelaevents</groupId>
+    <groupId>de.zalando.wholesale</groupId>
     <artifactId>tarbela-producer-spring-boot-starter</artifactId>
-    <version>${tarbela-events.version}</version>
+    <version>${tarbela-producer.version}</version>
 </dependency>
 ```
 
@@ -41,11 +41,11 @@ This library also uses:
 
 ## Configuration
 
-Use `@EnableTarbelaEvents` annotation to activate spring boot starter auto configuration
+Use `@EnableTarbelaProducer` annotation to activate spring boot starter auto configuration
 
 ```java
 @SpringBootApplication
-@EnableTarbelaEvents
+@EnableTarbelaProducer
 public class Application {
     public static void main(final String[] args) {
         SpringApplication.run(TestApplication.class, args);

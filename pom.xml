@@ -15,7 +15,7 @@
 
     <artifactId>tarbela-producer-spring-boot-starter</artifactId>
     <groupId>de.zalando.wholesale</groupId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.3-SNAPSHOT</version>
     <name>Tarbela Event Producer: Spring Boot Starter</name>
     <description>Spring Boot Auto Configuration for Tarbela event producer</description>
 

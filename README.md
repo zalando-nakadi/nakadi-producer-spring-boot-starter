@@ -125,7 +125,7 @@ endpoint | description
 -------- | -----------
 `GET /events` | Using this endpoint Tarbela retrieves some of the new events. The response will support pagination by a next link, using a cursor, assuming there are actually more events.
 `PATCH /events` | Using this endpoint Tarbela updates the publishing statuses of some events. This is used to inform the producer when a event was successfully delivered to the event sink or when it couldn't be delivered.
-`POST /events/snapshots/{event_type}` | Using this endpoint Tarbela makes producer to create a snapshot events at the producer's site so that Tarbela could request the whole state of the publisher from scratch
+`POST /events/snapshots/{event_type}` | This endpoint (a post without any body) can be used by operators to trigger creation of snapshot events in the producer. Those events will then be collected and published by Tarbela, so event consumers can get a full snapshot of the database. (Tarbela itself is not using this operation.)
 
 ### Creating events
 

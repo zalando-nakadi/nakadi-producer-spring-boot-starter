@@ -13,6 +13,7 @@ import de.zalando.wholesale.tarbelaproducer.service.EventLogService;
 import de.zalando.wholesale.tarbelaproducer.service.exception.InvalidCursorException;
 import de.zalando.wholesale.tarbelaproducer.service.exception.InvalidEventIdException;
 import de.zalando.wholesale.tarbelaproducer.service.exception.UnknownEventIdException;
+import de.zalando.wholesale.tarbelaproducer.service.exception.UnknownEventTypeException;
 import de.zalando.wholesale.tarbelaproducer.service.exception.ValidationException;
 
 import org.junit.Before;
@@ -230,5 +231,24 @@ public class EventControllerTest {
                 .andExpect(jsonPath("instance", startsWith("X-Flow-ID")));
     }
 
-    // todo: write tests for snapshots of different types
+    @Test
+    public void testSnapshotUnknownType() throws Exception {
+
+        String unknownEventType = "unknown.event-type";
+
+        doThrow(new UnknownEventTypeException(unknownEventType)).when(eventLogService).createSnapshotEvents(any(), any());
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/events/snapshots/" + unknownEventType)
+                .contentType(CONTENT_TYPE_EVENT_LIST_UPDATE)
+                .content(mapper.writeValueAsString(new BunchOfEventUpdatesDTO())))
+                .andExpect(status().is(422))
+                .andExpect(header().string("Content-Type", containsString(CONTENT_TYPE_PROBLEM)))
+                .andExpect(header().string("X-Flow-ID", not(isEmptyString())))
+                .andExpect(jsonPath("type", is("http://httpstatus.es/422")))
+                .andExpect(jsonPath("status", is(422)))
+                .andExpect(jsonPath("title", is("No event log found")))
+                .andExpect(jsonPath("detail", is("No event log found for event type ("+unknownEventType+").")))
+                .andExpect(jsonPath("instance", startsWith("X-Flow-ID")));
+    }
+
 }

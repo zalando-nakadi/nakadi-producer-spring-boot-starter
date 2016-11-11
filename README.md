@@ -14,7 +14,7 @@ The important thing is that the new events are stored in the same database (and 
 
 Build and install the library into your local Maven repository:
 
-```sh
+```shell
 ./mvnw clean install
 ```
 
@@ -36,7 +36,6 @@ This library also uses:
 
 * flyway-core 4.0.3
 * querydsl-jpa 4.1.4
-* Zalando's stups-spring-oauth2-server 1.0.15-GH42-1
 * (Optional) Zalando's tracer-spring-boot-starter 0.11.2 
 
 ## Configuration
@@ -59,6 +58,24 @@ This will configure:
 * EventLogService service for writing events into the table 
 * controller listening `/events` endpoint that will publish the events for Tarbela
 
+### Data access layer configuration
+
+Library relies on Spring Data JPA. In order for Spring to pick up needed repository and entity you should explicitly configure it using this annotations:
+
+```java
+@EnableJpaRepositories("de.zalando.wholesale.tarbelaproducer.persistance")
+@EntityScan("de.zalando.wholesale.tarbelaproducer.persistance")
+```
+
+If you also use Spring Data JPA and you have your own repositories and entities, you should set them all like this:
+
+```java
+@EnableJpaRepositories({"path.to.your.package.containing.repositories", "de.zalando.wholesale.tarbelaproducer.persistance"})
+@EntityScan({"path.to.your.package.containing.jpa.entities", "de.zalando.wholesale.tarbelaproducer.persistance"})
+```
+
+You can apply those annotations to any @Configuration marked class of your Spring Boot application.
+
 ### Tarbela sinkId
 
 Configure Tarbela Sink identifier in application properties:
@@ -66,23 +83,6 @@ Configure Tarbela Sink identifier in application properties:
 ```yaml
 tarbela:
   sink-id: zalando-nakadi
-```
-
-### Security
-
-Web endpoints this library provides are secured with oauth2 (spring-security-oauth2 library).
-
-In order the security to work you need to configure oauth2 scopes to access endpoints.
-
-Example configuration:
-
-```yaml
-spring:
-  oauth2:
-    application:
-      scope:
-        read.tarbela_event_log: "#oauth2.hasScope('tarbela-producer.read')"
-        write.tarbela_event_log: "#oauth2.hasScope('tarbela-producer.event_log_write')"
 ```
 
 ### Database
@@ -114,6 +114,11 @@ tracer:
   traces:
     X-Flow-ID: flow-id
 ```
+
+### Security
+
+The library does not provide any security. 
+You should secure the `/events` endpoint and all its operations as you need for your application
 
 ## Using 
 
@@ -182,7 +187,9 @@ public interface TarbelaSnapshotProvider {
     /**
      * Returns a stream consisting of elements for creating a snapshot of events
      * of given type (event type is an event channel topic name).
+     * @param eventType event type to make a snapshot of
      * @return stream of elements to create a snapshot from
+     * @throws UnknownEventTypeException if {@code eventType} is unknown
      */
     Stream<EventPayload> getSnapshot(@NotNull String eventType);
 
@@ -206,4 +213,6 @@ tarbela:
 
 Build with unit tests and integration tests:
 
-    ./mvnw clean install
+```shell
+./mvnw clean install
+```

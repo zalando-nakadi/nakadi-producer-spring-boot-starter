@@ -8,16 +8,21 @@ import java.util.List;
 
 public class Fixture {
 
+    public static final String PUBLISHER_EVENT_OTHER_TYPE = "wholesale.different-event-type";
     public static final String PUBLISHER_EVENT_TYPE = "wholesale.some-publisher-change-event";
     public static final String PUBLISHER_DATA_TYPE = "tarbela:some-publisher";
     public static final String SINK_ID = "zalando-nakadi";
 
-    public static EventPayload mockEventPayload(MockPayload mockPayload) {
+    public static EventPayload mockEventPayload(MockPayload mockPayload, String eventType) {
         return EventPayloadImpl.builder()
                 .data(mockPayload)
-                .eventType(PUBLISHER_EVENT_TYPE)
+                .eventType(eventType)
                 .dataType(PUBLISHER_DATA_TYPE)
                 .build();
+    }
+
+    public static EventPayload mockEventPayload(MockPayload mockPayload) {
+        return mockEventPayload(mockPayload, PUBLISHER_EVENT_TYPE);
     }
 
     public static MockPayload mockPayload(Integer id, String code, Boolean isActive,

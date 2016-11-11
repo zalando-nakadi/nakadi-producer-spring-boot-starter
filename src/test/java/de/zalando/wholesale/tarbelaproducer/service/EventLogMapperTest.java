@@ -8,8 +8,12 @@ import de.zalando.wholesale.tarbelaproducer.api.event.model.EventDTO;
 import de.zalando.wholesale.tarbelaproducer.persistance.entity.EventDataOperation;
 import de.zalando.wholesale.tarbelaproducer.persistance.entity.EventLog;
 import de.zalando.wholesale.tarbelaproducer.persistance.entity.EventStatus;
+import de.zalando.wholesale.tarbelaproducer.service.model.EventPayload;
 import de.zalando.wholesale.tarbelaproducer.service.model.NakadiEvent;
+import de.zalando.wholesale.tarbelaproducer.util.Fixture;
+import de.zalando.wholesale.tarbelaproducer.util.MockPayload;
 
+import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +34,7 @@ import static de.zalando.wholesale.tarbelaproducer.util.Fixture.PUBLISHER_EVENT_
 import static de.zalando.wholesale.tarbelaproducer.util.Fixture.SINK_ID;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -125,4 +130,29 @@ public class EventLogMapperTest {
         assertThat(result.getLinks()).isNull();
         assertThat(result.getEvents().isEmpty()).isTrue();
     }
+
+    @Test
+    public void testCreateWarehouseEventLog() throws Exception {
+        String eventBody =
+                ("{'id':1,"
+                + "'code':'mockedcode',"
+                + "'more':{'info':'some info'},"
+                + "'items':[{'detail':'some detail0'},{'detail':'some detail1'}],"
+                + "'active':true"
+                + "}").replace('\'', '"');
+        MockPayload mockPayload = Fixture.mockPayload(1, "mockedcode", true,
+                Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
+        EventPayload eventPayload = Fixture.mockEventPayload(mockPayload);
+        String traceId = "TRACE_ID";
+
+        final EventLog eventLog = eventLogMapper.createEventLog(
+                EventDataOperation.UPDATE, eventPayload, traceId);
+        MatcherAssert.assertThat(eventLog.getEventBodyData(), is(eventBody));
+        MatcherAssert.assertThat(eventLog.getDataOp(), is(EventDataOperation.UPDATE.toString()));
+        MatcherAssert.assertThat(eventLog.getEventType(), is(PUBLISHER_EVENT_TYPE));
+        MatcherAssert.assertThat(eventLog.getDataType(), is(PUBLISHER_DATA_TYPE));
+        MatcherAssert.assertThat(eventLog.getStatus(), is(EventStatus.NEW.toString()));
+        MatcherAssert.assertThat(eventLog.getFlowId(), is(traceId));
+    }
+
 }

@@ -15,7 +15,7 @@
 
     <artifactId>tarbela-producer-spring-boot-starter</artifactId>
     <groupId>de.zalando.wholesale</groupId>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.0.10-SNAPSHOT</version>
     <name>Tarbela Event Producer: Spring Boot Starter</name>
     <description>Spring Boot Auto Configuration for Tarbela event producer</description>
 
@@ -53,11 +53,6 @@
         <dependency>
             <groupId>org.springframework.hateoas</groupId>
             <artifactId>spring-hateoas</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.zalando.stups</groupId>
-            <artifactId>stups-spring-oauth2-server</artifactId>
-            <version>1.0.15-GH42-1</version>
         </dependency>
         <dependency>
             <groupId>org.zalando</groupId>

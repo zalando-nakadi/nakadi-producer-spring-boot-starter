@@ -7,6 +7,7 @@ import de.zalando.wholesale.tarbelaproducer.api.event.model.ProblemDTO;
 import de.zalando.wholesale.tarbelaproducer.service.exception.InvalidCursorException;
 import de.zalando.wholesale.tarbelaproducer.service.exception.InvalidEventIdException;
 import de.zalando.wholesale.tarbelaproducer.service.exception.UnknownEventIdException;
+import de.zalando.wholesale.tarbelaproducer.service.exception.UnknownEventTypeException;
 import de.zalando.wholesale.tarbelaproducer.service.exception.ValidationException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,14 @@ public class EventExceptionHandlerAdvice {
     @ExceptionHandler
     @ResponseBody
     public ResponseEntity<ProblemDTO> onUnknownEventIdException(final UnknownEventIdException exception) {
+        final ProblemDTO error = getErrorForUnProcessableEntity(
+                "No event log found", exception.getMessage());
+        return getErrorResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, error);
+    }
+
+    @ExceptionHandler
+    @ResponseBody
+    public ResponseEntity<ProblemDTO> onUnknownEventTypeException(final UnknownEventTypeException exception) {
         final ProblemDTO error = getErrorForUnProcessableEntity(
                 "No event log found", exception.getMessage());
         return getErrorResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, error);

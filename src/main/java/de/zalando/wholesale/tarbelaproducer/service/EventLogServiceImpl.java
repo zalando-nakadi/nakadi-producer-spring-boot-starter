@@ -1,11 +1,7 @@
 package de.zalando.wholesale.tarbelaproducer.service;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.zalando.wholesale.tarbelaproducer.TarbelaProperties;
 import de.zalando.wholesale.tarbelaproducer.TarbelaSnapshotProvider;
@@ -39,11 +35,9 @@ import static com.google.common.collect.Lists.newArrayList;
 
 @Service
 @Slf4j
-public class EventLogServiceImpl implements EventLogWriter, EventLogService {
+public class EventLogServiceImpl implements EventLogService {
 
     public static final int DEFAULT_LIMIT = 10;
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Autowired
     private EventLogRepository eventLogRepository;
@@ -56,37 +50,6 @@ public class EventLogServiceImpl implements EventLogWriter, EventLogService {
 
     @Autowired
     private TarbelaSnapshotProvider tarbelaSnapshotProvider;
-
-    @Override
-    @Transactional
-    public void fireCreateEvent(final EventPayload payload, final String flowId) {
-        final EventLog eventLog = createEventLog(EventDataOperation.CREATE, payload, flowId);
-        eventLogRepository.save(eventLog);
-    }
-
-    @Override
-    @Transactional
-    public void fireUpdateEvent(final EventPayload payload, final String flowId) {
-        final EventLog eventLog = createEventLog(EventDataOperation.UPDATE, payload, flowId);
-        eventLogRepository.save(eventLog);
-    }
-
-    @VisibleForTesting
-    EventLog createEventLog(final EventDataOperation dataOp, final EventPayload eventPayload, final String flowId) {
-        final EventLog eventLog = new EventLog();
-        eventLog.setStatus(EventStatus.NEW.toString());
-        eventLog.setEventType(eventPayload.getEventType());
-        try {
-            eventLog.setEventBodyData(objectMapper.writeValueAsString(eventPayload.getData()));
-        } catch (final JsonProcessingException e) {
-            throw new IllegalStateException("could not map object to json: " + eventPayload.getData().toString(), e);
-        }
-
-        eventLog.setDataOp(dataOp.toString());
-        eventLog.setDataType(eventPayload.getDataType());
-        eventLog.setFlowId(flowId);
-        return eventLog;
-    }
 
     @Override
     public BunchOfEventsDTO searchEvents(final String cursor, final String status, final Integer limit) {
@@ -181,7 +144,7 @@ public class EventLogServiceImpl implements EventLogWriter, EventLogService {
         Iterators.partition(snapshotItemsStream.iterator(), tarbelaProperties.getSnapshotBatchSize())
                 .forEachRemaining(batch -> {
                     final List<EventLog> events = batch.stream()
-                            .map(item -> createEventLog(EventDataOperation.SNAPSHOT, item, flowId))
+                            .map(item -> eventLogMapper.createEventLog(EventDataOperation.SNAPSHOT, item, flowId))
                             .collect(Collectors.toList());
                     eventLogRepository.save(events);
                 });

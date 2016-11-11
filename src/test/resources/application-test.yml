@@ -1,14 +1,8 @@
 spring:
-  oauth2:
-    application:
-      scope:
-        read.tarbela_event_log: "#oauth2.hasScope('tarbela-producer.read')"
-        write.tarbela_event_log: "#oauth2.hasScope('tarbela-producer.event_log_write')"
   jackson.default-property-inclusion: non_null
   jpa:
     show-sql: true
 
-#todo: make the location present in flyway config by default
 flyway.locations: classpath:db_tarbela/migrations
 
 logging.level:

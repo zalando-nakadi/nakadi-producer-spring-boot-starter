@@ -45,6 +45,7 @@ import static de.zalando.wholesale.tarbelaproducer.util.Fixture.SINK_ID;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -129,34 +130,6 @@ public class EventLogServiceTest {
         events = newArrayList(eventLog);
 
         bunchOfEventsDTO = new BunchOfEventsDTO();
-    }
-
-    @Test
-    public void testFireCreateEvent() throws Exception {
-        final ArgumentCaptor<EventLog> argumentCaptor = ArgumentCaptor.forClass(EventLog.class);
-        eventLogService.fireCreateEvent(eventPayload, traceId);
-        verify(eventLogRepository, times(1)).save(argumentCaptor.capture());
-        assertThat(argumentCaptor.getValue().getDataOp(), is(EventDataOperation.CREATE.toString()));
-    }
-
-    @Test
-    public void testFireUpdateEvent() throws Exception {
-        final ArgumentCaptor<EventLog> argumentCaptor = ArgumentCaptor.forClass(EventLog.class);
-        eventLogService.fireUpdateEvent(eventPayload, traceId);
-        verify(eventLogRepository, times(1)).save(argumentCaptor.capture());
-        assertThat(argumentCaptor.getValue().getDataOp(), is(EventDataOperation.UPDATE.toString()));
-    }
-
-    @Test
-    public void testCreateWarehouseEventLog() throws Exception {
-        final EventLog eventLog = eventLogService.createEventLog(
-                EventDataOperation.UPDATE, eventPayload, traceId);
-        assertThat(eventLog.getEventBodyData(), is(EVENT_BODY_DATA));
-        assertThat(eventLog.getDataOp(), is(EventDataOperation.UPDATE.toString()));
-        assertThat(eventLog.getEventType(), is(PUBLISHER_EVENT_TYPE));
-        assertThat(eventLog.getDataType(), is(PUBLISHER_DATA_TYPE));
-        assertThat(eventLog.getStatus(), is(EventStatus.NEW.toString()));
-        assertThat(eventLog.getFlowId(), is(traceId));
     }
 
     @Test
@@ -313,7 +286,14 @@ public class EventLogServiceTest {
 
         final List<EventPayload> eventPayloads = Collections.singletonList(eventPayload);
 
+        EventLog eventLog = EventLog.builder().id(123).eventBodyData(EVENT_BODY_DATA)
+                .eventType(PUBLISHER_EVENT_TYPE)
+                .dataType(PUBLISHER_DATA_TYPE)
+                .dataOp(EventDataOperation.SNAPSHOT.toString())
+                .status(EventStatus.NEW.name()).flowId("FLOW_ID").errorCount(0).build();
+
         when(tarbelaSnapshotProvider.getSnapshot(PUBLISHER_EVENT_TYPE)).thenReturn(eventPayloads.stream());
+        when(eventLogMapper.createEventLog(any(), any(), any())).thenReturn(eventLog);
 
         eventLogService.createSnapshotEvents(PUBLISHER_EVENT_TYPE, traceId);
 
@@ -356,5 +336,4 @@ public class EventLogServiceTest {
 
     }
 
-    // todo: write tests for snapshots of different types
 }

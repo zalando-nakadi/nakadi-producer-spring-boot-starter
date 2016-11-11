@@ -26,17 +26,27 @@ import java.util.UUID;
 
 import static com.jayway.restassured.RestAssured.given;
 import static de.zalando.wholesale.tarbelaproducer.util.Fixture.PUBLISHER_DATA_TYPE;
+import static de.zalando.wholesale.tarbelaproducer.util.Fixture.PUBLISHER_EVENT_OTHER_TYPE;
 import static de.zalando.wholesale.tarbelaproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
 import static de.zalando.wholesale.tarbelaproducer.util.Fixture.SINK_ID;
 import static de.zalando.wholesale.tarbelaproducer.web.EventController.CONTENT_TYPE_EVENT_LIST;
 import static de.zalando.wholesale.tarbelaproducer.web.EventController.CONTENT_TYPE_EVENT_LIST_UPDATE;
+import static de.zalando.wholesale.tarbelaproducer.web.EventController.CONTENT_TYPE_PROBLEM;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.startsWith;
 
 public class EventLogIT extends BaseMockedExternalCommunicationIT {
+
+    public static final String SOME_DETAIL = "some detail";
+
     @Autowired
     private EventLogRepository eventLogRepository;
     private List<MockPayload> mockPayloads = new ArrayList<>();
@@ -44,14 +54,6 @@ public class EventLogIT extends BaseMockedExternalCommunicationIT {
 
     @Autowired
     private EventLogWriter eventLogWriter;
-
-    private static final String[] ALL_SCOPES_EXCEPT_READ = {
-            UID_SCOPE, EVENT_LOG_WRITE_SCOPE
-    };
-
-    private static final String[] ALL_SCOPES_EXCEPT_EVENT_LOG_WRITE = {
-            UID_SCOPE, READ_SCOPE
-    };
 
     @Before
     public void setup() {
@@ -61,7 +63,7 @@ public class EventLogIT extends BaseMockedExternalCommunicationIT {
 
         for (int i = 0; i < 5; i++) {
             MockPayload mockPayload = Fixture.mockPayload(i+1, mockedCode+i, true,
-                    Fixture.mockSubClass("some info"+i), Fixture.mockSubList(2, "some detail"+i));
+                    Fixture.mockSubClass("some info"+i), Fixture.mockSubList(2, SOME_DETAIL +i));
             mockPayloads.add(mockPayload);
             EventPayload eventPayload = Fixture.mockEventPayload(mockPayload);
             eventLogWriter.fireCreateEvent(eventPayload, "SOME_FLOW_ID");
@@ -73,26 +75,10 @@ public class EventLogIT extends BaseMockedExternalCommunicationIT {
     }
 
     @Test
-    public void getEventsWithoutTheCorrectScopeGivesAnError() {
-        given(anAuthenticatedRequestWithScopes(ALL_SCOPES_EXCEPT_READ))
-                .when().get("/events")
-                .then().statusCode(403);
-    }
-
-    @Test
-    public void patchEventLogWithoutTheCorrectScopeGivesAnError() {
-        given(anAuthenticatedRequestWithScopes(ALL_SCOPES_EXCEPT_EVENT_LOG_WRITE))
-                .header("Content-Type", CONTENT_TYPE_EVENT_LIST_UPDATE)
-                .body(new BunchOfEventUpdatesDTO())
-                .when().patch("/events")
-                .then().statusCode(403);
-    }
-
-    @Test
     public void anEventCanBeRetrieved() {
 
         MockPayload mockPayload = mockPayloads.get(0);
-        given(anAuthorizedRequest())
+        given(aHttpsRequest())
                 .header("Content-Type", CONTENT_TYPE_EVENT_LIST)
                 .when().get("/events?status={id}", EventStatus.NEW.name())
                 .then().assertThat()
@@ -119,7 +105,7 @@ public class EventLogIT extends BaseMockedExternalCommunicationIT {
     @Test
     public void occuredAtMetadataFieldMustAlwaysBeISO8601Zulu() {
 
-        given(anAuthorizedRequest())
+        given(aHttpsRequest())
                 .header("Content-Type", CONTENT_TYPE_EVENT_LIST)
                 .when().get("/events?status={id}", EventStatus.NEW.name())
                 .then().assertThat()
@@ -134,7 +120,7 @@ public class EventLogIT extends BaseMockedExternalCommunicationIT {
     @Test
     public void anEventCanBeUpdatedAsSent() {
 
-        BunchOfEventsDTO bunchOfEventsDTO = given(anAuthorizedRequest())
+        BunchOfEventsDTO bunchOfEventsDTO = given(aHttpsRequest())
                 .header("Content-Type", CONTENT_TYPE_EVENT_LIST)
                 .when().get("/events?status={id}", EventStatus.NEW.name())
                 .as(BunchOfEventsDTO.class);
@@ -149,14 +135,14 @@ public class EventLogIT extends BaseMockedExternalCommunicationIT {
         final BunchOfEventUpdatesDTO updates = new BunchOfEventUpdatesDTO();
         updates.setEvents(newArrayList(updateEventDTO));
 
-        given(anAuthorizedRequest())
+        given(aHttpsRequest())
                 .header("Content-Type", CONTENT_TYPE_EVENT_LIST_UPDATE)
                 .body(updates)
                 .when().patch("/events")
                 .then().assertThat()
                 .statusCode(200);
 
-        given(anAuthorizedRequest())
+        given(aHttpsRequest())
                 .header("Content-Type", CONTENT_TYPE_EVENT_LIST)
                 .when().get("/events")
                 .then().assertThat()
@@ -173,29 +159,100 @@ public class EventLogIT extends BaseMockedExternalCommunicationIT {
     public void snapshotEventsCanBeCreatedAndRetrieved() {
         eventLogRepository.deleteAll();
 
-        //J-
-        given(anAuthenticatedRequestWithScopes(EVENT_LOG_WRITE_SCOPE))
+        // Create snapshot
+        given(aHttpsRequest())
                 .when().post("/events/snapshots/" + PUBLISHER_EVENT_TYPE)
                 .then().assertThat().statusCode(201);
 
-        final BunchOfEventsDTO bunchOfEventsDTO = given(anAuthorizedRequest())
+        // Check created events. They should consist of events created from mockPayloads
+        given(aHttpsRequest())
                 .header("Content-Type", CONTENT_TYPE_EVENT_LIST)
                 .when().get("/events?status={id}", EventStatus.NEW.name())
                 .then().assertThat().statusCode(200)
-                .extract().as(BunchOfEventsDTO.class);
-        //J+
+                .body(
+                        "_links.next.href", notNullValue(),
+                        "events", hasSize(5),
+                        "events.event_payload.data_op",
+                                everyItem(equalTo(EventDataOperation.SNAPSHOT.toString())),
+                        "events.channel.topic_name",
+                                everyItem(equalTo(PUBLISHER_EVENT_TYPE)),
+                        "events.channel.sink_identifier",
+                                everyItem(equalTo(SINK_ID)),
+                        "events.event_payload.data.id",
+                                hasItems(mockPayloads.stream().map(MockPayload::getId).toArray()),
+                        "events.event_payload.data.code",
+                                hasItems(mockPayloads.stream().map(MockPayload::getCode).toArray()),
+                        "events.event_payload.data.active",
+                                hasItems(mockPayloads.stream().map(MockPayload::isActive).toArray()),
+                        "events.event_payload.data.more.info",
+                                hasItems(mockPayloads.stream().map(it -> it.getMore().getInfo()).toArray()),
+                        "events.event_payload.data.items.detail",
+                                everyItem(hasSize(2)),
+                        "events.event_payload.data.items.detail",
+                                everyItem(hasItems(startsWith(SOME_DETAIL)))
+                );
 
-        assertThat(bunchOfEventsDTO).isNotNull();
-        assertThat(bunchOfEventsDTO.getLinks()).isNotNull();
-        assertThat(bunchOfEventsDTO.getEvents()).isNotEmpty();
-
-        bunchOfEventsDTO.getEvents().forEach(event -> {
-            assertThat(event.getEventPayload()).isNotNull();
-
-            final HashMap<String, Object> eventPayload = (HashMap<String, Object>) event.getEventPayload();
-            assertThat(eventPayload.get("data_op")).isEqualTo(EventDataOperation.SNAPSHOT.toString());
-        });
     }
 
-    // todo: write tests for snapshots of different types
+    @Test
+    public void snapshotEventsOfDifferentTypesCanBeCreatedAndRetrieved() {
+        eventLogRepository.deleteAll();
+
+        // Create snapshot
+        given(aHttpsRequest())
+                .when().post("/events/snapshots/" + PUBLISHER_EVENT_OTHER_TYPE)
+                .then().assertThat().statusCode(201);
+
+        // Check created events. They should consist of events created from mockPayloads
+        given(aHttpsRequest())
+                .header("Content-Type", CONTENT_TYPE_EVENT_LIST)
+                .when().get("/events?status={id}", EventStatus.NEW.name())
+                .then().assertThat().statusCode(200)
+                .body(
+                        "_links.next.href", notNullValue(),
+                        "events", hasSize(5),
+                        "events.event_payload.data_op",
+                                everyItem(equalTo(EventDataOperation.SNAPSHOT.toString())),
+                        "events.channel.topic_name",
+                                everyItem(equalTo(PUBLISHER_EVENT_OTHER_TYPE)),
+                        "events.channel.sink_identifier",
+                                everyItem(equalTo(SINK_ID)),
+                        "events.event_payload.data.id",
+                                hasItems(mockPayloads.stream().map(MockPayload::getId).toArray()),
+                        "events.event_payload.data.code",
+                                hasItems(mockPayloads.stream().map(MockPayload::getCode).toArray()),
+                        "events.event_payload.data.active",
+                                hasItems(mockPayloads.stream().map(MockPayload::isActive).toArray()),
+                        "events.event_payload.data.more.info",
+                                hasItems(mockPayloads.stream().map(it -> it.getMore().getInfo()).toArray()),
+                        "events.event_payload.data.items.detail",
+                                everyItem(hasSize(2)),
+                        "events.event_payload.data.items.detail",
+                                everyItem(hasItems(startsWith(SOME_DETAIL)))
+                );
+
+    }
+
+    @Test
+    public void snapshotEventsOfUnknownTypeThrowsAnError() {
+        eventLogRepository.deleteAll();
+
+        String unknownEventType = "unknown.event-type";
+
+        // Create snapshot
+        given(aHttpsRequest())
+                .when().post("/events/snapshots/" + unknownEventType)
+                .then().assertThat()
+                .statusCode(422)
+                .contentType(containsString(CONTENT_TYPE_PROBLEM))
+                .body(
+                    "type", is("http://httpstatus.es/422"),
+                    "status", is(422),
+                    "title", is("No event log found"),
+                    "detail", is("No event log found for event type ("+unknownEventType+")."),
+                    "instance", startsWith("X-Flow-ID")
+                );
+
+    }
+
 }

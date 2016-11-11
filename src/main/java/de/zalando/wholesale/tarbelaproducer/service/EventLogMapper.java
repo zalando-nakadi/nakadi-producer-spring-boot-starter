@@ -2,6 +2,7 @@ package de.zalando.wholesale.tarbelaproducer.service;
 
 import com.google.common.collect.Maps;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.zalando.wholesale.tarbelaproducer.api.event.model.BunchOfEventsDTO;
@@ -9,7 +10,10 @@ import de.zalando.wholesale.tarbelaproducer.api.event.model.BunchofEventsLinksDT
 import de.zalando.wholesale.tarbelaproducer.api.event.model.BunchofEventsLinksNextDTO;
 import de.zalando.wholesale.tarbelaproducer.api.event.model.EventChannelDTO;
 import de.zalando.wholesale.tarbelaproducer.api.event.model.EventDTO;
+import de.zalando.wholesale.tarbelaproducer.persistance.entity.EventDataOperation;
 import de.zalando.wholesale.tarbelaproducer.persistance.entity.EventLog;
+import de.zalando.wholesale.tarbelaproducer.persistance.entity.EventStatus;
+import de.zalando.wholesale.tarbelaproducer.service.model.EventPayload;
 import de.zalando.wholesale.tarbelaproducer.service.model.NakadiEvent;
 import de.zalando.wholesale.tarbelaproducer.service.model.NakadiMetadata;
 import de.zalando.wholesale.tarbelaproducer.web.EventController;
@@ -33,8 +37,12 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 @Slf4j
 public class EventLogMapper {
 
-    @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    public EventLogMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     public BunchOfEventsDTO mapToDTO(final List<EventLog> events, final String status,
                                      final Integer limit, final String sinkId) {
@@ -122,4 +130,21 @@ public class EventLogMapper {
     private String convertToUUID(final int number) {
         return new UUID(0, number).toString();
     }
+
+    public EventLog createEventLog(final EventDataOperation dataOp, final EventPayload eventPayload, final String flowId) {
+        final EventLog eventLog = new EventLog();
+        eventLog.setStatus(EventStatus.NEW.toString());
+        eventLog.setEventType(eventPayload.getEventType());
+        try {
+            eventLog.setEventBodyData(objectMapper.writeValueAsString(eventPayload.getData()));
+        } catch (final JsonProcessingException e) {
+            throw new IllegalStateException("could not map object to json: " + eventPayload.getData().toString(), e);
+        }
+
+        eventLog.setDataOp(dataOp.toString());
+        eventLog.setDataType(eventPayload.getDataType());
+        eventLog.setFlowId(flowId);
+        return eventLog;
+    }
+
 }

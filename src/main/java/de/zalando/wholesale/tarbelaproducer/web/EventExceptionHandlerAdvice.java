@@ -1,7 +1,5 @@
 package de.zalando.wholesale.tarbelaproducer.web;
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-
 import de.zalando.wholesale.tarbelaproducer.TarbelaSnapshotProviderNotImplementedException;
 import de.zalando.wholesale.tarbelaproducer.api.event.model.ProblemDTO;
 import de.zalando.wholesale.tarbelaproducer.service.exception.InvalidCursorException;
@@ -11,20 +9,20 @@ import de.zalando.wholesale.tarbelaproducer.service.exception.UnknownEventTypeEx
 import de.zalando.wholesale.tarbelaproducer.service.exception.ValidationException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.Optional;
-
 import lombok.extern.slf4j.Slf4j;
 
 @ControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @Slf4j
 public class EventExceptionHandlerAdvice {
 
@@ -83,32 +81,6 @@ public class EventExceptionHandlerAdvice {
         return getErrorResponseEntity(HttpStatus.NOT_IMPLEMENTED, error);
     }
 
-    @ExceptionHandler
-    @ResponseBody
-    public ResponseEntity<ProblemDTO> onRuntimeException(final RuntimeException runtimeException) {
-        log.error("Unknown exception occurred while processing request: ", runtimeException);
-
-        final ProblemDTO error = getErrorForInternalServerError("Unknown Exception",
-                "The request could not be processed. An unknown exception occurred when processing the request");
-        return getErrorResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, error);
-    }
-
-    @ExceptionHandler
-    @ResponseBody
-    public ResponseEntity<ProblemDTO> onHttpMessageNotReadableException(
-            final HttpMessageNotReadableException httpMessageNotReadableException) {
-        log.debug("http message parsing error occurred:", httpMessageNotReadableException);
-
-        String detailMessage = Optional.ofNullable(httpMessageNotReadableException.getMostSpecificCause())
-                .filter(e -> e instanceof InvalidFormatException)
-                .map(e -> (InvalidFormatException) e)
-                .map(InvalidFormatException::getOriginalMessage)
-                .orElse("Request body is missing or malformed");
-
-        final ProblemDTO error = getErrorForBadRequest("Bad Request", detailMessage);
-        return getErrorResponseEntity(HttpStatus.BAD_REQUEST, error);
-    }
-
     private ProblemDTO getErrorForUnProcessableEntity(final String title, final String detail) {
         final ProblemDTO error = new ProblemDTO();
         error.setTitle(title);
@@ -125,16 +97,6 @@ public class EventExceptionHandlerAdvice {
         error.setDetail(detail);
         error.setStatus(HttpStatus.BAD_REQUEST.value());
         error.setType("http://httpstatus.es/400");
-        error.setInstance(flowIdComponent.getXFlowIdKey() + ":" + flowIdComponent.getXFlowIdValue());
-        return error;
-    }
-
-    private ProblemDTO getErrorForInternalServerError(final String title, final String detail) {
-        final ProblemDTO error = new ProblemDTO();
-        error.setTitle(title);
-        error.setDetail(detail);
-        error.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        error.setType("http://httpstatus.es/500");
         error.setInstance(flowIdComponent.getXFlowIdKey() + ":" + flowIdComponent.getXFlowIdValue());
         return error;
     }

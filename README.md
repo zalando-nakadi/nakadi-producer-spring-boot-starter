@@ -22,7 +22,7 @@ Add the following dependency into the pom.xml of your Spring-Boot application
 
 ```xml
 <dependency>
-    <groupId>de.zalando.wholesale</groupId>
+    <groupId>org.zalando</groupId>
     <artifactId>tarbela-producer-spring-boot-starter</artifactId>
     <version>${tarbela-producer.version}</version>
 </dependency>
@@ -63,15 +63,15 @@ This will configure:
 Library relies on Spring Data JPA. In order for Spring to pick up needed repository and entity you should explicitly configure it using this annotations:
 
 ```java
-@EnableJpaRepositories("de.zalando.wholesale.tarbelaproducer.persistance")
-@EntityScan("de.zalando.wholesale.tarbelaproducer.persistance")
+@EnableJpaRepositories("org.zalando.tarbelaproducer.persistance")
+@EntityScan("org.zalando.tarbelaproducer.persistance")
 ```
 
 If you also use Spring Data JPA and you have your own repositories and entities, you should set them all like this:
 
 ```java
-@EnableJpaRepositories({"path.to.your.package.containing.repositories", "de.zalando.wholesale.tarbelaproducer.persistance"})
-@EntityScan({"path.to.your.package.containing.jpa.entities", "de.zalando.wholesale.tarbelaproducer.persistance"})
+@EnableJpaRepositories({"path.to.your.package.containing.repositories", "org.zalando.tarbelaproducer.persistance"})
+@EntityScan({"path.to.your.package.containing.jpa.entities", "org.zalando.tarbelaproducer.persistance"})
 ```
 
 You can apply those annotations to any @Configuration marked class of your Spring Boot application.
@@ -216,3 +216,14 @@ Build with unit tests and integration tests:
 ```shell
 ./mvnw clean install
 ```
+
+
+## License
+
+The MIT License (MIT) Copyright © 2016 Zalando SE, https://tech.zalando.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -14,7 +14,7 @@
     </parent>
 
     <artifactId>tarbela-producer-spring-boot-starter</artifactId>
-    <groupId>de.zalando.wholesale</groupId>
+    <groupId>org.zalando</groupId>
     <version>0.0.10-SNAPSHOT</version>
     <name>Tarbela Event Producer: Spring Boot Starter</name>
     <description>Spring Boot Auto Configuration for Tarbela event producer</description>
@@ -120,8 +120,8 @@
                         <configuration>
                             <apiFile>${project.basedir}/src/main/resources/api/swagger_event-producer-api.yaml</apiFile>
                             <language>springinterfacesResponseEntityNoSwaggerAnnotations</language>
-                            <apiPackage>de.zalando.wholesale.tarbelaproducer.api.event.controller</apiPackage>
-                            <modelPackage>de.zalando.wholesale.tarbelaproducer.api.event.model</modelPackage>
+                            <apiPackage>org.zalando.tarbelaproducer.api.event.controller</apiPackage>
+                            <modelPackage>org.zalando.tarbelaproducer.api.event.model</modelPackage>
                             <additionalProperties>
                                 <modelNameSuffix>DTO</modelNameSuffix>
                             </additionalProperties>
@@ -173,5 +173,13 @@
             </plugin>
         </plugins>
     </build>
+
+    <licenses>
+        <license>
+            <name>MIT</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
 </project>

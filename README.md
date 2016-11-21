@@ -103,6 +103,21 @@ Example:
 flyway.locations: classpath:my_db/migrations, classpath:db_tarbela/migrations
 ```
 
+#### Schema permissions
+
+Note that by default schema permissions look like this:
+
+```sql
+GRANT USAGE ON SCHEMA tarbela TO PUBLIC;
+GRANT SELECT ON tarbela.tarbela_event_log TO PUBLIC;
+GRANT INSERT ON tarbela.tarbela_event_log TO PUBLIC;
+GRANT UPDATE ON tarbela.tarbela_event_log TO PUBLIC;
+GRANT USAGE ON SEQUENCE tarbela.tarbela_event_log_id_seq TO PUBLIC; 
+```
+
+If you need to restrict permissions to the schema change it via your database migrations
+
+
 ### X-Flow-ID (Optional)
 
 This library supports tracer-spring-boot-starter (another library from Zalando) that provides a support of `X-Flow-ID` header.

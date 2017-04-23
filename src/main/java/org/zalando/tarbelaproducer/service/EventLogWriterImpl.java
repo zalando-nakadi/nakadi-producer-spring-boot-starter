@@ -33,4 +33,11 @@ public class EventLogWriterImpl implements EventLogWriter {
         eventLogRepository.save(eventLog);
     }
 
+    @Override
+    @Transactional
+    public void fireDeleteEvent(EventPayload payload, String flowId) {
+        final EventLog eventLog = eventLogMapper.createEventLog(EventDataOperation.DELETE, payload, flowId);
+        eventLogRepository.save(eventLog);
+    }
+
 }

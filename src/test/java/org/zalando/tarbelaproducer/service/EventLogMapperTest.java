@@ -75,7 +75,7 @@ public class EventLogMapperTest {
                                      .created(Instant.now()).dataOp(EventDataOperation.CREATE.toString())
                                      .status(EventStatus.NEW.toString()).flowId("FLOW_ID_1").errorCount(0).build();
 
-        eventLog2 = EventLog.builder().eventBodyData(EVENT_BODY_DATA).id(5)
+        eventLog2 = EventLog.builder().eventBodyData(EVENT_BODY_DATA).id(4)
                                      .eventType(PUBLISHER_EVENT_TYPE)
                                      .created(Instant.now())
                                      .dataType(PUBLISHER_DATA_TYPE)
@@ -91,19 +91,38 @@ public class EventLogMapperTest {
     }
 
     @Test
-    public void testMapToDTO() throws JsonProcessingException {
+    public void testMapToDTO_events() throws JsonProcessingException {
         final BunchOfEventsDTO result = eventLogMapper.mapToDTO(newArrayList(eventLog1, eventLog2, eventLog3),
                 EventStatus.NEW.name(), LIMIT, SINK_ID);
-
-        final String nextLink = result.getLinks().getNext().getHref();
-        assertThat(nextLink).contains(String.valueOf(LIMIT));
-        assertThat(nextLink).contains(EventStatus.NEW.name());
-        assertThat(nextLink).contains(String.valueOf(eventLog2.getId()));
 
         Assertions.assertThat(result.getEvents()).hasSize(3);
         compareEventDTOWithEvent(result.getEvents().get(0), eventLog1);
         compareEventDTOWithEvent(result.getEvents().get(1), eventLog2);
         compareEventDTOWithEvent(result.getEvents().get(2), eventLog3);
+    }
+
+    @Test
+    public void testMapToDTO_links() throws JsonProcessingException {
+        String status = EventStatus.NEW.name();
+        final BunchOfEventsDTO result = eventLogMapper.mapToDTO(newArrayList(eventLog1, eventLog2, eventLog3),
+                status, LIMIT, SINK_ID);
+
+        final String nextLink = result.getLinks().getNext().getHref();
+        assertThat(nextLink)
+                .isEqualTo("http://localhost/events?cursor=" + eventLog3.getId() + "&status=" + status + "&limit=" + LIMIT);
+
+    }
+
+    @Test
+    public void testMapToDTO_linksWithNoLimit() throws JsonProcessingException {
+        String status = EventStatus.NEW.name();
+        final BunchOfEventsDTO result = eventLogMapper.mapToDTO(newArrayList(eventLog1, eventLog2, eventLog3),
+                status, null, SINK_ID);
+
+        final String nextLink = result.getLinks().getNext().getHref();
+        assertThat(nextLink)
+                .isEqualTo("http://localhost/events?cursor=" + eventLog3.getId() + "&status=" + status);
+
     }
 
     private void compareEventDTOWithEvent(final EventDTO eventDTO, final EventLog eventLog)

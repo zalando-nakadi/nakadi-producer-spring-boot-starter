@@ -87,7 +87,7 @@ public class EventLogMapper {
 
         int maxEventId = events.stream().map(EventLog::getId).max(Integer::compare).get();
         final String nextUri = ControllerLinkBuilder.linkTo(methodOn(EventController.class).eventsGet(String.valueOf(maxEventId), status,
-                    limit)).toString();
+                    limit)).toUri().toASCIIString();
 
         final BunchofEventsLinksNextDTO nextLinkDTO = new BunchofEventsLinksNextDTO();
         nextLinkDTO.setHref(nextUri);

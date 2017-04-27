@@ -1,5 +1,11 @@
 package org.zalando.tarbelaproducer.service;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.zalando.tarbelaproducer.persistance.entity.EventDataOperation;
 import org.zalando.tarbelaproducer.persistance.entity.EventLog;
 import org.zalando.tarbelaproducer.persistance.entity.EventStatus;
@@ -8,24 +14,14 @@ import org.zalando.tarbelaproducer.service.model.EventPayload;
 import org.zalando.tarbelaproducer.util.Fixture;
 import org.zalando.tarbelaproducer.util.MockPayload;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import java.util.Random;
 
-import static org.zalando.tarbelaproducer.util.Fixture.PUBLISHER_DATA_TYPE;
-import static org.zalando.tarbelaproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.zalando.tarbelaproducer.util.Fixture.PUBLISHER_DATA_TYPE;
+import static org.zalando.tarbelaproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EventLogWriterTest {
@@ -53,11 +49,6 @@ public class EventLogWriterTest {
                     + "'active':true"
                     + "}").replace('\'', '"');
 
-    private final ArgumentCaptor<EventLog> saveArgCapture = ArgumentCaptor.forClass(EventLog.class);
-    private final ArgumentCaptor<EventDataOperation> eventDataArgCapture = ArgumentCaptor.forClass(EventDataOperation.class);
-    private final ArgumentCaptor<EventPayload> eventPayloadCapture = ArgumentCaptor.forClass(EventPayload.class);
-    private final ArgumentCaptor<String> strArgCapture = ArgumentCaptor.forClass(String.class);
-
     @Before
     public void setUp() throws Exception {
 
@@ -84,13 +75,9 @@ public class EventLogWriterTest {
 
         eventLogWriter.fireCreateEvent(eventPayload, traceId);
 
-        verify(eventLogMapper, times(1)).createEventLog(eventDataArgCapture.capture(), eventPayloadCapture.capture(), strArgCapture.capture());
-        assertThat(eventDataArgCapture.getValue(), is(EventDataOperation.CREATE));
-        assertThat(eventPayloadCapture.getValue(), is(eventPayload));
-        assertThat(strArgCapture.getValue(), is(traceId));
+        verify(eventLogMapper).createEventLog(eq(EventDataOperation.CREATE), eq(eventPayload), eq(traceId));
 
-        verify(eventLogRepository, times(1)).save(saveArgCapture.capture());
-        assertThat(saveArgCapture.getValue(), is(eventLog));
+        verify(eventLogRepository).save(eq(eventLog));
 
     }
 
@@ -99,13 +86,20 @@ public class EventLogWriterTest {
 
         eventLogWriter.fireUpdateEvent(eventPayload, traceId);
 
-        verify(eventLogMapper, times(1)).createEventLog(eventDataArgCapture.capture(), eventPayloadCapture.capture(), strArgCapture.capture());
-        assertThat(eventDataArgCapture.getValue(), is(EventDataOperation.UPDATE));
-        assertThat(eventPayloadCapture.getValue(), is(eventPayload));
-        assertThat(strArgCapture.getValue(), is(traceId));
+        verify(eventLogMapper).createEventLog(eq(EventDataOperation.UPDATE), eq(eventPayload), eq(traceId));
 
-        verify(eventLogRepository, times(1)).save(saveArgCapture.capture());
-        assertThat(saveArgCapture.getValue(), is(eventLog));
+        verify(eventLogRepository).save(eq(eventLog));
+
+    }
+
+    @Test
+    public void testFireDeleteEvent() throws Exception {
+
+        eventLogWriter.fireDeleteEvent(eventPayload, traceId);
+
+        verify(eventLogMapper).createEventLog(eq(EventDataOperation.DELETE), eq(eventPayload), eq(traceId));
+
+        verify(eventLogRepository).save(eq(eventLog));
 
     }
 

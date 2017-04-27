@@ -8,6 +8,7 @@ import org.zalando.tarbelaproducer.service.model.EventPayload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 @Service
@@ -21,21 +22,21 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
-    public void fireCreateEvent(final EventPayload payload, final String flowId) {
+    public void fireCreateEvent(final EventPayload payload, @Nullable final String flowId) {
         final EventLog eventLog = eventLogMapper.createEventLog(EventDataOperation.CREATE, payload, flowId);
         eventLogRepository.save(eventLog);
     }
 
     @Override
     @Transactional
-    public void fireUpdateEvent(final EventPayload payload, final String flowId) {
+    public void fireUpdateEvent(final EventPayload payload, @Nullable final String flowId) {
         final EventLog eventLog = eventLogMapper.createEventLog(EventDataOperation.UPDATE, payload, flowId);
         eventLogRepository.save(eventLog);
     }
 
     @Override
     @Transactional
-    public void fireDeleteEvent(EventPayload payload, String flowId) {
+    public void fireDeleteEvent(final EventPayload payload, @Nullable final String flowId) {
         final EventLog eventLog = eventLogMapper.createEventLog(EventDataOperation.DELETE, payload, flowId);
         eventLogRepository.save(eventLog);
     }

@@ -2,6 +2,7 @@ package org.zalando.tarbelaproducer.service;
 
 import org.zalando.tarbelaproducer.service.model.EventPayload;
 
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 public interface EventLogWriter {
@@ -16,7 +17,7 @@ public interface EventLogWriter {
      * @param flowId Optional parameter to provide an X-Flow-ID value
      */
     @Transactional
-    void fireCreateEvent(EventPayload payload, String flowId);
+    void fireCreateEvent(EventPayload payload, @Nullable String flowId);
 
     /**
      * Suppose you want to update some object in a database and also you want to fire an event
@@ -28,7 +29,7 @@ public interface EventLogWriter {
      * @param flowId Optional parameter to provide an X-Flow-ID value
      */
     @Transactional
-    void fireUpdateEvent(EventPayload payload, String flowId);
+    void fireUpdateEvent(EventPayload payload, @Nullable String flowId);
 
     /**
      * Suppose you want to remove an object from a database and also you want to fire an event
@@ -40,6 +41,6 @@ public interface EventLogWriter {
      * @param flowId Optional parameter to provide an X-Flow-ID value
      */
     @Transactional
-    void fireDeleteEvent(EventPayload payload, String flowId);
+    void fireDeleteEvent(EventPayload payload, @Nullable String flowId);
 
 }

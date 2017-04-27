@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import lombok.extern.slf4j.Slf4j;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -132,7 +134,7 @@ public class EventLogMapper {
         return new UUID(0, number).toString();
     }
 
-    public EventLog createEventLog(final EventDataOperation dataOp, final EventPayload eventPayload, final String flowId) {
+    public EventLog createEventLog(final EventDataOperation dataOp, final EventPayload eventPayload, @Nullable final String flowId) {
         final EventLog eventLog = new EventLog();
         eventLog.setStatus(EventStatus.NEW.toString());
         eventLog.setEventType(eventPayload.getEventType());

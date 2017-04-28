@@ -1,7 +1,10 @@
 package org.zalando.nakadiproducer;
 
-import org.zalando.nakadiproducer.web.FlowIdComponent;
+import lombok.extern.slf4j.Slf4j;
 
+import java.net.URI;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
@@ -10,9 +13,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.zalando.fahrschein.NakadiClient;
+import org.zalando.nakadiproducer.web.FlowIdComponent;
 import org.zalando.tracer.Tracer;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @EnableJpaAuditing
@@ -28,6 +31,14 @@ public class NakadiProducerAutoConfiguration {
         return eventType -> {
             throw new SnapshotEventProviderNotImplementedException();
         };
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(NakadiClient.class)
+    public NakadiClient nakadiClient(AccessTokenProvider accessTokenProvider, @Value("${nakadi-producer.nakadi-base-uri}") URI nakadiBaseUri) {
+        return NakadiClient.builder(nakadiBaseUri)
+                           .withAccessTokenProvider(accessTokenProvider::getAccessToken)
+                           .build();
     }
 
     @Bean

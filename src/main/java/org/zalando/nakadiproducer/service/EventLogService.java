@@ -8,4 +8,7 @@ public interface EventLogService {
      */
     @Transactional
     void createSnapshotEvents(String eventType, String flowId);
+
+    @Transactional
+    void sendMessages();
 }

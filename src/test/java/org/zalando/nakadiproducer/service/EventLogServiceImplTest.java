@@ -36,7 +36,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EventLogServiceTest {
+public class EventLogServiceImplTest {
     private static final int SNAPSHOT_BATCH_SIZE = 5;
 
     @Mock

@@ -2,7 +2,6 @@ package org.zalando.nakadiproducer.service;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -11,6 +10,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.zalando.fahrschein.NakadiClient;
 import org.zalando.nakadiproducer.NakadiProperties;
 import org.zalando.nakadiproducer.SnapshotEventProvider;
 import org.zalando.nakadiproducer.persistence.entity.EventDataOperation;
@@ -24,8 +24,6 @@ import com.google.common.collect.Iterators;
 @Slf4j
 public class EventLogServiceImpl implements EventLogService {
 
-    public static final int DEFAULT_LIMIT = 10;
-
     @Autowired
     private EventLogRepository eventLogRepository;
 
@@ -37,6 +35,9 @@ public class EventLogServiceImpl implements EventLogService {
 
     @Autowired
     private SnapshotEventProvider snapshotEventProvider;
+
+    @Autowired
+    private NakadiClient nakadiClient;
 
     @Override
     @Transactional
@@ -53,6 +54,12 @@ public class EventLogServiceImpl implements EventLogService {
                 });
 
         eventLogRepository.flush();
+    }
+
+    @Override
+    @Transactional
+    public void sendMessages() {
+        log.info("This would transmit a bunch of events");
     }
 
 }

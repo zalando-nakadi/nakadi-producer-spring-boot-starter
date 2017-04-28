@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.zalando.fahrschein.NakadiClient;
 import org.zalando.nakadiproducer.NakadiProperties;
-import org.zalando.nakadiproducer.SnapshotEventProvider;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
 import org.zalando.nakadiproducer.persistence.entity.EventDataOperation;
 import org.zalando.nakadiproducer.persistence.entity.EventLog;
 import org.zalando.nakadiproducer.persistence.repository.EventLogRepository;

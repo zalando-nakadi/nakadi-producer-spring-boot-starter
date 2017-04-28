@@ -42,7 +42,7 @@ public class EventLogTransmitterIT extends BaseMockedExternalCommunicationIT {
         EventPayload payload = Fixture.mockEventPayload(code, MY_EVENT_TYPE);
         eventLogWriter.fireCreateEvent(payload, FLOW_ID);
 
-        eventLogTransmitter.sendMessages();
+        eventLogTransmitter.sendEvents();
 
         verify(nakadiClient).publish(eq(MY_EVENT_TYPE), captor.capture());
         List<NakadiEvent> value = captor.getValue();

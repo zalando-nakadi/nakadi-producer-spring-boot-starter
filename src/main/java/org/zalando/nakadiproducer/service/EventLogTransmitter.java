@@ -14,13 +14,13 @@ public class EventLogTransmitter {
     private EventLogService eventLogService;
 
     @Scheduled(fixedDelayString = "${nakadi-producer.transmission-polling-delay}")
-    protected void sendMessagesPeriodically() {
+    protected void sendEventsIfSchedulingEnabled() {
         if (nakadiProperties.isScheduledTransmissionEnabled()) {
-            sendMessages();
+            sendEvents();
         }
     }
 
-    public void sendMessages() {
+    public void sendEvents() {
         eventLogService.lockSomeEvents().forEach(eventLogService::sendEvent);
     }
 }

@@ -1,4 +1,4 @@
-package org.zalando.nakadiproducer;
+package org.zalando.nakadiproducer.snapshots;
 
 public class SnapshotEventProviderNotImplementedException extends RuntimeException {
 

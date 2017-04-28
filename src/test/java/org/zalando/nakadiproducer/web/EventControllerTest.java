@@ -25,9 +25,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.zalando.nakadiproducer.SnapshotEventProviderNotImplementedException;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventProviderNotImplementedException;
 import org.zalando.nakadiproducer.service.EventLogService;
-import org.zalando.nakadiproducer.service.exception.UnknownEventTypeException;
+import org.zalando.nakadiproducer.snapshots.UnknownEventTypeException;
 import org.zalando.nakadiproducer.util.Fixture;
 
 @RunWith(SpringRunner.class)

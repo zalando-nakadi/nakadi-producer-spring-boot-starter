@@ -1,4 +1,4 @@
-package org.zalando.nakadiproducer.service.exception;
+package org.zalando.nakadiproducer.snapshots;
 
 public class UnknownEventTypeException extends RuntimeException {
 

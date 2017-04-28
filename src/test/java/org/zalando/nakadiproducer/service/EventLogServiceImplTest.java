@@ -1,6 +1,6 @@
 package org.zalando.nakadiproducer.service;
 
-import org.zalando.nakadiproducer.SnapshotEventProvider;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
 import org.zalando.nakadiproducer.service.model.EventPayload;
 import org.zalando.nakadiproducer.web.FlowIdComponent;
 import org.zalando.nakadiproducer.NakadiProperties;

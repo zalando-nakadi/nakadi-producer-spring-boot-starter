@@ -1,11 +1,8 @@
 package org.zalando.nakadiproducer.web;
 
-import org.zalando.nakadiproducer.SnapshotEventProviderNotImplementedException;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventProviderNotImplementedException;
 import org.zalando.nakadiproducer.api.event.model.ProblemDTO;
-import org.zalando.nakadiproducer.service.exception.InvalidCursorException;
-import org.zalando.nakadiproducer.service.exception.InvalidEventIdException;
-import org.zalando.nakadiproducer.service.exception.UnknownEventIdException;
-import org.zalando.nakadiproducer.service.exception.UnknownEventTypeException;
+import org.zalando.nakadiproducer.snapshots.UnknownEventTypeException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
@@ -32,30 +29,6 @@ public class EventExceptionHandlerAdvice {
     @Autowired
     public EventExceptionHandlerAdvice(FlowIdComponent flowIdComponent) {
         this.flowIdComponent = flowIdComponent;
-    }
-
-    @ExceptionHandler
-    @ResponseBody
-    public ResponseEntity<ProblemDTO> onInvalidCursorException(final InvalidCursorException exception) {
-        final ProblemDTO error = getErrorForUnProcessableEntity(
-                "Invalid cursor format", exception.getMessage());
-        return getErrorResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, error);
-    }
-
-    @ExceptionHandler
-    @ResponseBody
-    public ResponseEntity<ProblemDTO> onInvalidEventIdException(final InvalidEventIdException exception) {
-        final ProblemDTO error = getErrorForUnProcessableEntity(
-                "Invalid event id format", exception.getMessage());
-        return getErrorResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, error);
-    }
-
-    @ExceptionHandler
-    @ResponseBody
-    public ResponseEntity<ProblemDTO> onUnknownEventIdException(final UnknownEventIdException exception) {
-        final ProblemDTO error = getErrorForUnProcessableEntity(
-                "No event log found", exception.getMessage());
-        return getErrorResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, error);
     }
 
     @ExceptionHandler

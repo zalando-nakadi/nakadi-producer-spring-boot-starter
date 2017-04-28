@@ -1,6 +1,5 @@
-package org.zalando.nakadiproducer;
+package org.zalando.nakadiproducer.snapshots;
 
-import org.zalando.nakadiproducer.service.exception.UnknownEventTypeException;
 import org.zalando.nakadiproducer.service.model.EventPayload;
 
 import java.util.stream.Stream;

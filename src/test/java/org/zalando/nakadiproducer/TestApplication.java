@@ -1,6 +1,7 @@
 package org.zalando.nakadiproducer;
 
-import org.zalando.nakadiproducer.service.exception.UnknownEventTypeException;
+import org.zalando.nakadiproducer.snapshots.UnknownEventTypeException;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 

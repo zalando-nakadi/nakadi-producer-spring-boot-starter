@@ -14,6 +14,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.zalando.fahrschein.NakadiClient;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventProviderNotImplementedException;
 import org.zalando.nakadiproducer.web.FlowIdComponent;
 import org.zalando.tracer.Tracer;
 

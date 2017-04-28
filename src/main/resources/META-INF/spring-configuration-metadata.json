@@ -1,21 +1,15 @@
 {"groups": [
   {
-    "name": "tarbela",
-    "type": "org.zalando.tarbelaproducer.TarbelaProperties",
-    "sourceType": "org.zalando.tarbelaproducer.TarbelaProperties"
+    "name": "nakadi-producer",
+    "type": "org.zalando.nakadiproducer.NakadiProperties",
+    "sourceType": "org.zalando.nakadiproducer.NakadiProperties"
   }
 ],"properties": [
   {
-    "name": "tarbela.sink-id",
-    "type": "java.lang.String",
-    "description": "An identifier for the event sink. This identifier needs to be configured in Tarbela's configuration.",
-    "sourceType": "org.zalando.tarbelaproducer.TarbelaProperties"
-  },
-  {
-    "name": "tarbela.snapshot-batch-size",
+    "name": "nakadi-producer.snapshot-batch-size",
     "type": "java.lang.Integer",
     "defaultValue": 25,
     "description": "How many events will be stored at a time during a snapshot creation",
-    "sourceType": "org.zalando.tarbelaproducer.TarbelaProperties"
+    "sourceType": "org.zalando.nakadiproducer.NakadiProperties"
   }
 ]}

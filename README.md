@@ -1,13 +1,13 @@
-# tarbela-producer-spring-boot-starter
-Tarbela event producer API implementation as a Spring boot starter 
+# nakadi-producer-spring-boot-starter
+Nakadi event producer as a Spring boot starter 
 
 :rocket:
 
-Tarbela is a reliable generic event publisher [according to documentation](https://libraries.io/github/zalando-incubator/tarbela)
+A distributed event bus that implements a RESTful API abstraction instead of Kafka-like queues [according to documentation](https://github.com/zalando/nakadi)
 
-The goal of this Spring Boot starter is to simplify the integration between event producer and Tarbela publisher reducing boiler plate code.
+The goal of this Spring Boot starter is to simplify the integration between event producer and Nakdi reducing boiler plate code.
 
-The important thing is that the new events are stored in the same database (and using the same JDBC connections and transactions) as the actual data we want to store (thereby making the distributed-transaction problem go away).
+The important thing is that the new events are persisted in a log table as part of the producing JDBC transaction. They will then be sent asynchonously to Nakadi after the transaction completed. If the transaction is rolled back, the events will vanish to. As a result, events will allways be sent if and only be sent if the transaction succeeded.
 
 
 ## Installation
@@ -23,8 +23,8 @@ Add the following dependency into the pom.xml of your Spring-Boot application
 ```xml
 <dependency>
     <groupId>org.zalando</groupId>
-    <artifactId>tarbela-producer-spring-boot-starter</artifactId>
-    <version>${tarbela-producer.version}</version>
+    <artifactId>nakadi-producer-spring-boot-starter</artifactId>
+    <version>${nakadi-producer.version}</version>
 </dependency>
 ```
 
@@ -40,11 +40,11 @@ This library also uses:
 
 ## Configuration
 
-Use `@EnableTarbelaProducer` annotation to activate spring boot starter auto configuration
+Use `@EnableNakadiProducer` annotation to activate spring boot starter auto configuration
 
 ```java
 @SpringBootApplication
-@EnableTarbelaProducer
+@EnableNakadiProducer
 public class Application {
     public static void main(final String[] args) {
         SpringApplication.run(TestApplication.class, args);
@@ -56,51 +56,42 @@ This will configure:
 
 * the database table for events 
 * EventLogService service for writing events into the table 
-* controller listening `/events` endpoint that will publish the events for Tarbela
+* A scheduled job that sents your events to nakadi
 
 ### Data access layer configuration
 
 Library relies on Spring Data JPA. In order for Spring to pick up needed repository and entity you should explicitly configure it using this annotations:
 
 ```java
-@EnableJpaRepositories("org.zalando.tarbelaproducer.persistance")
-@EntityScan("org.zalando.tarbelaproducer.persistance")
+@EnableJpaRepositories("org.zalando.nakadiproducer.persistence")
+@EntityScan("org.zalando.nakadiproducer.persistence")
 ```
 
 If you also use Spring Data JPA and you have your own repositories and entities, you should set them all like this:
 
 ```java
-@EnableJpaRepositories({"path.to.your.package.containing.repositories", "org.zalando.tarbelaproducer.persistance"})
-@EntityScan({"path.to.your.package.containing.jpa.entities", "org.zalando.tarbelaproducer.persistance"})
+@EnableJpaRepositories({"path.to.your.package.containing.repositories", "org.zalando.nakadiproducer.persistence"})
+@EntityScan({"path.to.your.package.containing.jpa.entities", "org.zalando.nakadiproducer.persistence"})
 ```
 
 You can apply those annotations to any @Configuration marked class of your Spring Boot application.
-
-### Tarbela sinkId
-
-Configure Tarbela Sink identifier in application properties:
-
-```yaml
-tarbela:
-  sink-id: zalando-nakadi
-```
 
 ### Database
 
 Another important thing to configure is a flyway migrations directory.
 
-Make sure that `classpath:db_tarbela/migrations` is present in a `flyway.locations` property:
+Make sure that `classpath:db_nakadiproducer/migrations` is present in a `flyway.locations` property:
 
 ```yaml
-flyway.locations: classpath:db_tarbela/migrations
+flyway.locations: classpath:db_nakadiproducer/migrations
 ```
 
-If you have you own `flyway.locations` property configured then just extend it with `, classpath:db_tarbela/migrations` (with a comma).
+If you have you own `flyway.locations` property configured then just extend it with `, classpath:db_nakadiproducer/migrations` (with a comma).
 
 Example:
 
 ```yaml
-flyway.locations: classpath:my_db/migrations, classpath:db_tarbela/migrations
+flyway.locations: classpath:my_db/migrations, classpath:db_nakadiproducer/migrations
 ```
 
 #### Schema permissions
@@ -108,11 +99,11 @@ flyway.locations: classpath:my_db/migrations, classpath:db_tarbela/migrations
 Note that by default schema permissions look like this:
 
 ```sql
-GRANT USAGE ON SCHEMA tarbela TO PUBLIC;
-GRANT SELECT ON tarbela.tarbela_event_log TO PUBLIC;
-GRANT INSERT ON tarbela.tarbela_event_log TO PUBLIC;
-GRANT UPDATE ON tarbela.tarbela_event_log TO PUBLIC;
-GRANT USAGE ON SEQUENCE tarbela.tarbela_event_log_id_seq TO PUBLIC; 
+GRANT USAGE ON SCHEMA nakadi_events TO PUBLIC;
+GRANT SELECT ON nakadi_events.event_log TO PUBLIC;
+GRANT INSERT ON nakadi_events.event_log TO PUBLIC;
+GRANT UPDATE ON nakadi_events.event_log TO PUBLIC;
+GRANT USAGE ON SEQUENCE nakadi_events.event_log_id_seq TO PUBLIC; 
 ```
 
 If you need to restrict permissions to the schema change it via your database migrations
@@ -133,7 +124,7 @@ tracer:
 ### Security
 
 The library does not provide any security. 
-You should secure the `/events` endpoint and all its operations as you need for your application
+You should secure the `/events/snapshots/{event_type}` endpoint as you need for your application
 
 ## Using 
 
@@ -143,9 +134,7 @@ The API provides:
  
 endpoint | description
 -------- | -----------
-`GET /events` | Using this endpoint Tarbela retrieves some of the new events. The response will support pagination by a next link, using a cursor, assuming there are actually more events.
-`PATCH /events` | Using this endpoint Tarbela updates the publishing statuses of some events. This is used to inform the producer when a event was successfully delivered to the event sink or when it couldn't be delivered.
-`POST /events/snapshots/{event_type}` | This endpoint (a post without any body) can be used by operators to trigger creation of snapshot events in the producer. Those events will then be collected and published by Tarbela, so event consumers can get a full snapshot of the database. (Tarbela itself is not using this operation.)
+`POST /events/snapshots/{event_type}` | This endpoint (a post without any body) can be used by operators to trigger creation of snapshot events in the producer. Those events will then be collected and published to Nakadi, so event consumers can get a full snapshot of the database.
 
 ### Creating events
 
@@ -160,14 +149,14 @@ Example of using `fireCreateEvent`:
 public class SomeYourService {
 
     @Autowire
-    private EventLogWriter eventLogWriter 
+    private EventLogWriter eventLogWriter; 
     
     @Transactional
     public void createObject(Warehouse data, String flowId) {
         
-        ...
-        ... here we store an object in a database table
-        ...
+        // ...
+        // ... here we store an object in a database table
+        // ...
        
         // compose an event payload
         EventPayload eventPayload = EventPayloadImpl.builder()
@@ -194,10 +183,10 @@ It makes sense to use these methods in one transaction with corresponding object
 
 ### Event snapshots
 
-**Important:** In order `POST /events/snapshots/{event_type}` to work your application should implement the `TarbelaSnapshotProvider` interface.
+**Important:** In order `POST /events/snapshots/{event_type}` to work your application should implement the `SnapshotEventProvider` interface.
 
 ```java
-public interface TarbelaSnapshotProvider {
+public interface SnapshotEventProvider {
 
     /**
      * Returns a stream consisting of elements for creating a snapshot of events
@@ -211,16 +200,16 @@ public interface TarbelaSnapshotProvider {
 }
 ```
 
-If you will not implement and define the `TarbelaSnapshotProvider` as a Spring Bean the library will configure a fake `TarbelaSnapshotProvider` which will throw TarbelaSnapshotProviderNotImplementedException upon the any `POST /events/snapshots/*` request
+If you do not implement and define the `SnapshotEventProvider` as a Spring Bean the library will configure a fake `SnapshotEventProvider` which will throw `SnapshotEventProviderNotImplementedException` upon the any `POST /events/snapshots/*` request
 
 The method will be used by `EventLogService` to create snapshot events of the whole Publisher's state.
 
-`EventLogService` will take batches of elements from the stream returned by `getSnapshot` method and save those batches sequentially in tarbela_event_log table.
+`EventLogService` will take batches of elements from the stream returned by `getSnapshot` method and save those batches sequentially in event_log table.
  
-The default size of the batch is 25 and it can be adjusted via `tarbela.snapshot-batch-size` property:
+The default size of the batch is 25 and it can be adjusted via `nakadi-producer.snapshot-batch-size` property:
 
 ```yaml
-tarbela:
+nakadi-producer:
   snapshot-batch-size: 100
 ```
 

@@ -3,15 +3,8 @@ spring:
   jpa:
     show-sql: true
 
-flyway.locations: classpath:db_tarbela/migrations
+flyway.locations: classpath:db_nakadiproducer/migrations
 
 logging.level:
   org.springframework.web: 'DEBUG'
 
-# optional tracer configeration
-#tracer:
-#  traces:
-#    X-Flow-ID: flow-id
-
-tarbela:
-  sink-id: zalando-nakadi

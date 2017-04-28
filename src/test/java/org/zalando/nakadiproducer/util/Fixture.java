@@ -8,10 +8,8 @@ import java.util.List;
 
 public class Fixture {
 
-    public static final String PUBLISHER_EVENT_OTHER_TYPE = "wholesale.different-event-type";
     public static final String PUBLISHER_EVENT_TYPE = "wholesale.some-publisher-change-event";
     public static final String PUBLISHER_DATA_TYPE = "nakadi:some-publisher";
-    public static final String SINK_ID = "zalando-nakadi";
 
     public static EventPayload mockEventPayload(MockPayload mockPayload, String eventType) {
         return EventPayloadImpl.builder()
@@ -52,16 +50,12 @@ public class Fixture {
         return MockPayload.SubClass.builder().info(info).build();
     }
 
-    public static MockPayload.SubClass mockSubClass() {
+    private static MockPayload.SubClass mockSubClass() {
         return mockSubClass("Info something");
     }
 
-    public static MockPayload.SubListItem mockSubListItem(String detail) {
+    private static MockPayload.SubListItem mockSubListItem(String detail) {
         return MockPayload.SubListItem.builder().detail(detail).build();
-    }
-
-    public static MockPayload.SubListItem mockSubListItem() {
-        return mockSubListItem("Detail something");
     }
 
     public static List<MockPayload.SubListItem> mockSubList(Integer size, String detail) {
@@ -72,7 +66,7 @@ public class Fixture {
         return items;
     }
 
-    public static List<MockPayload.SubListItem> mockSubList(Integer size) {
+    private static List<MockPayload.SubListItem> mockSubList(Integer size) {
         return mockSubList(size, "Detail something ");
     }
 

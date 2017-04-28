@@ -35,8 +35,6 @@ public class EventLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String status;
-
     private String eventType;
 
     private String eventBodyData;
@@ -45,8 +43,6 @@ public class EventLog {
 
     private String dataOp;
 
-    private Integer errorCount = 0;
-
     private String flowId;
 
     @CreatedDate
@@ -54,5 +50,9 @@ public class EventLog {
 
     @LastModifiedDate
     private Instant lastModified;
+
+    private String lockedBy;
+
+    private Instant lockedUntil;
 
 }

@@ -35,7 +35,6 @@ public class EventLogMapper {
 
     public EventLog createEventLog(final EventDataOperation dataOp, final EventPayload eventPayload, @Nullable final String flowId) {
         final EventLog eventLog = new EventLog();
-        eventLog.setStatus(EventStatus.NEW.toString());
         eventLog.setEventType(eventPayload.getEventType());
         try {
             eventLog.setEventBodyData(objectMapper.writeValueAsString(eventPayload.getData()));

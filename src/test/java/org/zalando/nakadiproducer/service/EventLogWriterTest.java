@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.zalando.nakadiproducer.persistence.entity.EventDataOperation;
 import org.zalando.nakadiproducer.persistence.entity.EventLog;
-import org.zalando.nakadiproducer.persistence.entity.EventStatus;
 import org.zalando.nakadiproducer.persistence.repository.EventLogRepository;
 import org.zalando.nakadiproducer.service.model.EventPayload;
 import org.zalando.nakadiproducer.util.Fixture;
@@ -64,7 +63,8 @@ public class EventLogWriterTest {
                 .eventType(PUBLISHER_EVENT_TYPE)
                 .dataType(PUBLISHER_DATA_TYPE)
                 .dataOp(EventDataOperation.CREATE.toString())
-                .status(EventStatus.NEW.name()).flowId("FLOW_ID").errorCount(0).build();
+                .flowId("FLOW_ID")
+                .build();
 
         when(eventLogMapper.createEventLog(any(), any(), any())).thenReturn(eventLog);
 

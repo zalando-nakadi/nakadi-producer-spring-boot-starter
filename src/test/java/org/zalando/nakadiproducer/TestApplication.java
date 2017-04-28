@@ -11,9 +11,7 @@ import org.springframework.context.annotation.Bean;
 import java.util.Collection;
 import java.util.Objects;
 
-import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_OTHER_TYPE;
 import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
-import static org.zalando.nakadiproducer.util.Fixture.mockEventPayload;
 
 @SpringBootApplication
 @EnableNakadiProducer
@@ -29,9 +27,6 @@ public class TestApplication {
         return eventType -> {
             if (Objects.equals(eventType, PUBLISHER_EVENT_TYPE)) {
                 return list.stream().map(Fixture::mockEventPayload)
-                        .filter(eventPayload -> eventPayload.getEventType().equals(eventType));
-            } else if (Objects.equals(eventType, PUBLISHER_EVENT_OTHER_TYPE)) {
-                return list.stream().map(it -> mockEventPayload(it, PUBLISHER_EVENT_OTHER_TYPE))
                         .filter(eventPayload -> eventPayload.getEventType().equals(eventType));
             } else {
                 throw new UnknownEventTypeException(eventType);

@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import org.zalando.nakadiproducer.BaseMockedExternalCommunicationIT;
 import org.zalando.nakadiproducer.persistence.entity.EventDataOperation;
 import org.zalando.nakadiproducer.persistence.entity.EventLog;
-import org.zalando.nakadiproducer.persistence.entity.EventStatus;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -53,8 +52,7 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
                                                                      .eventType(WAREHOUSE_EVENT_TYPE)
                                                                      .dataType(WAREHOUSE_DATA_TYPE)
                                                                      .dataOp(EventDataOperation.CREATE.toString())
-                                                                     .status(EventStatus.NEW.toString())
-                                                                     .flowId("FLOW_ID").errorCount(0).build();
+                                                                     .flowId("FLOW_ID").build();
         eventLogRepository.saveAndFlush(eventLog);
         id = eventLog.getId();
     }
@@ -76,11 +74,9 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
 
     private void compareWithPersistedEvent(final EventLog eventLog) {
         assertThat(eventLog.getEventBodyData(), is(WAREHOUSE_EVENT_BODY_DATA));
-        assertThat(eventLog.getErrorCount(), is(0));
         assertThat(eventLog.getEventType(), is(WAREHOUSE_EVENT_TYPE));
         assertThat(eventLog.getDataType(), is(WAREHOUSE_DATA_TYPE));
         assertThat(eventLog.getDataOp(), is(EventDataOperation.CREATE.toString()));
-        assertThat(eventLog.getStatus(), is(EventStatus.NEW.toString()));
     }
 
 }

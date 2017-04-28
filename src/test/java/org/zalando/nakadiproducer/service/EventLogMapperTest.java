@@ -4,7 +4,6 @@ import org.mockito.Spy;
 import org.zalando.nakadiproducer.persistence.entity.EventDataOperation;
 import org.zalando.nakadiproducer.persistence.entity.EventLog;
 import org.zalando.nakadiproducer.service.model.EventPayload;
-import org.zalando.nakadiproducer.persistence.entity.EventStatus;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 
@@ -73,7 +72,6 @@ public class EventLogMapperTest {
         MatcherAssert.assertThat(eventLog.getDataOp(), is(EventDataOperation.UPDATE.toString()));
         MatcherAssert.assertThat(eventLog.getEventType(), is(PUBLISHER_EVENT_TYPE));
         MatcherAssert.assertThat(eventLog.getDataType(), is(PUBLISHER_DATA_TYPE));
-        MatcherAssert.assertThat(eventLog.getStatus(), is(EventStatus.NEW.toString()));
         MatcherAssert.assertThat(eventLog.getFlowId(), is(traceId));
     }
 

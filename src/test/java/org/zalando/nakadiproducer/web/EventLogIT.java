@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_DATA_TYPE;
-import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_OTHER_TYPE;
 import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
 
 import java.io.IOException;
@@ -30,7 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class EventLogIT extends BaseMockedExternalCommunicationIT {
 
-    public static final String SOME_DETAIL = "some detail";
+    private static final String SOME_DETAIL = "some detail";
 
     @Autowired
     private EventLogRepository eventLogRepository;
@@ -73,40 +72,7 @@ public class EventLogIT extends BaseMockedExternalCommunicationIT {
         all.forEach(event -> {
             assertThat(event.getDataOp(), is("S"));
             assertThat(event.getDataType(), is(PUBLISHER_DATA_TYPE));
-            assertThat(event.getErrorCount(), is(0));
             assertThat(event.getEventType(), is(PUBLISHER_EVENT_TYPE));
-            String eventBodyData = event.getEventBodyData();
-            MockPayload mockPayload;
-            try {
-                mockPayload = new ObjectMapper().readValue(eventBodyData, MockPayload.class);
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
-            int id = mockPayload.getId();
-            assertThat(mockPayload.getCode(), is(mockedCode + id));
-            assertThat(mockPayload.getItems().size(), is(2));
-            assertThat(mockPayload.getMore().getInfo(), is("some info" + id));
-
-        });
-    }
-
-    @Test
-    public void snapshotEventsOfDifferentTypesCanBeCreatedAndRetrieved() {
-        eventLogRepository.deleteAll();
-
-        // Create snapshot
-        given(aHttpsRequest())
-                .when().post("/events/snapshots/" + PUBLISHER_EVENT_OTHER_TYPE)
-                .then().assertThat().statusCode(201);
-
-
-        List<EventLog> all = eventLogRepository.findAll();
-        assertThat(all.size(), is(5));
-        all.forEach(event -> {
-            assertThat(event.getDataOp(), is("S"));
-            assertThat(event.getDataType(), is(PUBLISHER_DATA_TYPE));
-            assertThat(event.getErrorCount(), is(0));
-            assertThat(event.getEventType(), is(PUBLISHER_EVENT_OTHER_TYPE));
             String eventBodyData = event.getEventBodyData();
             MockPayload mockPayload;
             try {

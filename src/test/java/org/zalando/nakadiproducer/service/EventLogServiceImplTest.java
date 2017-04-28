@@ -6,7 +6,6 @@ import org.zalando.nakadiproducer.web.FlowIdComponent;
 import org.zalando.nakadiproducer.NakadiProperties;
 import org.zalando.nakadiproducer.persistence.entity.EventDataOperation;
 import org.zalando.nakadiproducer.persistence.entity.EventLog;
-import org.zalando.nakadiproducer.persistence.entity.EventStatus;
 import org.zalando.nakadiproducer.persistence.repository.EventLogRepository;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
@@ -100,7 +99,8 @@ public class EventLogServiceImplTest {
                 .eventType(PUBLISHER_EVENT_TYPE)
                 .dataType(PUBLISHER_DATA_TYPE)
                 .dataOp(EventDataOperation.SNAPSHOT.toString())
-                .status(EventStatus.NEW.name()).flowId("FLOW_ID").errorCount(0).build();
+                .flowId("FLOW_ID")
+                .build();
 
         when(snapshotEventProvider.getSnapshot(PUBLISHER_EVENT_TYPE)).thenReturn(eventPayloads.stream());
         when(eventLogMapper.createEventLog(any(), any(), any())).thenReturn(eventLog);
@@ -114,7 +114,6 @@ public class EventLogServiceImplTest {
         final EventLog snapshotEventLog = listEventLogCaptor.getValue().get(0);
 
         assertThat(snapshotEventLog.getDataOp(), is(EventDataOperation.SNAPSHOT.toString()));
-        assertThat(snapshotEventLog.getStatus(), is(EventStatus.NEW.toString()));
         assertThat(snapshotEventLog.getEventBodyData(), is(EVENT_BODY_DATA));
     }
 

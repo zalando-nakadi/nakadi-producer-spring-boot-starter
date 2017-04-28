@@ -1,7 +1,9 @@
 package org.zalando.nakadiproducer.service;
 
+import static java.util.Collections.singletonList;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -60,6 +62,14 @@ public class EventLogServiceImpl implements EventLogService {
     @Transactional
     public void sendMessages() {
         log.info("This would transmit a bunch of events");
+        eventLogRepository.findAll().stream().forEach(eventLog -> {
+                try {
+                    nakadiClient.publish(eventLog.getEventType(), singletonList(eventLogMapper.mapToNakadiPayload(eventLog)));
+                } catch (IOException e) {
+                    throw new IllegalStateException();
+                }
+            }
+         );
     }
 
 }

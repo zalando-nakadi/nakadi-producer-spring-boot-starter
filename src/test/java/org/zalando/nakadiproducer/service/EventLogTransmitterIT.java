@@ -19,7 +19,7 @@ import org.zalando.nakadiproducer.service.model.NakadiEvent;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 
-public class EventLogServiceImplIT extends BaseMockedExternalCommunicationIT {
+public class EventLogTransmitterIT extends BaseMockedExternalCommunicationIT {
     private static final String MY_EVENT_TYPE = "myEventType";
     private static final String FLOW_ID = "flowId1";
     private static final String CODE = "code123";
@@ -28,7 +28,7 @@ public class EventLogServiceImplIT extends BaseMockedExternalCommunicationIT {
     private EventLogWriter eventLogWriter;
 
     @Autowired
-    private EventLogServiceImpl eventLogService;
+    private EventLogTransmitter eventLogTransmitter;
 
     @Autowired
     private NakadiClient nakadiClient;
@@ -42,7 +42,7 @@ public class EventLogServiceImplIT extends BaseMockedExternalCommunicationIT {
         EventPayload payload = Fixture.mockEventPayload(code, MY_EVENT_TYPE);
         eventLogWriter.fireCreateEvent(payload, FLOW_ID);
 
-        eventLogService.sendMessages();
+        eventLogTransmitter.sendMessages();
 
         verify(nakadiClient).publish(eq(MY_EVENT_TYPE), captor.capture());
         List<NakadiEvent> value = captor.getValue();

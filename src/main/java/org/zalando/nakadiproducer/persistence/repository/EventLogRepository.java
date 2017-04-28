@@ -1,12 +1,18 @@
 package org.zalando.nakadiproducer.persistence.repository;
 
-import org.zalando.nakadiproducer.persistence.entity.EventLog;
+import java.time.Instant;
+import java.util.Collection;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.List;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.zalando.nakadiproducer.persistence.entity.EventLog;
 
 public interface EventLogRepository extends JpaRepository<EventLog, Integer> {
 
-    List<EventLog> findByIdIn(List<Integer> eventIds);
+    Collection<EventLog> findByLockedByAndLockedUntilGreaterThan(String lockedBy, Instant lockedUntil);
+
+    @Modifying
+    @Query("UPDATE EventLog SET lockedBy = ?1, lockedUntil = ?3 where lockedUntil is null or lockedUntil < ?2")
+    void lockSomeMessages(String lockId, Instant now, Instant lockExpires);
 }

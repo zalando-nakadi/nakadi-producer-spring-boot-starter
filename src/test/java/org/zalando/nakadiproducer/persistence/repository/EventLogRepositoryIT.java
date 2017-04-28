@@ -1,7 +1,5 @@
 package org.zalando.nakadiproducer.persistence.repository;
 
-import com.google.common.collect.Lists;
-
 import org.zalando.nakadiproducer.BaseMockedExternalCommunicationIT;
 import org.zalando.nakadiproducer.persistence.entity.EventDataOperation;
 import org.zalando.nakadiproducer.persistence.entity.EventLog;
@@ -9,8 +7,6 @@ import org.zalando.nakadiproducer.persistence.entity.EventLog;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
 
 import javax.transaction.Transactional;
 
@@ -61,15 +57,6 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
     public void findEventRepositoryId() {
         final EventLog eventLog = eventLogRepository.findOne(id);
         compareWithPersistedEvent(eventLog);
-    }
-
-    @Test
-    public void findByEventRepositoryIdIn() {
-        List<EventLog> result = eventLogRepository.findByIdIn(Lists.newArrayList(id));
-        final EventLog eventLog = eventLogRepository.findOne(id);
-
-        assertThat(result.size(), is(1));
-        assertThat(result.get(0), is(eventLog));
     }
 
     private void compareWithPersistedEvent(final EventLog eventLog) {

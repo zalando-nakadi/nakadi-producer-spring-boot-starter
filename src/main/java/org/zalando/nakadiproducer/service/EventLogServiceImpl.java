@@ -1,10 +1,14 @@
 package org.zalando.nakadiproducer.service;
 
+import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.util.Collections.singletonList;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -60,16 +64,24 @@ public class EventLogServiceImpl implements EventLogService {
 
     @Override
     @Transactional
-    public void sendMessages() {
-        log.info("This would transmit a bunch of events");
-        eventLogRepository.findAll().stream().forEach(eventLog -> {
-                try {
-                    nakadiClient.publish(eventLog.getEventType(), singletonList(eventLogMapper.mapToNakadiPayload(eventLog)));
-                } catch (IOException e) {
-                    throw new IllegalStateException();
-                }
-            }
-         );
+    public Collection<EventLog> lockSomeEvents() {
+        String lockId = UUID.randomUUID().toString();
+        log.info("Locking events for replcation with lockId {}", lockId);
+        eventLogRepository.lockSomeMessages(lockId, Instant.now(), Instant.now().plus(10, MINUTES));
+        return eventLogRepository.findByLockedByAndLockedUntilGreaterThan(lockId, Instant.now());
+    }
+
+    @Override
+    @Transactional
+    public void sendEvent(EventLog eventLog) {
+        try {
+            nakadiClient.publish(eventLog.getEventType(), singletonList(eventLogMapper.mapToNakadiPayload(eventLog)));
+            log.info("Event {} locked by {} was sucessfully transmitted to nakadi", eventLog.getId(), eventLog.getLockedBy());
+            eventLogRepository.delete(eventLog);
+        } catch (IOException e) {
+            log.error("Event {} locked by {} could not be transmitted to nakadi", eventLog.getId(), eventLog.getLockedBy(), e);
+        }
+
     }
 
 }

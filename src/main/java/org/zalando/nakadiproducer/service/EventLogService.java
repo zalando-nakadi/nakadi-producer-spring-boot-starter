@@ -1,6 +1,10 @@
 package org.zalando.nakadiproducer.service;
 
+import java.util.Collection;
+
 import javax.transaction.Transactional;
+
+import org.zalando.nakadiproducer.persistence.entity.EventLog;
 
 public interface EventLogService {
     /**
@@ -10,5 +14,8 @@ public interface EventLogService {
     void createSnapshotEvents(String eventType, String flowId);
 
     @Transactional
-    void sendMessages();
+    Collection<EventLog> lockSomeEvents();
+
+    @Transactional
+    void sendEvent(EventLog eventLog);
 }

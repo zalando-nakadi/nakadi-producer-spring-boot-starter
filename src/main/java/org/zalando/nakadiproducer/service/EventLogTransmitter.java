@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import org.zalando.nakadiproducer.NakadiProperties;
 
 @Component
-public class EventLogTransmissionScheduler {
+public class EventLogTransmitter {
     @Autowired
     private NakadiProperties nakadiProperties;
 
@@ -16,7 +16,11 @@ public class EventLogTransmissionScheduler {
     @Scheduled(fixedDelayString = "${nakadi-producer.transmission-polling-delay}")
     protected void sendMessagesPeriodically() {
         if (nakadiProperties.isScheduledTransmissionEnabled()) {
-            eventLogService.sendMessages();
+            sendMessages();
         }
+    }
+
+    public void sendMessages() {
+        eventLogService.lockSomeEvents().forEach(eventLogService::sendEvent);
     }
 }

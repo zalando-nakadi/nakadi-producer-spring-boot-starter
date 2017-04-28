@@ -83,44 +83,4 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
         assertThat(eventLog.getStatus(), is(EventStatus.NEW.toString()));
     }
 
-    @Test
-    public void searchEvent() {
-        final List<EventLog> events = eventLogRepository.search(-1, EventStatus.NEW.name(), 10);
-        assertThat(events.size(), is(1));
-        compareWithPersistedEvent(events.get(0));
-    }
-
-    @Test
-    public void searchEventWithoutCursor() {
-        final List<EventLog> events = eventLogRepository.search(null, EventStatus.NEW.name(), 10);
-        assertThat(events.size(), is(1));
-        compareWithPersistedEvent(events.get(0));
-    }
-
-    @Test
-    public void searchEventWitCursorNoResult() {
-        final List<EventLog> events = eventLogRepository.search(id, EventStatus.NEW.name(), 10);
-        assertThat(events.isEmpty(), is(true));
-    }
-
-    @Test
-    public void searchEventWithStatus() {
-        final List<EventLog> events = eventLogRepository.search(null, EventStatus.SENT.name(), 10);
-        assertThat(events.isEmpty(), is(true));
-    }
-
-    @Test
-    public void searchEventWithLimit() {
-        final EventLog eventLog = EventLog.builder().eventBodyData(WAREHOUSE_EVENT_BODY_DATA)
-                                                                     .eventType(WAREHOUSE_EVENT_TYPE)
-                                                                     .dataType(WAREHOUSE_DATA_TYPE)
-                                                                     .dataOp(EventDataOperation.CREATE.toString())
-                                                                     .status(EventStatus.NEW.toString())
-                                                                     .flowId("FLOW_ID").errorCount(0).build();
-        eventLogRepository.saveAndFlush(eventLog);
-
-        final List<EventLog> events = eventLogRepository.search(null, null, 1);
-        assertThat(events.size(), is(1));
-    }
-
 }

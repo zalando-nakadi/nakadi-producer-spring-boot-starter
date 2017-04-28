@@ -6,7 +6,6 @@ import org.zalando.nakadiproducer.service.exception.InvalidCursorException;
 import org.zalando.nakadiproducer.service.exception.InvalidEventIdException;
 import org.zalando.nakadiproducer.service.exception.UnknownEventIdException;
 import org.zalando.nakadiproducer.service.exception.UnknownEventTypeException;
-import org.zalando.nakadiproducer.service.exception.ValidationException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
@@ -65,13 +64,6 @@ public class EventExceptionHandlerAdvice {
         final ProblemDTO error = getErrorForUnProcessableEntity(
                 "No event log found", exception.getMessage());
         return getErrorResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY, error);
-    }
-
-    @ExceptionHandler
-    @ResponseBody
-    public ResponseEntity<ProblemDTO> onValidationException(final ValidationException exception) {
-        final ProblemDTO error = getErrorForBadRequest("Validation Error", exception.getMessage());
-        return getErrorResponseEntity(HttpStatus.BAD_REQUEST, error);
     }
 
     @ExceptionHandler

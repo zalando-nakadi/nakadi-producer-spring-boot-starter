@@ -74,7 +74,7 @@ public class EventControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.post("/events/snapshots/" + Fixture.PUBLISHER_EVENT_TYPE))
                 .andExpect(status().is(501))
-                .andExpect(header().string("Content-Type", containsString(EventController.CONTENT_TYPE_PROBLEM)))
+                .andExpect(header().string("Content-Type", containsString("application/problem+json")))
                 .andExpect(header().string("X-Flow-ID", not(isEmptyString())))
                 .andExpect(jsonPath("type", is("http://httpstatus.es/501")))
                 .andExpect(jsonPath("status", is(501)))
@@ -92,7 +92,7 @@ public class EventControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.post("/events/snapshots/" + unknownEventType))
                 .andExpect(status().is(422))
-                .andExpect(header().string("Content-Type", containsString(EventController.CONTENT_TYPE_PROBLEM)))
+                .andExpect(header().string("Content-Type", containsString("application/problem+json")))
                 .andExpect(header().string("X-Flow-ID", not(isEmptyString())))
                 .andExpect(jsonPath("type", is("http://httpstatus.es/422")))
                 .andExpect(jsonPath("status", is(422)))

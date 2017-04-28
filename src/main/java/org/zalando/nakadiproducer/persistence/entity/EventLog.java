@@ -22,7 +22,7 @@ import lombok.ToString;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(schema = "nakadi-producer", name = "event_log")
+@Table(schema = "nakadi_events", name = "event_log")
 @ToString
 @Getter
 @Setter

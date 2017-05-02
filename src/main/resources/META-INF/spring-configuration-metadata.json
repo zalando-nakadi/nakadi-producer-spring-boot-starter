@@ -6,13 +6,6 @@
   }
 ],"properties": [
   {
-    "name": "nakadi-producer.snapshot-batch-size",
-    "type": "java.lang.Integer",
-    "defaultValue": 25,
-    "description": "How many events will be stored at a time during a snapshot creation",
-    "sourceType": "org.zalando.nakadiproducer.NakadiProperties"
-  },
-  {
     "name": "nakadi-producer.scheduled-transmission-enabled",
     "type": "java.lang.Boolean",
     "defaultValue": true,

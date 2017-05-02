@@ -29,7 +29,7 @@ public class NakadiProducerAutoConfiguration {
     @ConditionalOnMissingBean(SnapshotEventProvider.class)
     public SnapshotEventProvider snapshotEventProvider() {
         log.error("SnapshotEventProvider interface should be implemented by the service in order to /events/snapshots/{event_type} work");
-        return eventType -> {
+        return (eventType, withIdGreaterThan) -> {
             throw new SnapshotEventProviderNotImplementedException();
         };
     }

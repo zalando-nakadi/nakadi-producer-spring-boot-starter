@@ -22,6 +22,7 @@ import org.zalando.nakadiproducer.eventlog.impl.EventLog;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.eventlog.EventPayload;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider.Snapshot;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 
@@ -33,7 +34,7 @@ public class CreateSnapshotControllerIT extends BaseMockedExternalCommunicationI
 
     @Autowired
     private EventLogRepository eventLogRepository;
-    private List<MockPayload> mockPayloads = new ArrayList<>();
+    private List<Snapshot> mockSnapshots = new ArrayList<>();
     private String mockedCode;
 
     @Autowired
@@ -48,13 +49,13 @@ public class CreateSnapshotControllerIT extends BaseMockedExternalCommunicationI
         for (int i = 0; i < 5; i++) {
             MockPayload mockPayload = Fixture.mockPayload(i, mockedCode+i, true,
                     Fixture.mockSubClass("some info"+i), Fixture.mockSubList(2, SOME_DETAIL +i));
-            mockPayloads.add(mockPayload);
+            mockSnapshots.add(new Snapshot(i, Fixture.mockEventPayload(mockPayload)));
             EventPayload eventPayload = Fixture.mockEventPayload(mockPayload);
             eventLogWriter.fireCreateEvent(eventPayload, "SOME_FLOW_ID");
         }
 
         // make listOfItems return predefined list
-        TestApplication.setList(mockPayloads);
+        TestApplication.setList(mockSnapshots);
 
     }
 

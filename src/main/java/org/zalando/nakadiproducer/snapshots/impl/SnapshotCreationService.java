@@ -1,40 +1,41 @@
 package org.zalando.nakadiproducer.snapshots.impl;
 
-import java.util.stream.Stream;
+import java.util.List;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.zalando.nakadiproducer.NakadiProperties;
-import org.zalando.nakadiproducer.eventlog.EventPayload;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogWriterImpl;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
-
-import com.google.common.collect.Iterators;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider.Snapshot;
 
 @Service
 public class SnapshotCreationService {
-
-    private final NakadiProperties nakadiProperties;
 
     private final SnapshotEventProvider snapshotEventProvider;
 
     private final EventLogWriterImpl eventLogWriter;
 
     @Autowired
-    public SnapshotCreationService(NakadiProperties nakadiProperties, SnapshotEventProvider snapshotEventProvider, EventLogWriterImpl eventLogWriter) {
-        this.nakadiProperties = nakadiProperties;
+    public SnapshotCreationService(SnapshotEventProvider snapshotEventProvider, EventLogWriterImpl eventLogWriter) {
         this.snapshotEventProvider = snapshotEventProvider;
         this.eventLogWriter = eventLogWriter;
     }
 
     @Transactional
     public void createSnapshotEvents(final String eventType, final String flowId) {
+        Object lastProcessedId = null;
+        do {
+            List<Snapshot> snapshots = snapshotEventProvider.getSnapshot(eventType, lastProcessedId);
+            if (snapshots.isEmpty()) {
+                break;
+            }
 
-        Stream<EventPayload> snapshotItemsStream = snapshotEventProvider.getSnapshot(eventType);
-
-        Iterators.partition(snapshotItemsStream.iterator(), nakadiProperties.getSnapshotBatchSize())
-                 .forEachRemaining(batch -> batch.forEach((item) -> eventLogWriter.fireSnapshotEvent(item, flowId)));
+            for (Snapshot snapshot : snapshots) {
+                eventLogWriter.fireSnapshotEvent(snapshot.getEventPayload(), flowId);
+                lastProcessedId = snapshot.getId();
+            }
+        } while (true);
     }
 }

@@ -1,41 +1,45 @@
 package org.zalando.nakadiproducer;
 
-import org.zalando.nakadiproducer.snapshots.UnknownEventTypeException;
-import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
-import org.zalando.nakadiproducer.util.Fixture;
-import org.zalando.nakadiproducer.util.MockPayload;
+import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-
-import java.util.Collection;
-import java.util.Objects;
-
-import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider.Snapshot;
+import org.zalando.nakadiproducer.snapshots.UnknownEventTypeException;
+import org.zalando.nakadiproducer.util.Fixture;
 
 @SpringBootApplication
 @EnableNakadiProducer
 public class TestApplication {
 
-    private static volatile Collection<MockPayload> list = Fixture.mockPayloadList(6);
+    private static volatile List<Snapshot> list = Fixture.mockSnapshotList(6);
 
     /**
      * Test implementation of the SnapshotEventProvider interface for integration tests
      */
     @Bean
     public SnapshotEventProvider snapshotEventProvider() {
-        return eventType -> {
-            if (Objects.equals(eventType, PUBLISHER_EVENT_TYPE)) {
-                return list.stream().map(Fixture::mockEventPayload)
-                        .filter(eventPayload -> eventPayload.getEventType().equals(eventType));
+        return (eventType, withIdGreaterThan) -> {
+            if (!Objects.equals(eventType, PUBLISHER_EVENT_TYPE)) {
+                    throw new UnknownEventTypeException(eventType);
+            } else if (withIdGreaterThan != null) {
+                return Collections.emptyList();
             } else {
-                throw new UnknownEventTypeException(eventType);
+                return list.stream()
+                           .filter(snapshot -> snapshot.getEventPayload().getEventType().equals(eventType))
+                           .collect(Collectors.toList());
             }
         };
     }
 
-    public static void setList(Collection<MockPayload> newList) {
+    public static void setList(List<Snapshot> newList) {
         list = newList;
     }
 

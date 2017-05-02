@@ -1,10 +1,11 @@
 package org.zalando.nakadiproducer.util;
 
-import org.zalando.nakadiproducer.eventlog.EventPayload;
-import org.zalando.nakadiproducer.eventlog.SimpleEventPayload;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.zalando.nakadiproducer.eventlog.EventPayload;
+import org.zalando.nakadiproducer.eventlog.SimpleEventPayload;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider.Snapshot;
 
 public class Fixture {
 
@@ -38,10 +39,10 @@ public class Fixture {
         return mockPayload(id, code, true, mockSubClass(), mockSubList(3));
     }
 
-    public static List<MockPayload> mockPayloadList(Integer size) {
-        List<MockPayload> list = new ArrayList<>();
+    public static List<Snapshot> mockSnapshotList(Integer size) {
+        List<Snapshot> list = new ArrayList<>();
         for (int i = 0; i < size; i++) {
-            list.add(mockPayload(i + 1, "code" + i, true, mockSubClass("some info " + i), mockSubList(3, "some detail for code" + i)));
+            list.add(new Snapshot(i, mockEventPayload(mockPayload(i + 1, "code" + i, true, mockSubClass("some info " + i), mockSubList(3, "some detail for code" + i)))));
         }
         return list;
     }

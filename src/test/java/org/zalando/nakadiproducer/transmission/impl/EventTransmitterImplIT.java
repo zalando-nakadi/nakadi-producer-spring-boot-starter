@@ -41,7 +41,7 @@ public class EventTransmitterImplIT extends BaseMockedExternalCommunicationIT {
     public void eventsShouldBeSubmittedToNakadi() throws IOException {
         MockPayload code = Fixture.mockPayload(1, CODE);
         EventPayload payload = Fixture.mockEventPayload(code, MY_EVENT_TYPE);
-        eventLogWriter.fireCreateEvent(payload, FLOW_ID);
+        eventLogWriter.fireCreateEvent(payload);
 
         eventTransmitter.sendEvents();
 

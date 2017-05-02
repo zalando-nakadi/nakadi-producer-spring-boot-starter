@@ -24,7 +24,7 @@ public class SnapshotCreationService {
     }
 
     @Transactional
-    public void createSnapshotEvents(final String eventType, final String flowId) {
+    public void createSnapshotEvents(final String eventType) {
         Object lastProcessedId = null;
         do {
             List<Snapshot> snapshots = snapshotEventProvider.getSnapshot(eventType, lastProcessedId);
@@ -33,7 +33,7 @@ public class SnapshotCreationService {
             }
 
             for (Snapshot snapshot : snapshots) {
-                eventLogWriter.fireSnapshotEvent(snapshot.getEventPayload(), flowId);
+                eventLogWriter.fireSnapshotEvent(snapshot.getEventPayload());
                 lastProcessedId = snapshot.getId();
             }
         } while (true);

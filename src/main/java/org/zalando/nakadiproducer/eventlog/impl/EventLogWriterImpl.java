@@ -1,12 +1,12 @@
 package org.zalando.nakadiproducer.eventlog.impl;
 
+import org.zalando.nakadiproducer.FlowIdComponent;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.eventlog.EventPayload;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,41 +18,43 @@ public class EventLogWriterImpl implements EventLogWriter {
     private final EventLogRepository eventLogRepository;
 
     private final ObjectMapper objectMapper;
+    private final FlowIdComponent flowIdComponent;
 
     @Autowired
-    public EventLogWriterImpl(EventLogRepository eventLogRepository, ObjectMapper objectMapper) {
+    public EventLogWriterImpl(EventLogRepository eventLogRepository, ObjectMapper objectMapper, FlowIdComponent flowIdComponent) {
         this.eventLogRepository = eventLogRepository;
         this.objectMapper = objectMapper;
+        this.flowIdComponent = flowIdComponent;
     }
 
     @Override
     @Transactional
-    public void fireCreateEvent(final EventPayload payload, @Nullable final String flowId) {
-        final EventLog eventLog = createEventLog(EventDataOperation.CREATE, payload, flowId);
-        eventLogRepository.save(eventLog);
-    }
-
-    @Override
-    @Transactional
-    public void fireUpdateEvent(final EventPayload payload, @Nullable final String flowId) {
-        final EventLog eventLog = createEventLog(EventDataOperation.UPDATE, payload, flowId);
+    public void fireCreateEvent(final EventPayload payload) {
+        final EventLog eventLog = createEventLog(EventDataOperation.CREATE, payload);
         eventLogRepository.save(eventLog);
     }
 
     @Override
     @Transactional
-    public void fireDeleteEvent(final EventPayload payload, @Nullable final String flowId) {
-        final EventLog eventLog = createEventLog(EventDataOperation.DELETE, payload, flowId);
+    public void fireUpdateEvent(final EventPayload payload) {
+        final EventLog eventLog = createEventLog(EventDataOperation.UPDATE, payload);
+        eventLogRepository.save(eventLog);
+    }
+
+    @Override
+    @Transactional
+    public void fireDeleteEvent(final EventPayload payload) {
+        final EventLog eventLog = createEventLog(EventDataOperation.DELETE, payload);
         eventLogRepository.save(eventLog);
     }
 
     @Transactional
-    public void fireSnapshotEvent(final EventPayload payload, @Nullable final String flowId) {
-        final EventLog eventLog = createEventLog(EventDataOperation.SNAPSHOT, payload, flowId);
+    public void fireSnapshotEvent(final EventPayload payload) {
+        final EventLog eventLog = createEventLog(EventDataOperation.SNAPSHOT, payload);
         eventLogRepository.save(eventLog);
     }
 
-    private EventLog createEventLog(final EventDataOperation dataOp, final EventPayload eventPayload, @Nullable final String flowId) {
+    private EventLog createEventLog(final EventDataOperation dataOp, final EventPayload eventPayload) {
         final EventLog eventLog = new EventLog();
         eventLog.setEventType(eventPayload.getEventType());
         try {
@@ -63,7 +65,7 @@ public class EventLogWriterImpl implements EventLogWriter {
 
         eventLog.setDataOp(dataOp.toString());
         eventLog.setDataType(eventPayload.getDataType());
-        eventLog.setFlowId(flowId);
+        eventLog.setFlowId(flowIdComponent.getXFlowIdValue());
         return eventLog;
     }
 

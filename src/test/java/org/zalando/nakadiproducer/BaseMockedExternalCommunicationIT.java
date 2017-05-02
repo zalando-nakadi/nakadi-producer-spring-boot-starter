@@ -17,7 +17,7 @@ import static com.jayway.restassured.RestAssured.given;
 @RunWith(SpringRunner.class)
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-        properties = { "server.port:50203", "management.port:0", "zalando.team.id:alpha-local-testing" },
+        properties = { "server.port:50203", "management.port:0", "zalando.team.id:alpha-local-testing", "nakadi-producer.scheduled-transmission-enabled:false" },
         classes = { TestApplication.class, EmbeddedDataSourceConfig.class }
 )
 public abstract class BaseMockedExternalCommunicationIT {

@@ -54,7 +54,7 @@ public class CreateSnapshotControllerTest {
         when(flowIdComponent.getXFlowIdKey()).thenReturn("X-Flow-ID");
         when(flowIdComponent.getXFlowIdValue()).thenReturn(FLOW_ID_VALUE);
 
-        final CreateSnapshotController createSnapshotController = new CreateSnapshotController(snapshotCreationService, flowIdComponent);
+        final CreateSnapshotController createSnapshotController = new CreateSnapshotController(snapshotCreationService);
         mockMvc = MockMvcBuilders.standaloneSetup(createSnapshotController).setControllerAdvice(new EventExceptionHandlerAdvice(flowIdComponent))
                                  .build();
     }
@@ -64,13 +64,13 @@ public class CreateSnapshotControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.post("/events/snapshots/" + Fixture.PUBLISHER_EVENT_TYPE)).andExpect(status().isCreated());
 
-        verify(snapshotCreationService).createSnapshotEvents(matches(Fixture.PUBLISHER_EVENT_TYPE), any());
+        verify(snapshotCreationService).createSnapshotEvents(matches(Fixture.PUBLISHER_EVENT_TYPE));
     }
 
     @Test
     public void testSnapshotNotImplemented() throws Exception {
 
-        Mockito.doThrow(new SnapshotEventProviderNotImplementedException()).when(snapshotCreationService).createSnapshotEvents(any(), any());
+        Mockito.doThrow(new SnapshotEventProviderNotImplementedException()).when(snapshotCreationService).createSnapshotEvents(any());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/events/snapshots/" + Fixture.PUBLISHER_EVENT_TYPE))
                 .andExpect(status().is(501))
@@ -88,7 +88,7 @@ public class CreateSnapshotControllerTest {
 
         String unknownEventType = "unknown.event-type";
 
-        Mockito.doThrow(new UnknownEventTypeException(unknownEventType)).when(snapshotCreationService).createSnapshotEvents(any(), any());
+        Mockito.doThrow(new UnknownEventTypeException(unknownEventType)).when(snapshotCreationService).createSnapshotEvents(any());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/events/snapshots/" + unknownEventType))
                 .andExpect(status().is(422))

@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.zalando.fahrschein.NakadiClient;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventProviderNotImplementedException;
@@ -23,6 +24,7 @@ import org.zalando.tracer.Tracer;
 @Slf4j
 @EnableConfigurationProperties(NakadiProperties.class)
 @ComponentScan
+@EnableJpaRepositories
 public class NakadiProducerAutoConfiguration {
 
     @Bean

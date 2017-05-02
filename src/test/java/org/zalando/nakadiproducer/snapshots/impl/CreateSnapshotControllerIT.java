@@ -51,7 +51,7 @@ public class CreateSnapshotControllerIT extends BaseMockedExternalCommunicationI
                     Fixture.mockSubClass("some info"+i), Fixture.mockSubList(2, SOME_DETAIL +i));
             mockSnapshots.add(new Snapshot(i, Fixture.mockEventPayload(mockPayload)));
             EventPayload eventPayload = Fixture.mockEventPayload(mockPayload);
-            eventLogWriter.fireCreateEvent(eventPayload, "SOME_FLOW_ID");
+            eventLogWriter.fireCreateEvent(eventPayload);
         }
 
         // make listOfItems return predefined list

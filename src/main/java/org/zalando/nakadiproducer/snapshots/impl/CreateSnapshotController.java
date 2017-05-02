@@ -1,8 +1,6 @@
 package org.zalando.nakadiproducer.snapshots.impl;
 
 
-import org.zalando.nakadiproducer.FlowIdComponent;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,19 +18,16 @@ public class CreateSnapshotController {
 
     private SnapshotCreationService eventLogService;
 
-    private FlowIdComponent flowIdComponent;
-
     @Autowired
-    public CreateSnapshotController(final SnapshotCreationService eventLogService, FlowIdComponent flowIdComponent) {
+    public CreateSnapshotController(final SnapshotCreationService eventLogService) {
         this.eventLogService = eventLogService;
-        this.flowIdComponent = flowIdComponent;
     }
 
     @RequestMapping(value = "/snapshots/{event_type:.+}", method = RequestMethod.POST, produces = {CONTENT_TYPE_PROBLEM, CONTENT_TYPE_X_PROBLEM})
     public ResponseEntity<Void> eventsSnapshotPost(
             @PathVariable(value = "event_type") final String eventType) {
 
-        eventLogService.createSnapshotEvents(eventType, flowIdComponent.getXFlowIdValue());
+        eventLogService.createSnapshotEvents(eventType);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

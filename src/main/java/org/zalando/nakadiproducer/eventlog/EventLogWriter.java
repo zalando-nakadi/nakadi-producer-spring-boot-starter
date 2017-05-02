@@ -1,6 +1,5 @@
 package org.zalando.nakadiproducer.eventlog;
 
-import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 public interface EventLogWriter {
@@ -11,12 +10,11 @@ public interface EventLogWriter {
      * This method will serialize a payload object and will store an event with this payload
      * in a database. After the transaction completed, it will later read the event and publish
      * it to nakadi
+     *  @param payload some POJO that can be serialized into JSON (required parameter)
      *
-     * @param payload some POJO that can be serialized into JSON (required parameter)
-     * @param flowId Optional parameter to provide an X-Flow-ID value
      */
     @Transactional
-    void fireCreateEvent(EventPayload payload, @Nullable String flowId);
+    void fireCreateEvent(EventPayload payload);
 
     /**
      * Suppose you want to update some object in a database and also you want to fire an event
@@ -24,12 +22,11 @@ public interface EventLogWriter {
      * This method will serialize a payload object and will store an event with this payload
      * in a database. After the transaction completed, it will later read the event and publish
      * it to nakadi
+     *  @param payload some POJO that can be serialized into JSON (required parameter)
      *
-     * @param payload some POJO that can be serialized into JSON (required parameter)
-     * @param flowId Optional parameter to provide an X-Flow-ID value
      */
     @Transactional
-    void fireUpdateEvent(EventPayload payload, @Nullable String flowId);
+    void fireUpdateEvent(EventPayload payload);
 
     /**
      * Suppose you want to remove an object from a database and also you want to fire an event
@@ -37,11 +34,10 @@ public interface EventLogWriter {
      * This method will serialize a payload object and will store an event with this payload
      * in a database. After the transaction completed, it will later read the event and publish
      * it to nakadi
+     *  @param payload some POJO that can be serialized into JSON (required parameter)
      *
-     * @param payload some POJO that can be serialized into JSON (required parameter)
-     * @param flowId Optional parameter to provide an X-Flow-ID value
      */
     @Transactional
-    void fireDeleteEvent(EventPayload payload, @Nullable String flowId);
+    void fireDeleteEvent(EventPayload payload);
 
 }

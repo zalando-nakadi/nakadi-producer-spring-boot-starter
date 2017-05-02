@@ -108,6 +108,35 @@ GRANT USAGE ON SEQUENCE nakadi_events.event_log_id_seq TO PUBLIC;
 
 If you need to restrict permissions to the schema change it via your database migrations
 
+### Nakadi communication configuration
+
+You must tell the library, where it can reach your Nakadi instance:
+```yaml
+nakadi-producer:
+  access-token-uri: https://nakadi.example.org
+```
+
+Since the communication between your application and Nakadi is secured using OAuth2, you must also provide a OAuth2
+token. The easiest way to do so is to include the stups token library into your classpath:
+
+```xml
+<dependency>
+    <groupId>org.zalando.stups</groupId>
+    <artifactId>tokens</artifactId>
+    <version>0.11.0-beta-2</version>
+</dependency>
+```
+
+The library will detect and auto configure it. To do so, it needs two know the address of your oAuth2 server and a list of scopes it should request:
+```yaml
+nakadi-producer:
+  access-token-uri: https://token.auth.example.org/oauth2/access_token
+  access-token-scopes: 
+    - uid
+    - nakadi.write
+```
+
+If you do not use the zalando tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The library will detect it and call it once for each request to retrieve the token. 
 
 ### X-Flow-ID (Optional)
 

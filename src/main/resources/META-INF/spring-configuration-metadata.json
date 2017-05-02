@@ -19,6 +19,18 @@
     "sourceType": "org.zalando.nakadiproducer.NakadiProperties"
   },
   {
+    "name": "nakadi-producer.access-token-uri",
+    "type": "java.net.URI",
+    "description": "if you use the stups tokens library, this configures the URI of your OAuth2 server",
+    "sourceType": "org.zalando.nakadiproducer.NakadiProperties"
+  },
+  {
+    "name": "nakadi-producer.access-token-scopes",
+    "type": "java.util.Collection<String>",
+    "description": "if you use the stups tokens library, provide a list of oAuth scopes that are required to send nakadi events",
+    "sourceType": "org.zalando.nakadiproducer.NakadiProperties"
+  },
+  {
     "name": "nakadi-producer.transmission-polling-delay",
     "type": "java.lang.Long",
     "defaultValue": 1000,

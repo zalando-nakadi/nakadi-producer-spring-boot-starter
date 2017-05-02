@@ -14,7 +14,7 @@ public class EventTransmitterImpl implements EventTransmitter {
     @Autowired
     private EventTransmissionService eventLogService;
 
-    @Scheduled(fixedDelayString = "${nakadi-producer.transmission-polling-delay}")
+    @Scheduled(fixedDelayString = "${nakadi-producer.transmission-polling-delay:1000}")
     protected void sendEventsIfSchedulingEnabled() {
         if (nakadiProperties.isScheduledTransmissionEnabled()) {
             sendEvents();

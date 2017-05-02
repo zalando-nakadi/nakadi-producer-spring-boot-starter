@@ -38,7 +38,7 @@ public class EventTransmissionService {
     @Transactional
     public Collection<EventLog> lockSomeEvents() {
         String lockId = UUID.randomUUID().toString();
-        log.info("Locking events for replcation with lockId {}", lockId);
+        log.info("Locking events for replication with lockId {}", lockId);
         eventLogRepository.lockSomeMessages(lockId, Instant.now(), Instant.now().plus(10, MINUTES));
         return eventLogRepository.findByLockedByAndLockedUntilGreaterThan(lockId, Instant.now());
     }

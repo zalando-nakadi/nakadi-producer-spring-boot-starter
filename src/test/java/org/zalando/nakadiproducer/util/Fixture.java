@@ -1,7 +1,7 @@
 package org.zalando.nakadiproducer.util;
 
-import org.zalando.nakadiproducer.service.model.EventPayload;
-import org.zalando.nakadiproducer.service.model.EventPayloadImpl;
+import org.zalando.nakadiproducer.eventlog.EventPayload;
+import org.zalando.nakadiproducer.eventlog.SimpleEventPayload;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,11 +12,11 @@ public class Fixture {
     public static final String PUBLISHER_DATA_TYPE = "nakadi:some-publisher";
 
     public static EventPayload mockEventPayload(MockPayload mockPayload, String eventType) {
-        return EventPayloadImpl.builder()
-                .data(mockPayload)
-                .eventType(eventType)
-                .dataType(PUBLISHER_DATA_TYPE)
-                .build();
+        return SimpleEventPayload.builder()
+                                 .data(mockPayload)
+                                 .eventType(eventType)
+                                 .dataType(PUBLISHER_DATA_TYPE)
+                                 .build();
     }
 
     public static EventPayload mockEventPayload(MockPayload mockPayload) {

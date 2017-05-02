@@ -1,6 +1,6 @@
 package org.zalando.nakadiproducer.snapshots;
 
-import org.zalando.nakadiproducer.service.model.EventPayload;
+import org.zalando.nakadiproducer.eventlog.EventPayload;
 
 import java.util.stream.Stream;
 

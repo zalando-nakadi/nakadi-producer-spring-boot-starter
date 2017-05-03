@@ -19,6 +19,7 @@ This library also uses:
 * (Optional) Zalando's tracer-spring-boot-starter
 * (Optional) Zalando's tokens library
 
+
 ## Usage
 Include the library in your `pom.xml`:
 ```xml

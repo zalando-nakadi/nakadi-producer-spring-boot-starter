@@ -1,21 +1,10 @@
+X-Zalando-Team: lumberjack
+X-Zalando-Type: code
+
 approvals:
-  # PR needs at least 1 approvals
-  minimum: 2
-  # note that `from` is by default empty,
-  # accepting any matching comment as approval
-  from:
-    # commenter must be either one of:
-    orgs:
-      # a public zalando org member
-      # (any org in here counts)
-      - Alpha
-    # OR a collaborator of the repo
-    collaborators: true
-    # OR one of these guys
-commit:
-  message:
-    # note that there are no default patterns for commit messages
-    patterns:
-      - "^(ALPHA-\\d+ (.|\\n)*)" # has to start with ALPHA-{ticketNumber}
-        # OR
-      - "(Merge branch (.|\\n)*)" #  Merge commit
+  groups:
+    zalando:
+      minimum: 2
+      from:
+        orgs:
+          - zalando

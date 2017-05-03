@@ -101,7 +101,7 @@ If you need to restrict permissions to the schema change it via your database mi
 You must tell the library, where it can reach your Nakadi instance:
 ```yaml
 nakadi-producer:
-  access-token-uri: https://nakadi.example.org
+  nakadi-base-uri: https://nakadi.example.org
 ```
 
 Since the communication between your application and Nakadi is secured using OAuth2, you must also provide a OAuth2

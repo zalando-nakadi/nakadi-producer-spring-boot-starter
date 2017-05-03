@@ -40,4 +40,6 @@ public interface EventLogWriter {
     @Transactional
     void fireDeleteEvent(EventPayload payload);
 
+    @Transactional
+    void fireSnapshotEvent(EventPayload payload);
 }

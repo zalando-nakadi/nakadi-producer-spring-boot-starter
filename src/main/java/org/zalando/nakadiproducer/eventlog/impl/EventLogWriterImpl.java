@@ -48,6 +48,7 @@ public class EventLogWriterImpl implements EventLogWriter {
         eventLogRepository.save(eventLog);
     }
 
+    @Override
     @Transactional
     public void fireSnapshotEvent(final EventPayload payload) {
         final EventLog eventLog = createEventLog(EventDataOperation.SNAPSHOT, payload);

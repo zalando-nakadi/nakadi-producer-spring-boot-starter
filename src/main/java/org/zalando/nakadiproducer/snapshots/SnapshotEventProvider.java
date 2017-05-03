@@ -6,6 +6,7 @@ import lombok.Getter;
 import org.zalando.nakadiproducer.eventlog.EventPayload;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -37,6 +38,8 @@ public interface SnapshotEventProvider {
      * @throws UnknownEventTypeException if {@code eventType} is unknown
      */
     List<Snapshot> getSnapshot(@NotNull String eventType, @Nullable Object withIdGreaterThan);
+
+    Set<String> getSupportedEventTypes();
 
     @AllArgsConstructor
     @Getter

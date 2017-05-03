@@ -138,12 +138,6 @@ tracer:
     X-Flow-ID: flow-id
 ```
 
-### Security
-
-The library does not provide any security. 
-You should secure the `/events/snapshots/{event_type}` endpoint as you need for your application
-
-
 ### Creating events
 
 The typical use case for this library is to publish events like creating or updating of some objects.
@@ -192,7 +186,15 @@ It makes sense to use these methods in one transaction with corresponding object
 ### Event snapshots
 A Snapshot event is a special event type defined by Nakadi. It does not represent a change of the state of a resource, but a current snapshot of the state of the resource.  
 
-This library accepts requests to`POST /events/snapshots/{event_type}` (without any body). This endpoint can be used by operators to trigger creation of snapshot events by the producer. Those events will then be collected and published to Nakadi, so event consumers can get a full snapshot of the database.
+This library provides a Spring Boot Actuator endpoint named `snapshot_event_creation` that can be used to trigger a Snapshot for a given event type. Assuming your management port is set to `7979`
+
+    GET localhost:7979/snapshot_event_creation
+
+will return a list of all event types available for snapshot creation and 
+
+    POST localhost:7979/snapshot_event_creation/my.event-type
+
+will trigger a snapshot for the event type `my.event-type`.
 
 This will only  work if your application implements the `org.zalando.nakadiproducer.snapshots.SnapshotEventProvider` interface as a Spring Bean. Otherwise, the library will respond with an error message when you request a snapshot creation. 
 

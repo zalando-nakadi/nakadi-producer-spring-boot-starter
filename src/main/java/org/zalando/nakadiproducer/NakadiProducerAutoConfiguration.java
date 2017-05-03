@@ -4,8 +4,16 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.ManagementContextConfiguration;
+import org.springframework.boot.actuate.condition.ConditionalOnEnabledEndpoint;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
@@ -17,8 +25,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.zalando.fahrschein.NakadiClient;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventCreationEndpoint;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventCreationMvcEndpoint;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventProviderNotImplementedException;
+import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
 import org.zalando.stups.tokens.Tokens;
 import org.zalando.tracer.Tracer;
 
@@ -28,14 +39,23 @@ import org.zalando.tracer.Tracer;
 @EnableConfigurationProperties(NakadiProperties.class)
 @ComponentScan
 @EnableJpaRepositories
+@ManagementContextConfiguration
 public class NakadiProducerAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(SnapshotEventProvider.class)
     public SnapshotEventProvider snapshotEventProvider() {
         log.error("SnapshotEventProvider interface should be implemented by the service in order to /events/snapshots/{event_type} work");
-        return (eventType, withIdGreaterThan) -> {
-            throw new SnapshotEventProviderNotImplementedException();
+        return new SnapshotEventProvider() {
+            @Override
+            public List<Snapshot> getSnapshot(String eventType, @Nullable Object withIdGreaterThan) {
+                throw new SnapshotEventProviderNotImplementedException();
+            }
+
+            @Override
+            public Set<String> getSupportedEventTypes() {
+                return Collections.emptySet();
+            }
         };
     }
 
@@ -68,4 +88,16 @@ public class NakadiProducerAutoConfiguration {
         return new FlowIdComponent(tracer);
     }
 
+    @Bean
+    @ConditionalOnMissingBean
+    public SnapshotEventCreationEndpoint snapshotEventCreationEndpoint(SnapshotCreationService snapshotCreationService) {
+        return new SnapshotEventCreationEndpoint(snapshotCreationService);
+    }
+
+    @Bean
+    @ConditionalOnBean(SnapshotEventCreationEndpoint.class)
+    @ConditionalOnEnabledEndpoint("snapshot_event_creation")
+    public SnapshotEventCreationMvcEndpoint snapshotEventCreationMvcEndpoint(SnapshotEventCreationEndpoint snapshotEventCreationEndpoint) {
+        return new SnapshotEventCreationMvcEndpoint(snapshotEventCreationEndpoint);
+    }
 }

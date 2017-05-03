@@ -1,12 +1,11 @@
 package org.zalando.nakadiproducer.snapshots.impl;
 
 import java.util.List;
-
-import javax.transaction.Transactional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.zalando.nakadiproducer.eventlog.impl.EventLogWriterImpl;
+import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider.Snapshot;
 
@@ -15,15 +14,14 @@ public class SnapshotCreationService {
 
     private final SnapshotEventProvider snapshotEventProvider;
 
-    private final EventLogWriterImpl eventLogWriter;
+    private final EventLogWriter eventLogWriter;
 
     @Autowired
-    public SnapshotCreationService(SnapshotEventProvider snapshotEventProvider, EventLogWriterImpl eventLogWriter) {
+    public SnapshotCreationService(SnapshotEventProvider snapshotEventProvider, EventLogWriter eventLogWriter) {
         this.snapshotEventProvider = snapshotEventProvider;
         this.eventLogWriter = eventLogWriter;
     }
 
-    @Transactional
     public void createSnapshotEvents(final String eventType) {
         Object lastProcessedId = null;
         do {
@@ -37,5 +35,9 @@ public class SnapshotCreationService {
                 lastProcessedId = snapshot.getId();
             }
         } while (true);
+    }
+
+    public Set<String> getSupportedEventTypes() {
+        return snapshotEventProvider.getSupportedEventTypes();
     }
 }

@@ -5,7 +5,10 @@ import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -26,15 +29,23 @@ public class TestApplication {
      */
     @Bean
     public SnapshotEventProvider snapshotEventProvider() {
-        return (eventType, withIdGreaterThan) -> {
-            if (!Objects.equals(eventType, PUBLISHER_EVENT_TYPE)) {
+        return new SnapshotEventProvider() {
+            @Override
+            public List<Snapshot> getSnapshot(String eventType, @Nullable Object withIdGreaterThan) {
+                if (!Objects.equals(eventType, PUBLISHER_EVENT_TYPE)) {
                     throw new UnknownEventTypeException(eventType);
-            } else if (withIdGreaterThan != null) {
-                return Collections.emptyList();
-            } else {
-                return list.stream()
-                           .filter(snapshot -> snapshot.getEventPayload().getEventType().equals(eventType))
-                           .collect(Collectors.toList());
+                } else if (withIdGreaterThan != null) {
+                    return Collections.emptyList();
+                } else {
+                    return list.stream()
+                               .filter(snapshot -> snapshot.getEventPayload().getEventType().equals(eventType))
+                               .collect(Collectors.toList());
+                }
+            }
+
+            @Override
+            public Set<String> getSupportedEventTypes() {
+                return Collections.singleton(PUBLISHER_EVENT_TYPE);
             }
         };
     }

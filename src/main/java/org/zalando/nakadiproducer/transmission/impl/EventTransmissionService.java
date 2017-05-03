@@ -38,7 +38,7 @@ public class EventTransmissionService {
     @Transactional
     public Collection<EventLog> lockSomeEvents() {
         String lockId = UUID.randomUUID().toString();
-        log.info("Locking events for replication with lockId {}", lockId);
+        log.debug("Locking events for replication with lockId {}", lockId);
         eventLogRepository.lockSomeMessages(lockId, Instant.now(), Instant.now().plus(10, MINUTES));
         return eventLogRepository.findByLockedByAndLockedUntilGreaterThan(lockId, Instant.now());
     }
@@ -50,7 +50,7 @@ public class EventTransmissionService {
             log.info("Event {} locked by {} was sucessfully transmitted to nakadi", eventLog.getId(), eventLog.getLockedBy());
             eventLogRepository.delete(eventLog);
         } catch (IOException e) {
-            log.error("Event {} locked by {} could not be transmitted to nakadi", eventLog.getId(), eventLog.getLockedBy(), e);
+            log.error("Event {} locked by {} could not be transmitted to nakadi: {}", eventLog.getId(), eventLog.getLockedBy(), e.getMessage());
         }
 
     }

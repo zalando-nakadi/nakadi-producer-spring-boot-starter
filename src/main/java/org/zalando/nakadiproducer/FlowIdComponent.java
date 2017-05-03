@@ -24,9 +24,12 @@ public class FlowIdComponent {
             try {
                 return tracer.get(X_FLOW_ID).getValue();
             } catch (IllegalArgumentException e) {
-                log.warn("No trace was configured for the name {}. Returning null. \n\t\t" +
-                        "To configure Tracer provide an application property:\n\t\t\t" +
+                log.warn("No trace was configured for the name {}. Returning null. " +
+                        "To configure Tracer provide an application property: " +
                         "tracer.traces.X-Flow-ID=flow-id", X_FLOW_ID);
+            } catch (IllegalStateException e) {
+                log.warn("Unexpected Error while receiving the Trace Id {}. Returning null. " +
+                    "Please check your tracer configuration: {}", X_FLOW_ID, e.getMessage());
             }
         } else {
             log.warn("No bean of class Tracer was found. Returning null.");

@@ -21,8 +21,8 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.eventlog.EventPayload;
-import org.zalando.nakadiproducer.eventlog.impl.EventLogWriterImpl;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider.Snapshot;
 import org.zalando.nakadiproducer.util.Fixture;
@@ -35,7 +35,7 @@ public class SnapshotCreationServiceTest {
     private SnapshotEventProvider snapshotEventProvider;
 
     @Mock
-    private EventLogWriterImpl eventLogWriter;
+    private EventLogWriter eventLogWriter;
 
     @InjectMocks
     private SnapshotCreationService eventTransmissionService;

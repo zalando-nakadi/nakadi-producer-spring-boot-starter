@@ -5,7 +5,7 @@ Nakadi is a distributed event bus that implements a RESTful API abstraction inst
 
 The goal of this Spring Boot starter is to simplify the integration between event producer and Nakadi. New events are persisted in a log table as part of the producing JDBC transaction. They will then be sent asynchonously to Nakadi after the transaction completed. If the transaction is rolled back, the events will vanish to. As a result, events will always be sent if and only be sent if the transaction succeeded.
 
-The Transmitter generates a strictly monotonically increasing event id that can be used for ordering the events during retrieval. It is not guaranteed, that events will be sent to nakadi in the order they have been produced.
+The Transmitter generates a strictly monotonically increasing event id that can be used for ordering the events during retrieval. It is not guaranteed, that events will be sent to nakadi in the order they have been produced. If an event could not be sent to Nakadi, the library will periodically retry the transmission.
 
 
 ## Prerequisites

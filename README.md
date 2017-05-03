@@ -5,6 +5,8 @@ Nakadi is a distributed event bus that implements a RESTful API abstraction inst
 
 The goal of this Spring Boot starter is to simplify the integration between event producer and Nakadi. New events are persisted in a log table as part of the producing JDBC transaction. They will then be sent asynchonously to Nakadi after the transaction completed. If the transaction is rolled back, the events will vanish to. As a result, events will always be sent if and only be sent if the transaction succeeded.
 
+The Transmitter generates a strictly monotonically increasing event id that can be used for ordering the events during retrieval. It is not guaranteed, that events will be sent to nakadi in the order they have been produced.
+
 
 ## Prerequisites
 
@@ -113,7 +115,7 @@ token. The easiest way to do so is to include the stups token library into your 
 </dependency>
 ```
 
-The library will detect and auto configure it. To do so, it needs two know the address of your oAuth2 server and a list of scopes it should request:
+This starter will detect and auto configure it. To do so, it needs two know the address of your oAuth2 server and a list of scopes it should request:
 ```yaml
 nakadi-producer:
   access-token-uri: https://token.auth.example.org/oauth2/access_token
@@ -122,7 +124,7 @@ nakadi-producer:
     - nakadi.write
 ```
 
-If you do not use the zalando tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The library will detect it and call it once for each request to retrieve the token. 
+If you do not use the zalando tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The starter will detect it and call it once for each request to retrieve the token. 
 
 ### X-Flow-ID (Optional)
 

@@ -22,7 +22,6 @@ import org.zalando.nakadiproducer.util.MockPayload;
 
 public class EventTransmitterImplIT extends BaseMockedExternalCommunicationIT {
     private static final String MY_EVENT_TYPE = "myEventType";
-    private static final String FLOW_ID = "flowId1";
     private static final String CODE = "code123";
 
     @Autowired

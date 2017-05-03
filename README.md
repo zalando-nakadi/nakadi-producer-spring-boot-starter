@@ -8,7 +8,7 @@ The goal of this Spring Boot starter is to simplify the integration between even
 
 ## Prerequisites
 
-This library tested with Spring Boot 1.4.1 and relies on existing PostgreSQL DataSource configured
+This library tested with Spring Boot 1.5.3.RELEASE and relies on existing PostgreSQL DataSource configured
 
 This library also uses:
 

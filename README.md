@@ -196,7 +196,14 @@ will return a list of all event types available for snapshot creation and
 
 will trigger a snapshot for the event type `my.event-type`.
 
-This will only  work if your application implements the `org.zalando.nakadiproducer.snapshots.SnapshotEventProvider` interface as a Spring Bean. Otherwise, the library will respond with an error message when you request a snapshot creation. 
+This will only  work if your application has configured spring-boot-actuator
+```xml
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-actuator</artifactId>
+	</dependency>
+```
+and if it implements the `org.zalando.nakadiproducer.snapshots.SnapshotEventProvider` interface as a Spring Bean. Otherwise, the library will respond with an error message when you request a snapshot creation. 
 
 
 ## Build

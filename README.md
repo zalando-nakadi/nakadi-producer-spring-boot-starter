@@ -1,47 +1,33 @@
 # nakadi-producer-spring-boot-starter
-Nakadi event producer as a Spring boot starter 
+[Nakadi](https://github.com/zalando/nakadi) event producer as a Spring boot starter 
 
-:rocket:
+Nakadi is a distributed event bus that implements a RESTful API abstraction instead of Kafka-like queues.
 
-A distributed event bus that implements a RESTful API abstraction instead of Kafka-like queues [according to documentation](https://github.com/zalando/nakadi)
-
-The goal of this Spring Boot starter is to simplify the integration between event producer and Nakdi reducing boiler plate code.
-
-The important thing is that the new events are persisted in a log table as part of the producing JDBC transaction. They will then be sent asynchonously to Nakadi after the transaction completed. If the transaction is rolled back, the events will vanish to. As a result, events will allways be sent if and only be sent if the transaction succeeded.
+The goal of this Spring Boot starter is to simplify the integration between event producer and Nakadi. New events are persisted in a log table as part of the producing JDBC transaction. They will then be sent asynchonously to Nakadi after the transaction completed. If the transaction is rolled back, the events will vanish to. As a result, events will always be sent if and only be sent if the transaction succeeded.
 
 
-## Installation
+## Prerequisites
 
-Build and install the library into your local Maven repository:
+This library tested with Spring Boot 1.4.1 and relies on existing PostgreSQL DataSource configured
 
-```shell
-./mvnw clean install
-```
+This library also uses:
 
-Add the following dependency into the pom.xml of your Spring-Boot application
+* flyway-core
+* querydsl-jpa
+* (Optional) Zalando's tracer-spring-boot-starter
+* (Optional) Zalando's tokens library
 
+## Usage
+Include the library in your `pom.xml`:
 ```xml
 <dependency>
     <groupId>org.zalando</groupId>
     <artifactId>nakadi-producer-spring-boot-starter</artifactId>
     <version>${nakadi-producer.version}</version>
 </dependency>
-```
-
-### Prerequisites
-
-This library tested with Spring Boot 1.4.1 and relies on existing PostgreSQL DataSource configured
-
-This library also uses:
-
-* flyway-core 4.0.3
-* querydsl-jpa 4.1.4
-* (Optional) Zalando's tracer-spring-boot-starter 0.11.2 
-
-## Configuration
+``` 
 
 Use `@EnableNakadiProducer` annotation to activate spring boot starter auto configuration
-
 ```java
 @SpringBootApplication
 @EnableNakadiProducer
@@ -94,7 +80,7 @@ Example:
 flyway.locations: classpath:my_db/migrations, classpath:db_nakadiproducer/migrations
 ```
 
-#### Schema permissions
+##### Schema permissions
 
 Note that by default schema permissions look like this:
 
@@ -155,15 +141,6 @@ tracer:
 The library does not provide any security. 
 You should secure the `/events/snapshots/{event_type}` endpoint as you need for your application
 
-## Using 
-
-The library implements an interface definition of which you can find in a file `src/main/resources/api/swagger_event-producer-api.yaml`
-
-The API provides:
- 
-endpoint | description
--------- | -----------
-`POST /events/snapshots/{event_type}` | This endpoint (a post without any body) can be used by operators to trigger creation of snapshot events in the producer. Those events will then be collected and published to Nakadi, so event consumers can get a full snapshot of the database.
 
 ### Creating events
 
@@ -211,36 +188,12 @@ public class SomeYourService {
 It makes sense to use these methods in one transaction with corresponding object creation or mutation. This way we get rid of distributed-transaction problem as mentioned earlier.
 
 ### Event snapshots
+A Snapshot event is a special event type defined by Nakadi. It does not represent a change of the state of a resource, but a current snapshot of the state of the resource.  
 
-**Important:** In order `POST /events/snapshots/{event_type}` to work your application should implement the `SnapshotEventProvider` interface.
+This library accepts requests to`POST /events/snapshots/{event_type}` (without any body). This endpoint can be used by operators to trigger creation of snapshot events by the producer. Those events will then be collected and published to Nakadi, so event consumers can get a full snapshot of the database.
 
-```java
-public interface SnapshotEventProvider {
+This will only  work if your application implements the `org.zalando.nakadiproducer.snapshots.SnapshotEventProvider` interface as a Spring Bean. Otherwise, the library will respond with an error message when you request a snapshot creation. 
 
-    /**
-     * Returns a stream consisting of elements for creating a snapshot of events
-     * of given type (event type is an event channel topic name).
-     * @param eventType event type to make a snapshot of
-     * @return stream of elements to create a snapshot from
-     * @throws UnknownEventTypeException if {@code eventType} is unknown
-     */
-    Stream<EventPayload> getSnapshot(@NotNull String eventType);
-
-}
-```
-
-If you do not implement and define the `SnapshotEventProvider` as a Spring Bean the library will configure a fake `SnapshotEventProvider` which will throw `SnapshotEventProviderNotImplementedException` upon the any `POST /events/snapshots/*` request
-
-The method will be used by `EventLogService` to create snapshot events of the whole Publisher's state.
-
-`EventLogService` will take batches of elements from the stream returned by `getSnapshot` method and save those batches sequentially in event_log table.
- 
-The default size of the batch is 25 and it can be adjusted via `nakadi-producer.snapshot-batch-size` property:
-
-```yaml
-nakadi-producer:
-  snapshot-batch-size: 100
-```
 
 ## Build
 

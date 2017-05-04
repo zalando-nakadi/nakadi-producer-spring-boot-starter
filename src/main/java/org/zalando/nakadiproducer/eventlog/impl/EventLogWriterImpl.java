@@ -1,6 +1,6 @@
 package org.zalando.nakadiproducer.eventlog.impl;
 
-import org.zalando.nakadiproducer.FlowIdComponent;
+import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.eventlog.EventPayload;
 

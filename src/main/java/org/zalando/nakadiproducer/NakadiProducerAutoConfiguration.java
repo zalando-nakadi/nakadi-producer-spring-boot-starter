@@ -25,11 +25,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.zalando.fahrschein.NakadiClient;
+import org.zalando.nakadiproducer.flowid.FlowIdComponent;
+import org.zalando.nakadiproducer.flowid.NoopFlowIdComponent;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationEndpoint;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationMvcEndpoint;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventProviderNotImplementedException;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
+import org.zalando.nakadiproducer.flowid.TracerFlowIdComponent;
 import org.zalando.stups.tokens.Tokens;
 import org.zalando.tracer.Tracer;
 
@@ -78,14 +81,14 @@ public class NakadiProducerAutoConfiguration {
     @Bean
     @ConditionalOnMissingClass("org.zalando.tracer.Tracer")
     public FlowIdComponent flowIdComponentFake() {
-        return new FlowIdComponent(null);
+        return new NoopFlowIdComponent();
     }
 
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Bean
     @ConditionalOnClass(name = "org.zalando.tracer.Tracer")
     public FlowIdComponent flowIdComponent(Tracer tracer) {
-        return new FlowIdComponent(tracer);
+        return new TracerFlowIdComponent(tracer);
     }
 
     @Bean

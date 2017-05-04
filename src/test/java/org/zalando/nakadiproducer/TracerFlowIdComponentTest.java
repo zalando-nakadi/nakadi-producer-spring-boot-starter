@@ -9,17 +9,19 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.zalando.nakadiproducer.flowid.FlowIdComponent;
+import org.zalando.nakadiproducer.flowid.TracerFlowIdComponent;
 import org.zalando.tracer.Tracer;
 
 @RunWith(MockitoJUnitRunner.class)
-public class FlowIdComponentTest {
+public class TracerFlowIdComponentTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     Tracer tracer;
 
     @Test
     public void makeSureItWorks() {
-        FlowIdComponent flowIdComponent = new FlowIdComponent(tracer);
+        TracerFlowIdComponent flowIdComponent = new TracerFlowIdComponent(tracer);
         Mockito.when(tracer.get("X-Flow-ID").getValue()).thenReturn("A_FUNKY_VALUE");
 
         assertThat(flowIdComponent.getXFlowIdKey(), Matchers.equalTo("X-Flow-ID"));

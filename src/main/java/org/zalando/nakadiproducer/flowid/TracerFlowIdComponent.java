@@ -1,17 +1,17 @@
-package org.zalando.nakadiproducer;
+package org.zalando.nakadiproducer.flowid;
 
 import org.zalando.tracer.Tracer;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class FlowIdComponent {
+public class TracerFlowIdComponent implements FlowIdComponent {
     
     private static final String X_FLOW_ID = "X-Flow-ID";
     
     private final Tracer tracer;
     
-    public FlowIdComponent(Tracer tracer) {
+    public TracerFlowIdComponent(Tracer tracer) {
         this.tracer = tracer;
     }
 
@@ -19,6 +19,7 @@ public class FlowIdComponent {
         return X_FLOW_ID;
     }
 
+    @Override
     public String getXFlowIdValue() {
         if (tracer != null) {
             try {

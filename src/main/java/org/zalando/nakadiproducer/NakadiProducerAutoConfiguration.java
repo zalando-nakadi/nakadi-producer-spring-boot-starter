@@ -39,7 +39,6 @@ import org.zalando.tracer.Tracer;
 @Configuration
 @EnableJpaAuditing
 @Slf4j
-@EnableConfigurationProperties(NakadiProperties.class)
 @ComponentScan
 @EnableJpaRepositories
 @ManagementContextConfiguration

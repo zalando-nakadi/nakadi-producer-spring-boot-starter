@@ -52,8 +52,7 @@ This will configure:
 Library relies on Spring Data JPA. In order for Spring to pick up needed repository and entity you should explicitly configure it using this annotations:
 
 ```java
-@EnableJpaRepositories("org.zalando.nakadiproducer.persistence")
-@EntityScan("org.zalando.nakadiproducer.persistence")
+@EntityScan("org.zalando.nakadiproducer.eventlog")
 ```
 
 If you also use Spring Data JPA and you have your own repositories and entities, you should set them all like this:

@@ -15,7 +15,7 @@ This library tested with Spring Boot 1.5.3.RELEASE and relies on existing Postgr
 This library also uses:
 
 * flyway-core
-* querydsl-jpa
+* Spring Data JPA 
 * (Optional) Zalando's tracer-spring-boot-starter
 * (Optional) Zalando's tokens library
 
@@ -34,6 +34,7 @@ Use `@EnableNakadiProducer` annotation to activate spring boot starter auto conf
 ```java
 @SpringBootApplication
 @EnableNakadiProducer
+@EntityScan("org.zalando.nakadiproducer.eventlog")
 public class Application {
     public static void main(final String[] args) {
         SpringApplication.run(TestApplication.class, args);
@@ -46,22 +47,6 @@ This will configure:
 * the database table for events 
 * EventLogService service for writing events into the table 
 * A scheduled job that sends your events to nakadi
-
-### Data access layer configuration
-
-Library relies on Spring Data JPA. In order for Spring to pick up needed repository and entity you should explicitly configure it using this annotations:
-
-```java
-@EntityScan("org.zalando.nakadiproducer.eventlog")
-```
-
-If you also use Spring Data JPA and you have your own repositories and entities, you should set them all like this:
-
-```java
-@EntityScan({"path.to.your.package.containing.jpa.entities", "org.zalando.nakadiproducer.eventlog"})
-```
-
-You can apply those annotations to any @Configuration marked class of your Spring Boot application.
 
 ### Database
 

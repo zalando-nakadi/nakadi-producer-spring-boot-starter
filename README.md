@@ -213,6 +213,13 @@ Build with unit tests and integration tests:
 ./mvnw clean install
 ```
 
+If the GPG integration causes headaches (and you do not plan to publish the created artifact to maven central anyway), 
+you can skip gpg signing:
+
+```shell
+./mvnw -Dgpg.skip=true clean install
+```
+
 
 ## License
 

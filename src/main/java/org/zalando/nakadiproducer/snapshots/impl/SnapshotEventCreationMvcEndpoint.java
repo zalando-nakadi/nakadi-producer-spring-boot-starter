@@ -1,4 +1,4 @@
-package org.zalando.nakadiproducer.snapshots;
+package org.zalando.nakadiproducer.snapshots.impl;
 
 import org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter;
 import org.springframework.boot.actuate.endpoint.mvc.HypermediaDisabled;

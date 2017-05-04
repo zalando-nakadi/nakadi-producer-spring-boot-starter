@@ -1,4 +1,4 @@
-package org.zalando.nakadiproducer.snapshots;
+package org.zalando.nakadiproducer.snapshots.impl;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.springframework.boot.actuate.endpoint.AbstractEndpoint;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
 
 @ConfigurationProperties("endpoints.snapshot-event-creation")
 public class SnapshotEventCreationEndpoint extends AbstractEndpoint<SnapshotEventCreationEndpoint.SnapshotReport> {

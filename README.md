@@ -45,7 +45,7 @@ This will configure:
 
 * the database table for events 
 * EventLogService service for writing events into the table 
-* A scheduled job that sents your events to nakadi
+* A scheduled job that sends your events to nakadi
 
 ### Data access layer configuration
 
@@ -59,8 +59,7 @@ Library relies on Spring Data JPA. In order for Spring to pick up needed reposit
 If you also use Spring Data JPA and you have your own repositories and entities, you should set them all like this:
 
 ```java
-@EnableJpaRepositories({"path.to.your.package.containing.repositories", "org.zalando.nakadiproducer.persistence"})
-@EntityScan({"path.to.your.package.containing.jpa.entities", "org.zalando.nakadiproducer.persistence"})
+@EntityScan({"path.to.your.package.containing.jpa.entities", "org.zalando.nakadiproducer.eventlog"})
 ```
 
 You can apply those annotations to any @Configuration marked class of your Spring Boot application.

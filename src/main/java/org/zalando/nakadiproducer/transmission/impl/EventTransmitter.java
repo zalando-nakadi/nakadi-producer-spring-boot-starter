@@ -4,10 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.zalando.nakadiproducer.transmission.EventTransmitter;
 
 @Component
-public class EventTransmitterImpl implements EventTransmitter {
+public class EventTransmitter {
     @Autowired
     private EventTransmissionService eventLogService;
 
@@ -21,7 +20,6 @@ public class EventTransmitterImpl implements EventTransmitter {
         }
     }
 
-    @Override
     public void sendEvents() {
         eventLogService.lockSomeEvents().forEach(eventLogService::sendEvent);
     }

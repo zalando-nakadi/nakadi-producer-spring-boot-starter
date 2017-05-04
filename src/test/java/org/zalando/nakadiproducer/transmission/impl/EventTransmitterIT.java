@@ -16,11 +16,10 @@ import org.zalando.fahrschein.NakadiClient;
 import org.zalando.nakadiproducer.BaseMockedExternalCommunicationIT;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.eventlog.EventPayload;
-import org.zalando.nakadiproducer.transmission.EventTransmitter;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 
-public class EventTransmitterImplIT extends BaseMockedExternalCommunicationIT {
+public class EventTransmitterIT extends BaseMockedExternalCommunicationIT {
     private static final String MY_EVENT_TYPE = "myEventType";
     private static final String CODE = "code123";
 

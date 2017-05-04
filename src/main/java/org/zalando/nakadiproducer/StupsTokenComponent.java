@@ -12,7 +12,7 @@ class StupsTokenComponent implements AccessTokenProvider {
     private AccessTokens accessTokens;
 
     public StupsTokenComponent(URI accessTokenUri, Collection<String> accessTokenScopes) {
-        accessTokens = Tokens.createAccessTokensWithUri(URI.create("accessTokenUri"))
+        accessTokens = Tokens.createAccessTokensWithUri(accessTokenUri)
                              .manageToken(TOKEN_ID)
                              .addScopesTypeSafe(accessTokenScopes)
                              .done()
@@ -20,7 +20,7 @@ class StupsTokenComponent implements AccessTokenProvider {
     }
 
     public void stop() {
-
+        accessTokens.stop();
     }
 
     @Override

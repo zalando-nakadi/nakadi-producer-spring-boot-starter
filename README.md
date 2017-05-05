@@ -42,43 +42,13 @@ public class Application {
 }
 ```
 
-This will configure: 
-
-* the database table for events 
-* EventLogService service for writing events into the table 
-* A scheduled job that sends your events to nakadi
-
-### Database
-
-Another important thing to configure is a flyway migrations directory.
-
-Make sure that `classpath:db_nakadiproducer/migrations` is present in a `flyway.locations` property:
+The library uses flyway migrations to set up its own database schema. You must therefore make sure that `classpath:db_nakadiproducer/migrations` is present in a `flyway.locations` property:
 
 ```yaml
-flyway.locations: classpath:db_nakadiproducer/migrations
+flyway.locations: 
+  - classpath:db_nakadiproducer/migrations
+  - classpath:my_db/your_services_migrations
 ```
-
-If you have you own `flyway.locations` property configured then just extend it with `, classpath:db_nakadiproducer/migrations` (with a comma).
-
-Example:
-
-```yaml
-flyway.locations: classpath:my_db/migrations, classpath:db_nakadiproducer/migrations
-```
-
-##### Schema permissions
-
-Note that by default schema permissions look like this:
-
-```sql
-GRANT USAGE ON SCHEMA nakadi_events TO PUBLIC;
-GRANT SELECT ON nakadi_events.event_log TO PUBLIC;
-GRANT INSERT ON nakadi_events.event_log TO PUBLIC;
-GRANT UPDATE ON nakadi_events.event_log TO PUBLIC;
-GRANT USAGE ON SEQUENCE nakadi_events.event_log_id_seq TO PUBLIC; 
-```
-
-If you need to restrict permissions to the schema change it via your database migrations
 
 ### Nakadi communication configuration
 
@@ -204,7 +174,6 @@ you can skip gpg signing:
 ```shell
 ./mvnw -Dgpg.skip=true clean install
 ```
-
 
 ## License
 

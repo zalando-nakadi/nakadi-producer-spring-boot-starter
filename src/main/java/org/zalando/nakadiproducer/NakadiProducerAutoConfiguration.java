@@ -69,12 +69,15 @@ public class NakadiProducerAutoConfiguration {
                            .build();
     }
 
-    @Bean(destroyMethod = "stop")
     @ConditionalOnClass(Tokens.class)
-    @ConditionalOnProperty({"nakadi-producer.access-token-uri", "nakadi-producer.access-token-scopes"})
-    @ConditionalOnMissingBean(AccessTokenProvider.class)
-    public StupsTokenComponent accessTokenProvider(@Value("${nakadi-producer.access-token-uri}") URI accessTokenUri, @Value("${nakadi-producer.access-token-scopes}") Collection<String> accessTokenScopes) {
-        return new StupsTokenComponent(accessTokenUri, accessTokenScopes);
+    @Configuration
+    static class StupsTokenConfiguration {
+        @Bean(destroyMethod = "stop")
+        @ConditionalOnProperty({"nakadi-producer.access-token-uri", "nakadi-producer.access-token-scopes"})
+        @ConditionalOnMissingBean(AccessTokenProvider.class)
+        public StupsTokenComponent accessTokenProvider(@Value("${nakadi-producer.access-token-uri}") URI accessTokenUri, @Value("${nakadi-producer.access-token-scopes}") Collection<String> accessTokenScopes) {
+            return new StupsTokenComponent(accessTokenUri, accessTokenScopes);
+        }
     }
 
     @Bean
@@ -83,11 +86,14 @@ public class NakadiProducerAutoConfiguration {
         return new NoopFlowIdComponent();
     }
 
-    @SuppressWarnings("SpringJavaAutowiringInspection")
-    @Bean
     @ConditionalOnClass(name = "org.zalando.tracer.Tracer")
-    public FlowIdComponent flowIdComponent(Tracer tracer) {
-        return new TracerFlowIdComponent(tracer);
+    @Configuration
+    static class TracerConfiguration {
+        @SuppressWarnings("SpringJavaAutowiringInspection")
+        @Bean
+        public FlowIdComponent flowIdComponent(Tracer tracer) {
+            return new TracerFlowIdComponent(tracer);
+        }
     }
 
     @Bean

@@ -1,11 +1,11 @@
 # nakadi-producer-spring-boot-starter
-[Nakadi](https://github.com/zalando/nakadi) event producer as a Spring boot starter 
+[Nakadi](https://github.com/zalando/nakadi) event producer as a Spring boot starter.
 
 Nakadi is a distributed event bus that implements a RESTful API abstraction instead of Kafka-like queues.
 
-The goal of this Spring Boot starter is to simplify the integration between event producer and Nakadi. New events are persisted in a log table as part of the producing JDBC transaction. They will then be sent asynchonously to Nakadi after the transaction completed. If the transaction is rolled back, the events will vanish to. As a result, events will always be sent if and only be sent if the transaction succeeded.
+The goal of this Spring Boot starter is to simplify the integration between event producer and Nakadi. New events are persisted in a log table as part of the producing JDBC transaction. They will then be sent asynchonously to Nakadi after the transaction completed. If the transaction is rolled back, the events will vanish too. As a result, events will always be sent if and only if the transaction succeeded.
 
-The Transmitter generates a strictly monotonically increasing event id that can be used for ordering the events during retrieval. It is not guaranteed, that events will be sent to nakadi in the order they have been produced. If an event could not be sent to Nakadi, the library will periodically retry the transmission.
+The Transmitter generates a strictly monotonically increasing event id that can be used for ordering the events during retrieval. It is not guaranteed, that events will be sent to Nakadi in the order they have been produced. If an event could not be sent to Nakadi, the library will periodically retry the transmission.
 
 Be aware that this library **does neither guarantee that events are sent exactly once, nor that they are sent in the order they have been persisted**. This is not a bug but a design decision that allows us to skip and retry sending events later in case of temporary failures. So make sure that your events are designed to be processed out of order. 
 ## Prerequisites
@@ -60,7 +60,7 @@ nakadi-producer:
 ```
 
 Since the communication between your application and Nakadi is secured using OAuth2, you must also provide a OAuth2
-token. The easiest way to do so is to include the stups token library into your classpath:
+token. The easiest way to do so is to include the [Zalando Tokens library](https://github.com/zalando/tokens) into your classpath:
 
 ```xml
 <dependency>
@@ -70,7 +70,7 @@ token. The easiest way to do so is to include the stups token library into your 
 </dependency>
 ```
 
-This starter will detect and auto configure it. To do so, it needs two know the address of your oAuth2 server and a list of scopes it should request:
+This starter will detect and auto configure it. To do so, it needs to know the address of your oAuth2 server and a list of scopes it should request:
 ```yaml
 nakadi-producer:
   access-token-uri: https://token.auth.example.org/oauth2/access_token
@@ -78,11 +78,11 @@ nakadi-producer:
     - nakadi.event_stream.write
 ```
 
-If you do not use the zalando tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The starter will detect it and call it once for each request to retrieve the token. 
+If you do not use the STUPS Tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The starter will detect it and call it once for each request to retrieve the token. 
 
 ### X-Flow-ID (Optional)
 
-This library supports tracer-spring-boot-starter (another library from Zalando) that provides a support of `X-Flow-ID` header.
+This library supports [tracer-spring-boot-starter](https://github.com/zalando/tracer) (another library from Zalando) that provides a support of `X-Flow-ID` header.
 
 In order to use it you should provide the library as a dependency in your project and configure it:
 
@@ -146,7 +146,7 @@ public class SomeYourService {
 It makes sense to use these methods in one transaction with corresponding object creation or mutation. This way we get rid of distributed-transaction problem as mentioned earlier.
 
 ### Event snapshots
-A Snapshot event is a special event type defined by Nakadi. It does not represent a change of the state of a resource, but a current snapshot of the state of the resource.  
+A Snapshot event is a special event type (data operation) defined by Nakadi. It does not represent a change of the state of a resource, but a current snapshot of the state of the resource.  
 
 This library provides a Spring Boot Actuator endpoint named `snapshot_event_creation` that can be used to trigger a Snapshot for a given event type. Assuming your management port is set to `7979`
 

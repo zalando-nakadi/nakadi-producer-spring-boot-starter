@@ -81,12 +81,12 @@ public class NakadiProducerAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingClass("org.zalando.tracer.Tracer")
+    @ConditionalOnMissingBean(org.zalando.tracer.Tracer.class)
     public FlowIdComponent flowIdComponentFake() {
         return new NoopFlowIdComponent();
     }
 
-    @ConditionalOnClass(name = "org.zalando.tracer.Tracer")
+    @ConditionalOnBean(org.zalando.tracer.Tracer.class)
     @Configuration
     static class TracerConfiguration {
         @SuppressWarnings("SpringJavaAutowiringInspection")

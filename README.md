@@ -65,7 +65,7 @@ token. The easiest way to do so is to include the stups token library into your 
 <dependency>
     <groupId>org.zalando.stups</groupId>
     <artifactId>tokens</artifactId>
-    <version>0.11.0-beta-2</version>
+    <version>${tokens.version}</version>
 </dependency>
 ```
 
@@ -84,6 +84,14 @@ If you do not use the zalando tokens library, you can implement token retrieval 
 This library supports tracer-spring-boot-starter (another library from Zalando) that provides a support of `X-Flow-ID` header.
 
 In order to use it you should provide the library as a dependency in your project and configure it:
+
+```xml
+<dependency>
+    <groupId>org.zalando</groupId>
+    <artifactId>tracer-spring-boot-starter</artifactId>
+    <version>${tracer.version}</version>
+</dependency>
+```
 
 ```yaml
 tracer:
@@ -151,10 +159,10 @@ will trigger a snapshot for the event type `my.event-type`.
 
 This will only  work if your application has configured spring-boot-actuator
 ```xml
-	<dependency>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-actuator</artifactId>
-	</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
 ```
 and if it implements the `org.zalando.nakadiproducer.snapshots.SnapshotEventProvider` interface as a Spring Bean. Otherwise, the library will respond with an error message when you request a snapshot creation. 
 

@@ -33,6 +33,7 @@ Include the library in your `pom.xml`:
 Use `@EnableNakadiProducer` annotation to activate spring boot starter auto configuration
 ```java
 @SpringBootApplication
+@EnableJpaRepositories
 @EnableNakadiProducer
 @EntityScan({"org.zalando.nakadiproducer", "your.apps.base.package"})
 public class Application {

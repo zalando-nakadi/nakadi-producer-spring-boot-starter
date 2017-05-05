@@ -1,1 +1,2 @@
-# org.springframework.boot.autoconfigure.EnableAutoConfiguration=TarbelaProducerAutoConfiguration
+# org.springframework.boot.autoconfigure.EnableAutoConfiguration=org.zalando.nakadiproducer.NakadiProducerAutoConfiguration
+org.springframework.boot.actuate.autoconfigure.ManagementContextConfiguration=org.zalando.nakadiproducer.NakadiProducerAutoConfiguration

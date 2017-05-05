@@ -1,50 +1,40 @@
-# tarbela-producer-spring-boot-starter
-Tarbela event producer API implementation as a Spring boot starter 
+# nakadi-producer-spring-boot-starter
+[Nakadi](https://github.com/zalando/nakadi) event producer as a Spring boot starter 
 
-:rocket:
+Nakadi is a distributed event bus that implements a RESTful API abstraction instead of Kafka-like queues.
 
-Tarbela is a reliable generic event publisher [according to documentation](https://libraries.io/github/zalando-incubator/tarbela)
+The goal of this Spring Boot starter is to simplify the integration between event producer and Nakadi. New events are persisted in a log table as part of the producing JDBC transaction. They will then be sent asynchonously to Nakadi after the transaction completed. If the transaction is rolled back, the events will vanish to. As a result, events will always be sent if and only be sent if the transaction succeeded.
 
-The goal of this Spring Boot starter is to simplify the integration between event producer and Tarbela publisher reducing boiler plate code.
+The Transmitter generates a strictly monotonically increasing event id that can be used for ordering the events during retrieval. It is not guaranteed, that events will be sent to nakadi in the order they have been produced. If an event could not be sent to Nakadi, the library will periodically retry the transmission.
 
-The important thing is that the new events are stored in the same database (and using the same JDBC connections and transactions) as the actual data we want to store (thereby making the distributed-transaction problem go away).
+Be aware that this library **does neither guarantee that events are sent exactly once, nor that they are sent in the order they have been persisted**. This is not a bug but a design decision that allows us to skip and retry sending events later in case of temporary failures. So make sure that your events are designed to be processed out of order. 
+## Prerequisites
 
-
-## Installation
-
-Build and install the library into your local Maven repository:
-
-```shell
-./mvnw clean install
-```
-
-Add the following dependency into the pom.xml of your Spring-Boot application
-
-```xml
-<dependency>
-    <groupId>org.zalando</groupId>
-    <artifactId>tarbela-producer-spring-boot-starter</artifactId>
-    <version>${tarbela-producer.version}</version>
-</dependency>
-```
-
-### Prerequisites
-
-This library tested with Spring Boot 1.4.1 and relies on existing PostgreSQL DataSource configured
+This library tested with Spring Boot 1.5.3.RELEASE and relies on existing PostgreSQL DataSource configured
 
 This library also uses:
 
-* flyway-core 4.0.3
-* querydsl-jpa 4.1.4
-* (Optional) Zalando's tracer-spring-boot-starter 0.11.2 
+* flyway-core
+* Spring Data JPA 
+* (Optional) Zalando's tracer-spring-boot-starter
+* (Optional) Zalando's tokens library
 
-## Configuration
 
-Use `@EnableTarbelaProducer` annotation to activate spring boot starter auto configuration
+## Usage
+Include the library in your `pom.xml`:
+```xml
+<dependency>
+    <groupId>org.zalando</groupId>
+    <artifactId>nakadi-producer-spring-boot-starter</artifactId>
+    <version>${nakadi-producer.version}</version>
+</dependency>
+``` 
 
+Use `@EnableNakadiProducer` annotation to activate spring boot starter auto configuration
 ```java
 @SpringBootApplication
-@EnableTarbelaProducer
+@EnableNakadiProducer
+@EntityScan({"org.zalando.nakadiproducer", "your.apps.base.package"})
 public class Application {
     public static void main(final String[] args) {
         SpringApplication.run(TestApplication.class, args);
@@ -52,71 +42,42 @@ public class Application {
 }
 ```
 
-This will configure: 
-
-* the database table for events 
-* EventLogService service for writing events into the table 
-* controller listening `/events` endpoint that will publish the events for Tarbela
-
-### Data access layer configuration
-
-Library relies on Spring Data JPA. In order for Spring to pick up needed repository and entity you should explicitly configure it using this annotations:
-
-```java
-@EnableJpaRepositories("org.zalando.tarbelaproducer.persistance")
-@EntityScan("org.zalando.tarbelaproducer.persistance")
-```
-
-If you also use Spring Data JPA and you have your own repositories and entities, you should set them all like this:
-
-```java
-@EnableJpaRepositories({"path.to.your.package.containing.repositories", "org.zalando.tarbelaproducer.persistance"})
-@EntityScan({"path.to.your.package.containing.jpa.entities", "org.zalando.tarbelaproducer.persistance"})
-```
-
-You can apply those annotations to any @Configuration marked class of your Spring Boot application.
-
-### Tarbela sinkId
-
-Configure Tarbela Sink identifier in application properties:
+The library uses flyway migrations to set up its own database schema. You must therefore make sure that `classpath:db_nakadiproducer/migrations` is present in a `flyway.locations` property:
 
 ```yaml
-tarbela:
-  sink-id: zalando-nakadi
+flyway.locations: 
+  - classpath:db_nakadiproducer/migrations
+  - classpath:my_db/your_services_migrations
 ```
 
-### Database
+### Nakadi communication configuration
 
-Another important thing to configure is a flyway migrations directory.
-
-Make sure that `classpath:db_tarbela/migrations` is present in a `flyway.locations` property:
-
+You must tell the library, where it can reach your Nakadi instance:
 ```yaml
-flyway.locations: classpath:db_tarbela/migrations
+nakadi-producer:
+  nakadi-base-uri: https://nakadi.example.org
 ```
 
-If you have you own `flyway.locations` property configured then just extend it with `, classpath:db_tarbela/migrations` (with a comma).
+Since the communication between your application and Nakadi is secured using OAuth2, you must also provide a OAuth2
+token. The easiest way to do so is to include the stups token library into your classpath:
 
-Example:
+```xml
+<dependency>
+    <groupId>org.zalando.stups</groupId>
+    <artifactId>tokens</artifactId>
+    <version>${tokens.version}</version>
+</dependency>
+```
 
+This starter will detect and auto configure it. To do so, it needs two know the address of your oAuth2 server and a list of scopes it should request:
 ```yaml
-flyway.locations: classpath:my_db/migrations, classpath:db_tarbela/migrations
+nakadi-producer:
+  access-token-uri: https://token.auth.example.org/oauth2/access_token
+  access-token-scopes: 
+    - nakadi.event_stream.write
 ```
 
-#### Schema permissions
-
-Note that by default schema permissions look like this:
-
-```sql
-GRANT USAGE ON SCHEMA tarbela TO PUBLIC;
-GRANT SELECT ON tarbela.tarbela_event_log TO PUBLIC;
-GRANT INSERT ON tarbela.tarbela_event_log TO PUBLIC;
-GRANT UPDATE ON tarbela.tarbela_event_log TO PUBLIC;
-GRANT USAGE ON SEQUENCE tarbela.tarbela_event_log_id_seq TO PUBLIC; 
-```
-
-If you need to restrict permissions to the schema change it via your database migrations
-
+If you do not use the zalando tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The starter will detect it and call it once for each request to retrieve the token. 
 
 ### X-Flow-ID (Optional)
 
@@ -124,28 +85,19 @@ This library supports tracer-spring-boot-starter (another library from Zalando) 
 
 In order to use it you should provide the library as a dependency in your project and configure it:
 
+```xml
+<dependency>
+    <groupId>org.zalando</groupId>
+    <artifactId>tracer-spring-boot-starter</artifactId>
+    <version>${tracer.version}</version>
+</dependency>
+```
+
 ```yaml
 tracer:
   traces:
     X-Flow-ID: flow-id
 ```
-
-### Security
-
-The library does not provide any security. 
-You should secure the `/events` endpoint and all its operations as you need for your application
-
-## Using 
-
-The library implements an interface definition of which you can find in a file `src/main/resources/api/swagger_event-producer-api.yaml`
-
-The API provides:
- 
-endpoint | description
--------- | -----------
-`GET /events` | Using this endpoint Tarbela retrieves some of the new events. The response will support pagination by a next link, using a cursor, assuming there are actually more events.
-`PATCH /events` | Using this endpoint Tarbela updates the publishing statuses of some events. This is used to inform the producer when a event was successfully delivered to the event sink or when it couldn't be delivered.
-`POST /events/snapshots/{event_type}` | This endpoint (a post without any body) can be used by operators to trigger creation of snapshot events in the producer. Those events will then be collected and published by Tarbela, so event consumers can get a full snapshot of the database. (Tarbela itself is not using this operation.)
 
 ### Creating events
 
@@ -160,14 +112,14 @@ Example of using `fireCreateEvent`:
 public class SomeYourService {
 
     @Autowire
-    private EventLogWriter eventLogWriter 
+    private EventLogWriter eventLogWriter; 
     
     @Transactional
     public void createObject(Warehouse data, String flowId) {
         
-        ...
-        ... here we store an object in a database table
-        ...
+        // ...
+        // ... here we store an object in a database table
+        // ...
        
         // compose an event payload
         EventPayload eventPayload = EventPayloadImpl.builder()
@@ -193,36 +145,27 @@ public class SomeYourService {
 It makes sense to use these methods in one transaction with corresponding object creation or mutation. This way we get rid of distributed-transaction problem as mentioned earlier.
 
 ### Event snapshots
+A Snapshot event is a special event type defined by Nakadi. It does not represent a change of the state of a resource, but a current snapshot of the state of the resource.  
 
-**Important:** In order `POST /events/snapshots/{event_type}` to work your application should implement the `TarbelaSnapshotProvider` interface.
+This library provides a Spring Boot Actuator endpoint named `snapshot_event_creation` that can be used to trigger a Snapshot for a given event type. Assuming your management port is set to `7979`
 
-```java
-public interface TarbelaSnapshotProvider {
+    GET localhost:7979/snapshot_event_creation
 
-    /**
-     * Returns a stream consisting of elements for creating a snapshot of events
-     * of given type (event type is an event channel topic name).
-     * @param eventType event type to make a snapshot of
-     * @return stream of elements to create a snapshot from
-     * @throws UnknownEventTypeException if {@code eventType} is unknown
-     */
-    Stream<EventPayload> getSnapshot(@NotNull String eventType);
+will return a list of all event types available for snapshot creation and 
 
-}
+    POST localhost:7979/snapshot_event_creation/my.event-type
+
+will trigger a snapshot for the event type `my.event-type`.
+
+This will only  work if your application has configured spring-boot-actuator
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
 ```
+and if it implements the `org.zalando.nakadiproducer.snapshots.SnapshotEventProvider` interface as a Spring Bean. Otherwise, the library will respond with an error message when you request a snapshot creation. 
 
-If you will not implement and define the `TarbelaSnapshotProvider` as a Spring Bean the library will configure a fake `TarbelaSnapshotProvider` which will throw TarbelaSnapshotProviderNotImplementedException upon the any `POST /events/snapshots/*` request
-
-The method will be used by `EventLogService` to create snapshot events of the whole Publisher's state.
-
-`EventLogService` will take batches of elements from the stream returned by `getSnapshot` method and save those batches sequentially in tarbela_event_log table.
- 
-The default size of the batch is 25 and it can be adjusted via `tarbela.snapshot-batch-size` property:
-
-```yaml
-tarbela:
-  snapshot-batch-size: 100
-```
 
 ## Build
 
@@ -232,6 +175,12 @@ Build with unit tests and integration tests:
 ./mvnw clean install
 ```
 
+If the GPG integration causes headaches (and you do not plan to publish the created artifact to maven central anyway), 
+you can skip gpg signing:
+
+```shell
+./mvnw -Dgpg.skip=true clean install
+```
 
 ## License
 

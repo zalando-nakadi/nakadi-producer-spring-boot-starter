@@ -1,21 +1,33 @@
 {"groups": [
   {
-    "name": "tarbela",
-    "type": "org.zalando.tarbelaproducer.TarbelaProperties",
-    "sourceType": "org.zalando.tarbelaproducer.TarbelaProperties"
+    "name": "nakadi-producer"
   }
 ],"properties": [
   {
-    "name": "tarbela.sink-id",
-    "type": "java.lang.String",
-    "description": "An identifier for the event sink. This identifier needs to be configured in Tarbela's configuration.",
-    "sourceType": "org.zalando.tarbelaproducer.TarbelaProperties"
+    "name": "nakadi-producer.scheduled-transmission-enabled",
+    "type": "java.lang.Boolean",
+    "defaultValue": true,
+    "description": "determines, if persisted events should be automatically and periodically transmitted to nakadi"
   },
   {
-    "name": "tarbela.snapshot-batch-size",
-    "type": "java.lang.Integer",
-    "defaultValue": 25,
-    "description": "How many events will be stored at a time during a snapshot creation",
-    "sourceType": "org.zalando.tarbelaproducer.TarbelaProperties"
+    "name": "nakadi-producer.nakadi-base-uri",
+    "type": "java.net.URI",
+    "description": "the base URI of your nakadi instance"
+  },
+  {
+    "name": "nakadi-producer.access-token-uri",
+    "type": "java.net.URI",
+    "description": "if you use the stups tokens library, this configures the URI of your OAuth2 server"
+  },
+  {
+    "name": "nakadi-producer.access-token-scopes",
+    "type": "java.util.Collection<String>",
+    "description": "if you use the stups tokens library, provide a list of oAuth scopes that are required to send nakadi events"
+  },
+  {
+    "name": "nakadi-producer.transmission-polling-delay",
+    "type": "java.lang.Long",
+    "defaultValue": 1000,
+    "description": "When all existing events have been transmitted to nakadi, the sender will sleep for the specified amount of milliseconds before trying to fetch a new batch of events for transmission"
   }
 ]}

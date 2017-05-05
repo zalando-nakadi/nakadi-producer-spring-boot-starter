@@ -10,15 +10,16 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.ManagementContextConfiguration;
 import org.springframework.boot.actuate.condition.ConditionalOnEnabledEndpoint;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -27,13 +28,12 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.zalando.fahrschein.NakadiClient;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.flowid.NoopFlowIdComponent;
+import org.zalando.nakadiproducer.flowid.TracerFlowIdComponent;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
+import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationEndpoint;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationMvcEndpoint;
-import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventProviderNotImplementedException;
-import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
-import org.zalando.nakadiproducer.flowid.TracerFlowIdComponent;
-import org.zalando.stups.tokens.Tokens;
 import org.zalando.tracer.Tracer;
 
 @Configuration
@@ -42,6 +42,7 @@ import org.zalando.tracer.Tracer;
 @ComponentScan
 @EnableJpaRepositories
 @ManagementContextConfiguration
+@AutoConfigureAfter(name="org.zalando.tracer.spring.TracerAutoConfiguration")
 public class NakadiProducerAutoConfiguration {
 
     @Bean
@@ -69,7 +70,7 @@ public class NakadiProducerAutoConfiguration {
                            .build();
     }
 
-    @ConditionalOnClass(Tokens.class)
+    @ConditionalOnClass(name = "org.zalando.stups.tokens.Tokens")
     @Configuration
     static class StupsTokenConfiguration {
         @Bean(destroyMethod = "stop")
@@ -81,18 +82,27 @@ public class NakadiProducerAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(org.zalando.tracer.Tracer.class)
-    public FlowIdComponent flowIdComponentFake() {
+    @ConditionalOnMissingClass("org.zalando.tracer.Tracer")
+    @ConditionalOnMissingBean(FlowIdComponent.class)
+    public FlowIdComponent flowIdComponent() {
         return new NoopFlowIdComponent();
     }
 
-    @ConditionalOnBean(org.zalando.tracer.Tracer.class)
+    @ConditionalOnClass(name = "org.zalando.tracer.Tracer")
     @Configuration
     static class TracerConfiguration {
+        @Autowired(required = false)
+        Tracer tracer;
+
         @SuppressWarnings("SpringJavaAutowiringInspection")
+        @ConditionalOnMissingBean(FlowIdComponent.class)
         @Bean
-        public FlowIdComponent flowIdComponent(Tracer tracer) {
-            return new TracerFlowIdComponent(tracer);
+        public FlowIdComponent flowIdComponent() {
+            if (tracer == null) {
+                return new NoopFlowIdComponent();
+            } else {
+                return new TracerFlowIdComponent(tracer);
+            }
         }
     }
 

@@ -34,7 +34,7 @@ Use `@EnableNakadiProducer` annotation to activate spring boot starter auto conf
 ```java
 @SpringBootApplication
 @EnableNakadiProducer
-@EntityScan("org.zalando.nakadiproducer.eventlog")
+@EntityScan({"org.zalando.nakadiproducer.eventlog", "your.apps.base.package"})
 public class Application {
     public static void main(final String[] args) {
         SpringApplication.run(TestApplication.class, args);

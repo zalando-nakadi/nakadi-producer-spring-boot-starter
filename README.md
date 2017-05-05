@@ -74,8 +74,7 @@ This starter will detect and auto configure it. To do so, it needs two know the 
 nakadi-producer:
   access-token-uri: https://token.auth.example.org/oauth2/access_token
   access-token-scopes: 
-    - uid
-    - nakadi.write
+    - nakadi.event_stream.write
 ```
 
 If you do not use the zalando tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The starter will detect it and call it once for each request to retrieve the token. 

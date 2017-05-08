@@ -70,12 +70,11 @@ token. The easiest way to do so is to include the [Zalando Tokens library](https
 </dependency>
 ```
 
-This starter will detect and auto configure it. To do so, it needs to know the address of your oAuth2 server and a list of scopes it should request:
+This starter will detect and auto configure it. To do so, it needs to know the address of your oAuth2 server and a comma separated list of scopes it should request:
 ```yaml
 nakadi-producer:
   access-token-uri: https://token.auth.example.org/oauth2/access_token
-  access-token-scopes: 
-    - nakadi.event_stream.write
+  access-token-scopes: uid, nakadi.event_stream.write
 ```
 
 If you do not use the STUPS Tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The starter will detect it and call it once for each request to retrieve the token. 

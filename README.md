@@ -122,7 +122,7 @@ public class SomeYourService {
         // ...
        
         // compose an event payload
-        EventPayload eventPayload = EventPayloadImpl.builder()
+        EventPayload eventPayload = SimpleEventPayload.builder()
                 .data(data)
                 .eventType("wholesale.warehouse-change-event")
                 .dataType("wholesale:warehouse")

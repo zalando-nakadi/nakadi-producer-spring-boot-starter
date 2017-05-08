@@ -70,7 +70,7 @@ token. The easiest way to do so is to include the [Zalando Tokens library](https
 </dependency>
 ```
 
-This starter will detect and auto configure it. To do so, it needs to know the address of your oAuth2 server and a comma seperated list of scopes it should request:
+This starter will detect and auto configure it. To do so, it needs to know the address of your oAuth2 server and a comma separated list of scopes it should request:
 ```yaml
 nakadi-producer:
   access-token-uri: https://token.auth.example.org/oauth2/access_token

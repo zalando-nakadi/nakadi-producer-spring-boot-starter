@@ -3,7 +3,7 @@ package org.zalando.nakadiproducer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -76,8 +76,8 @@ public class NakadiProducerAutoConfiguration {
         @Bean(destroyMethod = "stop")
         @ConditionalOnProperty({"nakadi-producer.access-token-uri", "nakadi-producer.access-token-scopes"})
         @ConditionalOnMissingBean(AccessTokenProvider.class)
-        public StupsTokenComponent accessTokenProvider(@Value("${nakadi-producer.access-token-uri}") URI accessTokenUri, @Value("${nakadi-producer.access-token-scopes}") Collection<String> accessTokenScopes) {
-            return new StupsTokenComponent(accessTokenUri, accessTokenScopes);
+        public StupsTokenComponent accessTokenProvider(@Value("${nakadi-producer.access-token-uri}") URI accessTokenUri, @Value("${nakadi-producer.access-token-scopes}") String[] accessTokenScopes) {
+            return new StupsTokenComponent(accessTokenUri, Arrays.asList(accessTokenScopes));
         }
     }
 

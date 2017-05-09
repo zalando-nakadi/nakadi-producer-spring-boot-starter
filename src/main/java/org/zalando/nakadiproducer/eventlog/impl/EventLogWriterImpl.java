@@ -55,6 +55,13 @@ public class EventLogWriterImpl implements EventLogWriter {
         eventLogRepository.save(eventLog);
     }
 
+    @Override
+    public void fireBusinessEvent(EventPayload payload) {
+        // data_op doesn't make sense for business events, so just nulify it
+        final EventLog eventLog = createEventLog(null, payload);
+        eventLogRepository.save(eventLog);
+    }
+
     private EventLog createEventLog(final EventDataOperation dataOp, final EventPayload eventPayload) {
         final EventLog eventLog = new EventLog();
         eventLog.setEventType(eventPayload.getEventType());
@@ -64,8 +71,8 @@ public class EventLogWriterImpl implements EventLogWriter {
             throw new IllegalStateException("could not map object to json: " + eventPayload.getData().toString(), e);
         }
 
-        eventLog.setDataOp(dataOp.toString());
-        eventLog.setDataType(eventPayload.getDataType());
+        eventLog.setDataOp(dataOp != null ? dataOp.toString() : null);
+        eventLog.setDataType(eventPayload.getDataType() != null ? eventPayload.getDataType() : null);
         eventLog.setFlowId(flowIdComponent.getXFlowIdValue());
         return eventLog;
     }

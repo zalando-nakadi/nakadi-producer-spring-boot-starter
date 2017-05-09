@@ -126,4 +126,22 @@ public class EventLogWriterTest {
         assertThat(eventLogCapture.getValue().getLockedUntil(), is(nullValue()));
     }
 
+    @Test
+    public void testFireBusinessEvent() throws Exception {
+        MockPayload mockPayload = Fixture.mockPayload(1, "mockedcode", true,
+                Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
+
+        eventLogWriter.fireBusinessEvent(Fixture.mockBusinessEventPayload(mockPayload));
+
+        verify(eventLogRepository).save(eventLogCapture.capture());
+
+        assertThat(eventLogCapture.getValue().getDataOp(), is(nullValue()));
+        assertThat(eventLogCapture.getValue().getDataType(), is(nullValue()));
+        assertThat(eventLogCapture.getValue().getEventBodyData(), is(EVENT_BODY_DATA));
+        assertThat(eventLogCapture.getValue().getEventType(), is(PUBLISHER_EVENT_TYPE));
+        assertThat(eventLogCapture.getValue().getFlowId(), is(TRACE_ID));
+        assertThat(eventLogCapture.getValue().getLockedBy(), is(nullValue()));
+        assertThat(eventLogCapture.getValue().getLockedUntil(), is(nullValue()));
+    }
+
 }

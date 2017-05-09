@@ -3,6 +3,7 @@ package org.zalando.nakadiproducer.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.zalando.nakadiproducer.eventlog.BusinessEventPayload;
 import org.zalando.nakadiproducer.eventlog.EventPayload;
 import org.zalando.nakadiproducer.eventlog.SimpleEventPayload;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider.Snapshot;
@@ -22,6 +23,17 @@ public class Fixture {
 
     public static EventPayload mockEventPayload(MockPayload mockPayload) {
         return mockEventPayload(mockPayload, PUBLISHER_EVENT_TYPE);
+    }
+
+    public static EventPayload mockBusinessEventPayload(MockPayload mockPayload, String eventType) {
+        return BusinessEventPayload.builder()
+                .data(mockPayload)
+                .eventType(eventType)
+                .build();
+    }
+
+    public static EventPayload mockBusinessEventPayload(MockPayload mockPayload) {
+        return mockBusinessEventPayload(mockPayload, PUBLISHER_EVENT_TYPE);
     }
 
     public static MockPayload mockPayload(Integer id, String code, Boolean isActive,

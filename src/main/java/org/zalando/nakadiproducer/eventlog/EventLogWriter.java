@@ -42,4 +42,15 @@ public interface EventLogWriter {
 
     @Transactional
     void fireSnapshotEvent(EventPayload payload);
+
+    /**
+     * Suppose you want to perform some action on an object in a database and also you want to fire a
+     * business event related to this object change. Then you can call this method in the same transaction.
+     * This method will serialize a payload object and will store an event with this payload
+     * in a database. After the transaction completed, it will later read the event and publish
+     * it to nakadi
+     * @param payload some POJO that can be serialized into JSON (required parameter)
+     */
+    @Transactional
+    void fireBusinessEvent(EventPayload payload);
 }

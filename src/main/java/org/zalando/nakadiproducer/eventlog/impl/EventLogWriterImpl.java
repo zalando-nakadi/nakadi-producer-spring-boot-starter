@@ -72,7 +72,7 @@ public class EventLogWriterImpl implements EventLogWriter {
         }
 
         eventLog.setDataOp(dataOp != null ? dataOp.toString() : null);
-        eventLog.setDataType(eventPayload.getDataType() != null ? eventPayload.getDataType() : null);
+        eventLog.setDataType(eventPayload.getDataType());
         eventLog.setFlowId(flowIdComponent.getXFlowIdValue());
         return eventLog;
     }

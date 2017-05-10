@@ -46,7 +46,12 @@ public class EventTransmissionService {
     @Transactional
     public void sendEvent(EventLog eventLog) {
         try {
-            nakadiClient.publish(eventLog.getEventType(), singletonList(mapToNakadiPayload(eventLog)));
+            // If it's a business event we use a different payload wrapper
+            if (eventLog.getDataOp() == null && eventLog.getDataType() == null) {
+                nakadiClient.publish(eventLog.getEventType(), singletonList(mapToNakadiBusinessPayload(eventLog)));
+            } else {
+                nakadiClient.publish(eventLog.getEventType(), singletonList(mapToNakadiPayload(eventLog)));
+            }
             log.info("Event {} locked by {} was sucessfully transmitted to nakadi", eventLog.getId(), eventLog.getLockedBy());
             eventLogRepository.delete(eventLog);
         } catch (IOException e) {
@@ -56,7 +61,6 @@ public class EventTransmissionService {
     }
 
     public NakadiEvent mapToNakadiPayload(final EventLog event) {
-
         final NakadiEvent nakadiEvent = new NakadiEvent();
 
         final NakadiMetadata metadata = new NakadiMetadata();
@@ -80,7 +84,26 @@ public class EventTransmissionService {
         return nakadiEvent;
     }
 
+    public NakadiBusinessEvent mapToNakadiBusinessPayload(final EventLog event) {
+        final NakadiBusinessEvent nakadiBusinessEvent = new NakadiBusinessEvent();
 
+        final NakadiMetadata metadata = new NakadiMetadata();
+        metadata.setEid(convertToUUID(event.getId()));
+        metadata.setOccuredAt(event.getCreated());
+        nakadiBusinessEvent.setMetadata(metadata);
+
+        HashMap<String, Object> payloadDTO;
+        try {
+            payloadDTO = objectMapper.readValue(event.getEventBodyData(), Maps.newLinkedHashMap().getClass());
+        } catch (IOException e) {
+            log.error("An error occurred at JSON deserialization", e);
+            throw new UncheckedIOException(e);
+        }
+
+        nakadiBusinessEvent.setData(payloadDTO);
+
+        return nakadiBusinessEvent;
+    }
 
     /**
      * Converts a number in UUID format.

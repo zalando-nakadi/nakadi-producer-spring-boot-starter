@@ -58,7 +58,6 @@ public class EventLogWriterImpl implements EventLogWriter {
     @Override
     @Transactional
     public void fireBusinessEvent(final String eventType, Object payload) {
-        // data_op doesn't make sense for business events, so just nulify it
         final EventLog eventLog = createBusinessEventLog(eventType, payload);
         eventLogRepository.save(eventLog);
     }

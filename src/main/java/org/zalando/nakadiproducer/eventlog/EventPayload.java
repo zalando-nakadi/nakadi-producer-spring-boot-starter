@@ -11,14 +11,6 @@ package org.zalando.nakadiproducer.eventlog;
  * This object should be serializable to Json by Jackson ObjectMapper
  */
 public interface EventPayload {
-
-    /**
-     * Returns predefined event type sting name that will be attached
-     * to each {@code EventDTO}'s {@code channel} as a {@code topicName} parameter
-     * @return event type name
-     */
-
-
     /**
      * Returns predefined data type string name that will be attached
      * to each {@code EventDTO}'s {@code event_payload} as a {@code data_type} parameter

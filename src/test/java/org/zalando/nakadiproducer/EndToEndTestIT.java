@@ -17,7 +17,6 @@ import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zalando.fahrschein.NakadiClient;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
-import org.zalando.nakadiproducer.eventlog.DataChangeEventPayload;
 import org.zalando.nakadiproducer.transmission.impl.EventTransmitter;
 import org.zalando.nakadiproducer.transmission.impl.NakadiEvent;
 import org.zalando.nakadiproducer.util.Fixture;
@@ -26,6 +25,7 @@ import org.zalando.nakadiproducer.util.MockPayload;
 public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
     private static final String MY_DATA_CHANGE_EVENT_TYPE = "myDataChangeEventType";
     private static final String MY_BUSINESS_EVENT_TYPE = "myBusinessEventType";
+    public static final String PUBLISHER_DATA_TYPE = "nakadi:some-publisher";
     private static final String CODE = "code123";
 
     @Autowired
@@ -42,9 +42,8 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
 
     @Test
     public void dataEventsShouldBeSubmittedToNakadi() throws IOException {
-        MockPayload code = Fixture.mockPayload(1, CODE);
-        DataChangeEventPayload payload = Fixture.mockEventPayload(code);
-        eventLogWriter.fireCreateEvent(MY_DATA_CHANGE_EVENT_TYPE, payload);
+        MockPayload payload = Fixture.mockPayload(1, CODE);
+        eventLogWriter.fireCreateEvent(MY_DATA_CHANGE_EVENT_TYPE, PUBLISHER_DATA_TYPE, payload);
 
         eventTransmitter.sendEvents();
 
@@ -53,7 +52,7 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
 
         assertThat(value.size(), is(1));
         assertThat(value.get(0).any().get("data_op"), is("C"));
-        assertThat(value.get(0).any().get("data_type"), is(payload.getDataType()));
+        assertThat(value.get(0).any().get("data_type"), is(PUBLISHER_DATA_TYPE));
         Map<String, Object> data = (Map<String, Object>) value.get(0).any().get("data");
         assertThat(data.get("code"), is(CODE));
     }

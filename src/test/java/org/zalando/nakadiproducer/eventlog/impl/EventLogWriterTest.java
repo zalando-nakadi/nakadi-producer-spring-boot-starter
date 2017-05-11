@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_DATA_TYPE;
 import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
 
 import org.junit.Before;
@@ -16,7 +15,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
-import org.zalando.nakadiproducer.eventlog.DataChangeEventPayload;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 
@@ -36,7 +34,7 @@ public class EventLogWriterTest {
 
     private EventLogWriterImpl eventLogWriter;
 
-    private DataChangeEventPayload eventPayload;
+    private MockPayload eventPayload;
 
     private static final String TRACE_ID = "TRACE_ID";
 
@@ -49,14 +47,12 @@ public class EventLogWriterTest {
                     + "}").replace('\'', '"');
 
     private static final String DATA_CHANGE_BODY_DATA = ("{'data_op':'{DATA_OP}','data_type':'nakadi:some-publisher','data':" + EVENT_BODY_DATA + "}").replace('\'', '"');
+    private static final String PUBLISHER_DATA_TYPE = "nakadi:some-publisher";
 
     @Before
     public void setUp() throws Exception {
-
-        MockPayload mockPayload = Fixture.mockPayload(1, "mockedcode", true,
+        eventPayload = Fixture.mockPayload(1, "mockedcode", true,
                 Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
-
-        eventPayload = Fixture.mockEventPayload(mockPayload);
 
         when(flowIdComponent.getXFlowIdValue()).thenReturn(TRACE_ID);
 
@@ -65,8 +61,7 @@ public class EventLogWriterTest {
 
     @Test
     public void testFireCreateEvent() throws Exception {
-
-        eventLogWriter.fireCreateEvent(PUBLISHER_EVENT_TYPE, eventPayload);
+        eventLogWriter.fireCreateEvent(PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, eventPayload);
         verify(eventLogRepository).save(eventLogCapture.capture());
 
         assertThat(eventLogCapture.getValue().getEventBodyData(), is(DATA_CHANGE_BODY_DATA.replace("{DATA_OP}", "C")));
@@ -80,7 +75,7 @@ public class EventLogWriterTest {
     @Test
     public void testFireUpdateEvent() throws Exception {
 
-        eventLogWriter.fireUpdateEvent(PUBLISHER_EVENT_TYPE, eventPayload);
+        eventLogWriter.fireUpdateEvent(PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, eventPayload);
 
         verify(eventLogRepository).save(eventLogCapture.capture());
 
@@ -95,7 +90,7 @@ public class EventLogWriterTest {
     @Test
     public void testFireDeleteEvent() throws Exception {
 
-        eventLogWriter.fireDeleteEvent(PUBLISHER_EVENT_TYPE, eventPayload);
+        eventLogWriter.fireDeleteEvent(PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, eventPayload);
 
         verify(eventLogRepository).save(eventLogCapture.capture());
 
@@ -109,7 +104,7 @@ public class EventLogWriterTest {
     @Test
     public void testFireSnapshotEvent() throws Exception {
 
-        eventLogWriter.fireSnapshotEvent(PUBLISHER_EVENT_TYPE, eventPayload);
+        eventLogWriter.fireSnapshotEvent(PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, eventPayload);
 
         verify(eventLogRepository).save(eventLogCapture.capture());
 

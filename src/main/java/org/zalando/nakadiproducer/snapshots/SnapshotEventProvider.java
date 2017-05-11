@@ -3,8 +3,6 @@ package org.zalando.nakadiproducer.snapshots;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import org.zalando.nakadiproducer.eventlog.DataChangeEventPayload;
-
 import java.util.List;
 import java.util.Set;
 
@@ -46,7 +44,8 @@ public interface SnapshotEventProvider {
     class Snapshot {
         private Object id;
         private String eventType;
-        private DataChangeEventPayload eventPayload;
+        private String dataType;
+        private Object data;
     }
 
 }

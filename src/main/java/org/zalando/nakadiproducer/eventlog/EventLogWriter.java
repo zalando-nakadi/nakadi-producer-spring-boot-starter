@@ -11,11 +11,12 @@ public interface EventLogWriter {
      * in a database. After the transaction completed, it will later read the event and publish
      * it to nakadi
      *  @param eventType the nakadi event type of the event. This is roughly equivalent to an event channel or topic.
-     *  @param payload some POJO that can be serialized into JSON (required parameter)
+     *  @param dataType the content of the nakadi data_type field.
+     *  @param data some POJO that can be serialized into JSON (required parameter). Will be used as content of the nakadi data field
      *
      */
     @Transactional
-    void fireCreateEvent(String eventType, DataChangeEventPayload payload);
+    void fireCreateEvent(String eventType, String dataType, Object data);
 
     /**
      * Suppose you want to update some object in a database and also you want to fire an event
@@ -24,11 +25,12 @@ public interface EventLogWriter {
      * in a database. After the transaction completed, it will later read the event and publish
      * it to nakadi
      *  @param eventType the nakadi event type of the event. This is roughly equivalent to an event channel or topic.
-     *  @param payload some POJO that can be serialized into JSON (required parameter)
+     *  @param dataType the content of the nakadi data type field.
+     *  @param data some POJO that can be serialized into JSON (required parameter). Will be used as content of the nakadi data field
      *
      */
     @Transactional
-    void fireUpdateEvent(String eventType, DataChangeEventPayload payload);
+    void fireUpdateEvent(String eventType, String dataType, Object data);
 
     /**
      * Suppose you want to remove an object from a database and also you want to fire an event
@@ -37,11 +39,12 @@ public interface EventLogWriter {
      * in a database. After the transaction completed, it will later read the event and publish
      * it to nakadi
      *  @param eventType the nakadi event type of the event. This is roughly equivalent to an event channel or topic.
-     *  @param payload some POJO that can be serialized into JSON (required parameter)
+     *  @param dataType the content of the nakadi data type field.
+     *  @param data some POJO that can be serialized into JSON (required parameter). Will be used as content of the nakadi data field
      *
      */
     @Transactional
-    void fireDeleteEvent(String eventType, DataChangeEventPayload payload);
+    void fireDeleteEvent(String eventType, String dataType, Object data);
 
     /**
      * Suppose you want to notify your consumers about the current state of a resource, even if nothing changed.
@@ -52,11 +55,12 @@ public interface EventLogWriter {
      * in a database. After the transaction completed, it will later read the event and publish
      * it to nakadi
      *  @param eventType the nakadi event type of the event. This is roughly equivalent to an event channel or topic.
-     *  @param payload some POJO that can be serialized into JSON (required parameter)
+     *  @param dataType the content of the nakadi data type field.
+     *  @param data some POJO that can be serialized into JSON (required parameter). Will be used as content of the nakadi data field
      *
      */
     @Transactional
-    void fireSnapshotEvent(String eventType, DataChangeEventPayload payload);
+    void fireSnapshotEvent(String eventType, String dataType, Object data);
 
     /**
      * Suppose you want to perform some action on an object in a database and also you want to fire a

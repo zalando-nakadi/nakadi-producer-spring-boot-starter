@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.HashMap;
 
 @Data
-public class NakadiBusinessEvent {
+public class NakadiEvent {
     @JsonIgnore
     private HashMap<String, Object> data;
 

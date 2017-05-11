@@ -46,12 +46,7 @@ public class EventTransmissionService {
     @Transactional
     public void sendEvent(EventLog eventLog) {
         try {
-            // If it's a business event we use a different payload wrapper
-            if (eventLog.getDataOp() == null && eventLog.getDataType() == null) {
-                nakadiClient.publish(eventLog.getEventType(), singletonList(mapToNakadiBusinessPayload(eventLog)));
-            } else {
-                nakadiClient.publish(eventLog.getEventType(), singletonList(mapToNakadiDataChangePayload(eventLog)));
-            }
+            nakadiClient.publish(eventLog.getEventType(), singletonList(mapToNakadiEvent(eventLog)));
             log.info("Event {} locked by {} was sucessfully transmitted to nakadi", eventLog.getId(), eventLog.getLockedBy());
             eventLogRepository.delete(eventLog);
         } catch (IOException e) {
@@ -60,16 +55,13 @@ public class EventTransmissionService {
 
     }
 
-    public NakadiDataChangeEvent mapToNakadiDataChangePayload(final EventLog event) {
-        final NakadiDataChangeEvent nakadiDataChangeEvent = new NakadiDataChangeEvent();
+    public NakadiEvent mapToNakadiEvent(final EventLog event) {
+        final NakadiEvent nakadiEvent = new NakadiEvent();
 
         final NakadiMetadata metadata = new NakadiMetadata();
         metadata.setEid(convertToUUID(event.getId()));
         metadata.setOccuredAt(event.getCreated());
-        nakadiDataChangeEvent.setMetadata(metadata);
-
-        nakadiDataChangeEvent.setDataOperation(event.getDataOp());
-        nakadiDataChangeEvent.setDataType(event.getDataType());
+        nakadiEvent.setMetadata(metadata);
 
         HashMap<String, Object> payloadDTO;
         try {
@@ -79,30 +71,9 @@ public class EventTransmissionService {
             throw new UncheckedIOException(e);
         }
 
-        nakadiDataChangeEvent.setData(payloadDTO);
+        nakadiEvent.setData(payloadDTO);
 
-        return nakadiDataChangeEvent;
-    }
-
-    public NakadiBusinessEvent mapToNakadiBusinessPayload(final EventLog event) {
-        final NakadiBusinessEvent nakadiBusinessEvent = new NakadiBusinessEvent();
-
-        final NakadiMetadata metadata = new NakadiMetadata();
-        metadata.setEid(convertToUUID(event.getId()));
-        metadata.setOccuredAt(event.getCreated());
-        nakadiBusinessEvent.setMetadata(metadata);
-
-        HashMap<String, Object> payloadDTO;
-        try {
-            payloadDTO = objectMapper.readValue(event.getEventBodyData(), Maps.newLinkedHashMap().getClass());
-        } catch (IOException e) {
-            log.error("An error occurred at JSON deserialization", e);
-            throw new UncheckedIOException(e);
-        }
-
-        nakadiBusinessEvent.setData(payloadDTO);
-
-        return nakadiBusinessEvent;
+        return nakadiEvent;
     }
 
     /**

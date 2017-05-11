@@ -19,8 +19,7 @@ import org.zalando.fahrschein.NakadiClient;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.eventlog.DataChangeEventPayload;
 import org.zalando.nakadiproducer.transmission.impl.EventTransmitter;
-import org.zalando.nakadiproducer.transmission.impl.NakadiBusinessEvent;
-import org.zalando.nakadiproducer.transmission.impl.NakadiDataChangeEvent;
+import org.zalando.nakadiproducer.transmission.impl.NakadiEvent;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 
@@ -39,10 +38,7 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
     private NakadiClient nakadiClient;
 
     @Captor
-    private ArgumentCaptor<List<NakadiDataChangeEvent>> captor;
-
-    @Captor
-    private ArgumentCaptor<List<NakadiBusinessEvent>> businessEventCaptor;
+    private ArgumentCaptor<List<NakadiEvent>> eventCaptor;
 
     @Test
     public void dataEventsShouldBeSubmittedToNakadi() throws IOException {
@@ -52,13 +48,13 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
 
         eventTransmitter.sendEvents();
 
-        verify(nakadiClient).publish(eq(MY_DATA_CHANGE_EVENT_TYPE), captor.capture());
-        List<NakadiDataChangeEvent> value = captor.getValue();
+        verify(nakadiClient).publish(eq(MY_DATA_CHANGE_EVENT_TYPE), eventCaptor.capture());
+        List<NakadiEvent> value = eventCaptor.getValue();
 
         assertThat(value.size(), is(1));
-        assertThat(value.get(0).getDataOperation(), is("C"));
-        assertThat(value.get(0).getDataType(), is(payload.getDataType()));
-        Map<String, Object> data = value.get(0).getData();
+        assertThat(value.get(0).any().get("data_op"), is("C"));
+        assertThat(value.get(0).any().get("data_type"), is(payload.getDataType()));
+        Map<String, Object> data = (Map<String, Object>) value.get(0).any().get("data");
         assertThat(data.get("code"), is(CODE));
     }
 
@@ -69,8 +65,8 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
 
         eventTransmitter.sendEvents();
 
-        verify(nakadiClient).publish(eq(MY_BUSINESS_EVENT_TYPE), businessEventCaptor.capture());
-        List<NakadiBusinessEvent> value = businessEventCaptor.getValue();
+        verify(nakadiClient).publish(eq(MY_BUSINESS_EVENT_TYPE), eventCaptor.capture());
+        List<NakadiEvent> value = eventCaptor.getValue();
 
         assertThat(value.size(), is(1));
         assertThat(value.get(0).any().get("data_op"), is(nullValue()));

@@ -58,7 +58,7 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
         assertThat(value.size(), is(1));
         assertThat(value.get(0).getDataOperation(), is("C"));
         assertThat(value.get(0).getDataType(), is(payload.getDataType()));
-        Map<String, Object> data = (Map<String, Object>) value.get(0).getData();
+        Map<String, Object> data = value.get(0).getData();
         assertThat(data.get("code"), is(CODE));
     }
 

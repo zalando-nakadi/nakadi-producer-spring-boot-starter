@@ -38,7 +38,7 @@ public class TestApplication {
                     return Collections.emptyList();
                 } else {
                     return list.stream()
-                               .filter(snapshot -> snapshot.getEventPayload().getEventType().equals(eventType))
+                               .filter(snapshot -> snapshot.getEventType().equals(eventType))
                                .collect(Collectors.toList());
                 }
             }

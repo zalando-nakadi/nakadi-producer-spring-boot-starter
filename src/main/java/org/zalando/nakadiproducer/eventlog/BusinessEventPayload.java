@@ -8,15 +8,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 public class BusinessEventPayload implements EventPayload {
-
-    private String eventType;
-
     private Object data;
-
-    @Override
-    public String getEventType() {
-        return eventType;
-    }
 
     @Override
     public String getDataType() {

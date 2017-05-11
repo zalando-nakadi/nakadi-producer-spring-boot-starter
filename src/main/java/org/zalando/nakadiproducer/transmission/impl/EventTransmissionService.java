@@ -50,7 +50,7 @@ public class EventTransmissionService {
             if (eventLog.getDataOp() == null && eventLog.getDataType() == null) {
                 nakadiClient.publish(eventLog.getEventType(), singletonList(mapToNakadiBusinessPayload(eventLog)));
             } else {
-                nakadiClient.publish(eventLog.getEventType(), singletonList(mapToNakadiPayload(eventLog)));
+                nakadiClient.publish(eventLog.getEventType(), singletonList(mapToNakadiDataChangePayload(eventLog)));
             }
             log.info("Event {} locked by {} was sucessfully transmitted to nakadi", eventLog.getId(), eventLog.getLockedBy());
             eventLogRepository.delete(eventLog);
@@ -60,16 +60,16 @@ public class EventTransmissionService {
 
     }
 
-    public NakadiEvent mapToNakadiPayload(final EventLog event) {
-        final NakadiEvent nakadiEvent = new NakadiEvent();
+    public NakadiDataChangeEvent mapToNakadiDataChangePayload(final EventLog event) {
+        final NakadiDataChangeEvent nakadiDataChangeEvent = new NakadiDataChangeEvent();
 
         final NakadiMetadata metadata = new NakadiMetadata();
         metadata.setEid(convertToUUID(event.getId()));
         metadata.setOccuredAt(event.getCreated());
-        nakadiEvent.setMetadata(metadata);
+        nakadiDataChangeEvent.setMetadata(metadata);
 
-        nakadiEvent.setDataOperation(event.getDataOp());
-        nakadiEvent.setDataType(event.getDataType());
+        nakadiDataChangeEvent.setDataOperation(event.getDataOp());
+        nakadiDataChangeEvent.setDataType(event.getDataType());
 
         HashMap<String, Object> payloadDTO;
         try {
@@ -79,9 +79,9 @@ public class EventTransmissionService {
             throw new UncheckedIOException(e);
         }
 
-        nakadiEvent.setData(payloadDTO);
+        nakadiDataChangeEvent.setData(payloadDTO);
 
-        return nakadiEvent;
+        return nakadiDataChangeEvent;
     }
 
     public NakadiBusinessEvent mapToNakadiBusinessPayload(final EventLog event) {

@@ -3,9 +3,8 @@ package org.zalando.nakadiproducer.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.zalando.nakadiproducer.eventlog.BusinessEventPayload;
-import org.zalando.nakadiproducer.eventlog.EventPayload;
-import org.zalando.nakadiproducer.eventlog.SimpleEventPayload;
+import org.zalando.nakadiproducer.eventlog.DataChangeEventPayload;
+import org.zalando.nakadiproducer.eventlog.SimpleDataChangeEventPayload;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider.Snapshot;
 
 public class Fixture {
@@ -13,17 +12,11 @@ public class Fixture {
     public static final String PUBLISHER_EVENT_TYPE = "wholesale.some-publisher-change-event";
     public static final String PUBLISHER_DATA_TYPE = "nakadi:some-publisher";
 
-    public static EventPayload mockEventPayload(MockPayload mockPayload) {
-        return SimpleEventPayload.builder()
-                                 .data(mockPayload)
-                                 .dataType(PUBLISHER_DATA_TYPE)
-                                 .build();
-    }
-
-    public static EventPayload mockBusinessEventPayload(MockPayload mockPayload) {
-        return BusinessEventPayload.builder()
-                .data(mockPayload)
-                .build();
+    public static DataChangeEventPayload mockEventPayload(MockPayload mockPayload) {
+        return SimpleDataChangeEventPayload.builder()
+                                           .data(mockPayload)
+                                           .dataType(PUBLISHER_DATA_TYPE)
+                                           .build();
     }
 
     public static MockPayload mockPayload(Integer id, String code, Boolean isActive,

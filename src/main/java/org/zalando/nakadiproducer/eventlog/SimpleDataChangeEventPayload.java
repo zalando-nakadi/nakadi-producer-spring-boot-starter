@@ -7,12 +7,14 @@ import lombok.Setter;
 @Setter
 @Builder
 @AllArgsConstructor
-public class BusinessEventPayload implements EventPayload {
+public class SimpleDataChangeEventPayload implements DataChangeEventPayload {
+    private String dataType;
+
     private Object data;
 
     @Override
     public String getDataType() {
-        return null;
+        return dataType;
     }
 
     @Override

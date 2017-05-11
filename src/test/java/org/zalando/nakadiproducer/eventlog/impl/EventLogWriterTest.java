@@ -16,7 +16,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
-import org.zalando.nakadiproducer.eventlog.EventPayload;
+import org.zalando.nakadiproducer.eventlog.DataChangeEventPayload;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 
@@ -36,7 +36,7 @@ public class EventLogWriterTest {
 
     private EventLogWriterImpl eventLogWriter;
 
-    private EventPayload eventPayload;
+    private DataChangeEventPayload eventPayload;
 
     private static final String TRACE_ID = "TRACE_ID";
 
@@ -131,7 +131,7 @@ public class EventLogWriterTest {
         MockPayload mockPayload = Fixture.mockPayload(1, "mockedcode", true,
                 Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
 
-        eventLogWriter.fireBusinessEvent(PUBLISHER_EVENT_TYPE, Fixture.mockBusinessEventPayload(mockPayload));
+        eventLogWriter.fireBusinessEvent(PUBLISHER_EVENT_TYPE, mockPayload);
 
         verify(eventLogRepository).save(eventLogCapture.capture());
 

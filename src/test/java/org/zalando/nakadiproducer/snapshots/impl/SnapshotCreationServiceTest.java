@@ -23,7 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
-import org.zalando.nakadiproducer.eventlog.EventPayload;
+import org.zalando.nakadiproducer.eventlog.DataChangeEventPayload;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider.Snapshot;
 import org.zalando.nakadiproducer.util.Fixture;
@@ -41,13 +41,13 @@ public class SnapshotCreationServiceTest {
     @InjectMocks
     private SnapshotCreationService eventTransmissionService;
 
-    private EventPayload eventPayload;
+    private DataChangeEventPayload eventPayload;
 
     @Rule
     public final ExpectedException expectedException = ExpectedException.none();
 
     @Captor
-    private ArgumentCaptor<EventPayload> listEventLogCaptor;
+    private ArgumentCaptor<DataChangeEventPayload> listEventLogCaptor;
 
     @Before
     public void setUp() throws Exception {
@@ -81,7 +81,7 @@ public class SnapshotCreationServiceTest {
         eventTransmissionService.createSnapshotEvents(PUBLISHER_EVENT_TYPE);
 
         // verify that all returned events got written
-        verify(eventLogWriter, times(5)).fireSnapshotEvent(isA(String.class), isA(EventPayload.class));
+        verify(eventLogWriter, times(5)).fireSnapshotEvent(isA(String.class), isA(DataChangeEventPayload.class));
     }
 
 }

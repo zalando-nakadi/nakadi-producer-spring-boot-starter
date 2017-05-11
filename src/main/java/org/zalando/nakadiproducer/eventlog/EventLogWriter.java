@@ -14,7 +14,7 @@ public interface EventLogWriter {
      *
      */
     @Transactional
-    void fireCreateEvent(EventPayload payload);
+    void fireCreateEvent(String eventType, EventPayload payload);
 
     /**
      * Suppose you want to update some object in a database and also you want to fire an event
@@ -26,7 +26,7 @@ public interface EventLogWriter {
      *
      */
     @Transactional
-    void fireUpdateEvent(EventPayload payload);
+    void fireUpdateEvent(String eventType, EventPayload payload);
 
     /**
      * Suppose you want to remove an object from a database and also you want to fire an event
@@ -38,10 +38,10 @@ public interface EventLogWriter {
      *
      */
     @Transactional
-    void fireDeleteEvent(EventPayload payload);
+    void fireDeleteEvent(String eventType, EventPayload payload);
 
     @Transactional
-    void fireSnapshotEvent(EventPayload payload);
+    void fireSnapshotEvent(String eventType, EventPayload payload);
 
     /**
      * Suppose you want to perform some action on an object in a database and also you want to fire a
@@ -52,5 +52,5 @@ public interface EventLogWriter {
      * @param payload some POJO that can be serialized into JSON (required parameter)
      */
     @Transactional
-    void fireBusinessEvent(EventPayload payload);
+    void fireBusinessEvent(String eventType, EventPayload payload);
 }

@@ -2,6 +2,7 @@ package org.zalando.nakadiproducer.snapshots.impl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -58,11 +59,11 @@ public class SnapshotCreationServiceTest {
 
     @Test
     public void testCreateSnapshotEvents() {
-        when(snapshotEventProvider.getSnapshot(PUBLISHER_EVENT_TYPE, null)).thenReturn(Collections.singletonList(new Snapshot(1, eventPayload)));
+        when(snapshotEventProvider.getSnapshot(PUBLISHER_EVENT_TYPE, null)).thenReturn(Collections.singletonList(new Snapshot(1, PUBLISHER_EVENT_TYPE, eventPayload)));
 
         eventTransmissionService.createSnapshotEvents(PUBLISHER_EVENT_TYPE);
 
-        verify(eventLogWriter).fireSnapshotEvent(listEventLogCaptor.capture());
+        verify(eventLogWriter).fireSnapshotEvent(eq(PUBLISHER_EVENT_TYPE), listEventLogCaptor.capture());
         assertThat(listEventLogCaptor.getValue(), is(eventPayload));
     }
 
@@ -80,7 +81,7 @@ public class SnapshotCreationServiceTest {
         eventTransmissionService.createSnapshotEvents(PUBLISHER_EVENT_TYPE);
 
         // verify that all returned events got written
-        verify(eventLogWriter, times(5)).fireSnapshotEvent(isA(EventPayload.class));
+        verify(eventLogWriter, times(5)).fireSnapshotEvent(isA(String.class), isA(EventPayload.class));
     }
 
 }

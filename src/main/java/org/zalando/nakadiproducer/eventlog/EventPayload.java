@@ -17,7 +17,7 @@ public interface EventPayload {
      * to each {@code EventDTO}'s {@code channel} as a {@code topicName} parameter
      * @return event type name
      */
-    String getEventType();
+
 
     /**
      * Returns predefined data type string name that will be attached

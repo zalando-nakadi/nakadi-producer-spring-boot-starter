@@ -45,6 +45,7 @@ public interface SnapshotEventProvider {
     @Getter
     class Snapshot {
         private Object id;
+        private String eventType;
         private EventPayload eventPayload;
     }
 

@@ -8,17 +8,9 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 public class SimpleEventPayload implements EventPayload {
-
-    private String eventType;
-
     private String dataType;
 
     private Object data;
-
-    @Override
-    public String getEventType() {
-        return eventType;
-    }
 
     @Override
     public String getDataType() {

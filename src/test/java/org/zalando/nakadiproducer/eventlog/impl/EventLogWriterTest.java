@@ -64,7 +64,7 @@ public class EventLogWriterTest {
     @Test
     public void testFireCreateEvent() throws Exception {
 
-        eventLogWriter.fireCreateEvent(eventPayload);
+        eventLogWriter.fireCreateEvent(PUBLISHER_EVENT_TYPE, eventPayload);
         verify(eventLogRepository).save(eventLogCapture.capture());
 
         assertThat(eventLogCapture.getValue().getDataOp(), is("C"));
@@ -80,7 +80,7 @@ public class EventLogWriterTest {
     @Test
     public void testFireUpdateEvent() throws Exception {
 
-        eventLogWriter.fireUpdateEvent(eventPayload);
+        eventLogWriter.fireUpdateEvent(PUBLISHER_EVENT_TYPE, eventPayload);
 
         verify(eventLogRepository).save(eventLogCapture.capture());
 
@@ -97,7 +97,7 @@ public class EventLogWriterTest {
     @Test
     public void testFireDeleteEvent() throws Exception {
 
-        eventLogWriter.fireDeleteEvent(eventPayload);
+        eventLogWriter.fireDeleteEvent(PUBLISHER_EVENT_TYPE, eventPayload);
 
         verify(eventLogRepository).save(eventLogCapture.capture());
 
@@ -113,7 +113,7 @@ public class EventLogWriterTest {
     @Test
     public void testFireSnapshotEvent() throws Exception {
 
-        eventLogWriter.fireSnapshotEvent(eventPayload);
+        eventLogWriter.fireSnapshotEvent(PUBLISHER_EVENT_TYPE, eventPayload);
 
         verify(eventLogRepository).save(eventLogCapture.capture());
 
@@ -131,7 +131,7 @@ public class EventLogWriterTest {
         MockPayload mockPayload = Fixture.mockPayload(1, "mockedcode", true,
                 Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
 
-        eventLogWriter.fireBusinessEvent(Fixture.mockBusinessEventPayload(mockPayload));
+        eventLogWriter.fireBusinessEvent(PUBLISHER_EVENT_TYPE, Fixture.mockBusinessEventPayload(mockPayload));
 
         verify(eventLogRepository).save(eventLogCapture.capture());
 

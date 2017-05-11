@@ -29,42 +29,42 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
-    public void fireCreateEvent(final EventPayload payload) {
-        final EventLog eventLog = createEventLog(EventDataOperation.CREATE, payload);
+    public void fireCreateEvent(final String eventType, final EventPayload payload) {
+        final EventLog eventLog = createEventLog(eventType, EventDataOperation.CREATE, payload);
         eventLogRepository.save(eventLog);
     }
 
     @Override
     @Transactional
-    public void fireUpdateEvent(final EventPayload payload) {
-        final EventLog eventLog = createEventLog(EventDataOperation.UPDATE, payload);
+    public void fireUpdateEvent(final String eventType, final EventPayload payload) {
+        final EventLog eventLog = createEventLog(eventType, EventDataOperation.UPDATE, payload);
         eventLogRepository.save(eventLog);
     }
 
     @Override
     @Transactional
-    public void fireDeleteEvent(final EventPayload payload) {
-        final EventLog eventLog = createEventLog(EventDataOperation.DELETE, payload);
+    public void fireDeleteEvent(final String eventType, final EventPayload payload) {
+        final EventLog eventLog = createEventLog(eventType, EventDataOperation.DELETE, payload);
         eventLogRepository.save(eventLog);
     }
 
     @Override
     @Transactional
-    public void fireSnapshotEvent(final EventPayload payload) {
-        final EventLog eventLog = createEventLog(EventDataOperation.SNAPSHOT, payload);
+    public void fireSnapshotEvent(final String eventType, final EventPayload payload) {
+        final EventLog eventLog = createEventLog(eventType, EventDataOperation.SNAPSHOT, payload);
         eventLogRepository.save(eventLog);
     }
 
     @Override
-    public void fireBusinessEvent(EventPayload payload) {
+    public void fireBusinessEvent(final String eventType, EventPayload payload) {
         // data_op doesn't make sense for business events, so just nulify it
-        final EventLog eventLog = createEventLog(null, payload);
+        final EventLog eventLog = createEventLog(eventType, null, payload);
         eventLogRepository.save(eventLog);
     }
 
-    private EventLog createEventLog(final EventDataOperation dataOp, final EventPayload eventPayload) {
+    private EventLog createEventLog(final String eventType, final EventDataOperation dataOp, final EventPayload eventPayload) {
         final EventLog eventLog = new EventLog();
-        eventLog.setEventType(eventPayload.getEventType());
+        eventLog.setEventType(eventType);
         try {
             eventLog.setEventBodyData(objectMapper.writeValueAsString(eventPayload.getData()));
         } catch (final JsonProcessingException e) {

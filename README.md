@@ -1,21 +1,24 @@
 # nakadi-producer-spring-boot-starter
-[Nakadi](https://github.com/zalando/nakadi) event producer as a Spring boot starter.
+Nakadi event producer library as a Spring boot starter.
 
-Nakadi is a distributed event bus that implements a RESTful API abstraction instead of Kafka-like queues.
+[Nakadi](https://github.com/zalando/nakadi) is a distributed event bus that implements a RESTful API abstraction instead of Kafka-like queues.
 
 The goal of this Spring Boot starter is to simplify the integration between event producer and Nakadi. New events are persisted in a log table as part of the producing JDBC transaction. They will then be sent asynchonously to Nakadi after the transaction completed. If the transaction is rolled back, the events will vanish too. As a result, events will always be sent if and only if the transaction succeeded.
 
 The Transmitter generates a strictly monotonically increasing event id that can be used for ordering the events during retrieval. It is not guaranteed, that events will be sent to Nakadi in the order they have been produced. If an event could not be sent to Nakadi, the library will periodically retry the transmission.
 
-Be aware that this library **does neither guarantee that events are sent exactly once, nor that they are sent in the order they have been persisted**. This is not a bug but a design decision that allows us to skip and retry sending events later in case of temporary failures. So make sure that your events are designed to be processed out of order.  To help you in this matter, the library generates a *strictly monotonically increasing event id* (field `metadata/eid` in Nakadi's event object) that can be used to reconstruct the message order.  
+Be aware that this library **does neither guarantee that events are sent exactly once, nor that they are sent in the order they have been persisted**. This is not a bug but a design decision that allows us to skip and retry sending events later in case of temporary failures. So make sure that your events are designed to be processed out of order.  To help you in this matter, the library generates a *strictly monotonically increasing event id* (field `metadata/eid` in Nakadi's event object) that can be used to reconstruct the message order.
+
+
 ## Prerequisites
 
-This library tested with Spring Boot 1.5.3.RELEASE and relies on existing PostgreSQL DataSource configured
+This library was tested with Spring Boot 1.5.3.RELEASE and relies on existing configured PostgreSQL DataSource.
 
 This library also uses:
 
 * flyway-core
-* Spring Data JPA 
+* Spring Data JPA
+* [fahrschein](https://github.com/zalando-incubator/fahrschein) Nakadi client library
 * (Optional) Zalando's tracer-spring-boot-starter
 * (Optional) Zalando's tokens library
 
@@ -30,7 +33,7 @@ Include the library in your `pom.xml`:
 </dependency>
 ``` 
 
-Use `@EnableNakadiProducer` annotation to activate spring boot starter auto configuration
+Use `@EnableNakadiProducer` annotation to activate spring boot starter auto configuration:
 ```java
 @SpringBootApplication
 @EnableJpaRepositories
@@ -77,6 +80,8 @@ nakadi-producer:
   access-token-scopes: uid, nakadi.event_stream.write
 ```
 
+(Note that in the future you'll need a specific scope for writing to each event stream.)
+
 If you do not use the STUPS Tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The starter will detect it and call it once for each request to retrieve the token. 
 
 ### X-Flow-ID (Optional)
@@ -103,7 +108,10 @@ tracer:
 
 The typical use case for this library is to publish events like creating or updating of some objects.
 
-In order to store events you can autowire `EventLogWriter` service and use its methods: `fireCreateEvent` and `fireUpdateEvent`.
+In order to store events you can autowire the [`EventLogWriter`](src/main/java/org/zalando/nakadiproducer/eventlog/EventLogWriter.java) service and use its methods: `fireCreateEvent`, `fireUpdateEvent`, `fireDeleteEvent`, `fireSnapshotEvent`) or `fireBusinessEvent`.
+
+(You normally don't need to call `fireSnapshotEvent` directly, see below for [snapshot creation](#event-snapshots).)
+
 
 Example of using `fireCreateEvent`:
 
@@ -112,42 +120,53 @@ Example of using `fireCreateEvent`:
 public class SomeYourService {
 
     @Autowire
-    private EventLogWriter eventLogWriter; 
+    private EventLogWriter eventLogWriter;
+
+    @Autowired
+    private WarehouseRepository repository;
     
     @Transactional
-    public void createObject(Warehouse data, String flowId) {
+    public void createObject(Warehouse data) {
         
-        // ...
-        // ... here we store an object in a database table
-        // ...
+        // here we store an object in a database table
+        repository.save(data);
        
-        // compose an event payload
-        EventPayload eventPayload = SimpleEventPayload.builder()
-                .data(data)
-                .eventType("wholesale.warehouse-change-event")
-                .dataType("wholesale:warehouse")
-                .build();
-
         // and then in the same transaction we save the event about this object creation
-        eventLogWriter.fireCreateEvent(eventPayload, flowId);
+        eventLogWriter.fireCreateEvent("wholesale.warehouse-change-event", "wholesale:warehouse", data);
     }
 }
 ```
 
-**Note:** `flowId` is an optional parameter that will be saved with the event to make it traceable. It could be a value of an X-Flow-ID header.
+**Note:** The parameters to the `fire*Event` methods (except for business events) are the following:
 
-**Note:** `EventPayload` is an event payload structure that should contain following information:
+* **eventType** - event type name string that determines to which channel/topic the event will get sent.
+                  That event type name needs to exist at Nakadi.
+* **dataType** - data type name string that will end up as the `data_type` property of the data change event.
+                  ([It is not really clear what this property is used for](https://github.com/zalando/nakadi/issues/382),
+                   but it is required.)
+* **data** - event data payload itself, which will end up in the `data` property of the data change event.
+              This should be an object representing the resource which was created/updated/deleted.
+              This doesn't necessarily have to be the same object as you store in your DB, it can be a different
+              class which is optimized for JSON serialization. Its JSON serialization should confirm to the
+              JSON schema defined at the event type definition in Nakadi.
 
-* **eventType** - predefined event type sting name that will be attached to each `EventDTO`'s `channel` object as a `topicName` property
-* **dataType** - predefined data type string name that will be attached to each `EventDTO`'s `event_payload` object as a `data_type` property
-* **data** - event data payload itself that will be attached to each `EventDTO`'s `event_payload` object as a `data` property
+The choice of the method (*Create/Update/Delete/Snapshot*) event will determine the `data_op` field of the event.
 
 It makes sense to use these methods in one transaction with corresponding object creation or mutation. This way we get rid of distributed-transaction problem as mentioned earlier.
 
-### Event snapshots
-A Snapshot event is a special event type (data operation) defined by Nakadi. It does not represent a change of the state of a resource, but a current snapshot of the state of the resource.  
+For business events, you have just two parameters, the **eventType** and the event **payload** object.
+You usually should fire those also in the same transaction as you are storing the results of the
+process step the event is reporting.
 
-This library provides a Spring Boot Actuator endpoint named `snapshot_event_creation` that can be used to trigger a Snapshot for a given event type. Assuming your management port is set to `7979`
+
+### Event snapshots
+A Snapshot event is a special type of data change event (data operation) defined by Nakadi.
+It does not represent a change of the state of a resource, but a current snapshot of the state of the resource.
+
+You can create snapshot events programmatically (using EventLogWriter.fireSnapshotEvent), but usually snapshot event
+creation is a irregular, manually triggered maintenance task.
+
+This library provides a Spring Boot Actuator endpoint named `snapshot_event_creation` that can be used to trigger a Snapshot for a given event type. Assuming your management port is set to `7979`,
 
     GET localhost:7979/snapshot_event_creation
 

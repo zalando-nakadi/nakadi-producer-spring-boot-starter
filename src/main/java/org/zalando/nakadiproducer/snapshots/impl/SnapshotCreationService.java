@@ -31,7 +31,7 @@ public class SnapshotCreationService {
             }
 
             for (Snapshot snapshot : snapshots) {
-                eventLogWriter.fireSnapshotEvent(eventType, snapshot.getEventPayload());
+                eventLogWriter.fireSnapshotEvent(eventType, snapshot.getDataType(), snapshot.getData());
                 lastProcessedId = snapshot.getId();
             }
         } while (true);

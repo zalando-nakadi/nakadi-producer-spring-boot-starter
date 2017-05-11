@@ -89,6 +89,12 @@ public interface EventLogWriter {
      * consumers or hotfixes of data inconsistencies between producer and
      * consumer.
      * </p>
+     * <p>
+     * Normally applications don't have to call this themselves, instead they
+     * should implement the
+     * {@link org.zalando.nakadiproducer.snapshots.SnapshotEventProvider}
+     * interface to add support for snapshot creation via the actuator endpoint.
+     * </p>
      *
      * @param eventType
      *            the Nakadi event type of the event. This is roughly equivalent

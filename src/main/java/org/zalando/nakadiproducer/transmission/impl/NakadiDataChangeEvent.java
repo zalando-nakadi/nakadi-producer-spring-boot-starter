@@ -7,7 +7,7 @@ import java.util.HashMap;
 import lombok.Data;
 
 @Data
-public class NakadiEvent {
+public class NakadiDataChangeEvent {
 
     @JsonProperty("data_type")
     private String dataType;

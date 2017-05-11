@@ -46,7 +46,6 @@ public class EventTransmissionService {
     @Transactional
     public void sendEvent(EventLog eventLog) {
         try {
-            // If it's a business event we use a different payload wrapper
             nakadiClient.publish(eventLog.getEventType(), singletonList(mapToNakadiEvent(eventLog)));
             log.info("Event {} locked by {} was sucessfully transmitted to nakadi", eventLog.getId(), eventLog.getLockedBy());
             eventLogRepository.delete(eventLog);

@@ -69,8 +69,6 @@ public class EventLogWriterTest {
         eventLogWriter.fireCreateEvent(PUBLISHER_EVENT_TYPE, eventPayload);
         verify(eventLogRepository).save(eventLogCapture.capture());
 
-        assertThat(eventLogCapture.getValue().getDataOp(), is(nullValue()));
-        assertThat(eventLogCapture.getValue().getDataType(), is(nullValue()));
         assertThat(eventLogCapture.getValue().getEventBodyData(), is(DATA_CHANGE_BODY_DATA.replace("{DATA_OP}", "C")));
         assertThat(eventLogCapture.getValue().getEventType(), is(PUBLISHER_EVENT_TYPE));
         assertThat(eventLogCapture.getValue().getFlowId(), is(TRACE_ID));
@@ -86,8 +84,6 @@ public class EventLogWriterTest {
 
         verify(eventLogRepository).save(eventLogCapture.capture());
 
-        assertThat(eventLogCapture.getValue().getDataOp(), is(nullValue()));
-        assertThat(eventLogCapture.getValue().getDataType(), is(nullValue()));
         assertThat(eventLogCapture.getValue().getEventBodyData(), is(DATA_CHANGE_BODY_DATA.replace("{DATA_OP}", "U")));
         assertThat(eventLogCapture.getValue().getEventType(), is(PUBLISHER_EVENT_TYPE));
         assertThat(eventLogCapture.getValue().getFlowId(), is(TRACE_ID));
@@ -103,8 +99,6 @@ public class EventLogWriterTest {
 
         verify(eventLogRepository).save(eventLogCapture.capture());
 
-        assertThat(eventLogCapture.getValue().getDataOp(), is(nullValue()));
-        assertThat(eventLogCapture.getValue().getDataType(), is(nullValue()));
         assertThat(eventLogCapture.getValue().getEventBodyData(), is(DATA_CHANGE_BODY_DATA.replace("{DATA_OP}", "D")));
         assertThat(eventLogCapture.getValue().getEventType(), is(PUBLISHER_EVENT_TYPE));
         assertThat(eventLogCapture.getValue().getFlowId(), is(TRACE_ID));
@@ -119,8 +113,6 @@ public class EventLogWriterTest {
 
         verify(eventLogRepository).save(eventLogCapture.capture());
 
-        assertThat(eventLogCapture.getValue().getDataOp(), is(nullValue()));
-        assertThat(eventLogCapture.getValue().getDataType(), is(nullValue()));
         assertThat(eventLogCapture.getValue().getEventBodyData(), is(DATA_CHANGE_BODY_DATA.replace("{DATA_OP}", "S")));
         assertThat(eventLogCapture.getValue().getEventType(), is(PUBLISHER_EVENT_TYPE));
         assertThat(eventLogCapture.getValue().getFlowId(), is(TRACE_ID));
@@ -137,8 +129,6 @@ public class EventLogWriterTest {
 
         verify(eventLogRepository).save(eventLogCapture.capture());
 
-        assertThat(eventLogCapture.getValue().getDataOp(), is(nullValue()));
-        assertThat(eventLogCapture.getValue().getDataType(), is(nullValue()));
         assertThat(eventLogCapture.getValue().getEventBodyData(), is(EVENT_BODY_DATA));
         assertThat(eventLogCapture.getValue().getEventType(), is(PUBLISHER_EVENT_TYPE));
         assertThat(eventLogCapture.getValue().getFlowId(), is(TRACE_ID));

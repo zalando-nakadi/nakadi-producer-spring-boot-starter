@@ -39,12 +39,6 @@ public class EventLog {
 
     private String eventBodyData;
 
-    @Deprecated
-    private String dataType;
-
-    @Deprecated
-    private String dataOp;
-
     private String flowId;
 
     @CreatedDate

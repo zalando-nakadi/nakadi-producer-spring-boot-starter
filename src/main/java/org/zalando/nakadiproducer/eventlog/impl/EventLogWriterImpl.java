@@ -75,8 +75,6 @@ public class EventLogWriterImpl implements EventLogWriter {
             throw new IllegalStateException("could not map object to json: " + eventPayload.toString(), e);
         }
 
-        eventLog.setDataOp(null);
-        eventLog.setDataType(null);
         eventLog.setFlowId(flowIdComponent.getXFlowIdValue());
         return eventLog;
     }

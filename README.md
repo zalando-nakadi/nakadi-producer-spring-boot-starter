@@ -108,9 +108,9 @@ tracer:
 
 The typical use case for this library is to publish events like creating or updating of some objects.
 
-In order to store events you can autowire the [`EventLogWriter`](src/main/java/org/zalando/nakadiproducer/eventlog/EventLogWriter.java) service and use its methods: `fireCreateEvent`, `fireUpdateEvent`, `fireDeleteEvent`, `fireSnapshotEvent`) or `fireBusinessEvent`.
+In order to store events you can autowire the [`EventLogWriter`](src/main/java/org/zalando/nakadiproducer/eventlog/EventLogWriter.java) service and use its methods: `fireCreateEvent`, `fireUpdateEvent`, `fireDeleteEvent`, `fireSnapshotEvent` or `fireBusinessEvent`.
 
-(You normally don't need to call `fireSnapshotEvent` directly, see below for [snapshot creation](#event-snapshots).)
+You normally don't need to call `fireSnapshotEvent` directly, see below for [snapshot creation](#event-snapshots).
 
 
 Example of using `fireCreateEvent`:

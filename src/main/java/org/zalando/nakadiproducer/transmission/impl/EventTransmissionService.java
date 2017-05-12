@@ -9,6 +9,7 @@ import java.io.UncheckedIOException;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.UUID;
 
 import javax.transaction.Transactional;
@@ -20,7 +21,6 @@ import org.zalando.nakadiproducer.eventlog.impl.EventLog;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Maps;
 
 @Service
 @Slf4j
@@ -65,7 +65,7 @@ public class EventTransmissionService {
 
         HashMap<String, Object> payloadDTO;
         try {
-            payloadDTO = objectMapper.readValue(event.getEventBodyData(), Maps.newLinkedHashMap().getClass());
+            payloadDTO = objectMapper.readValue(event.getEventBodyData(), new LinkedHashMap<String, Object>().getClass());
         } catch (IOException e) {
             log.error("An error occurred at JSON deserialization", e);
             throw new UncheckedIOException(e);

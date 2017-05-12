@@ -46,7 +46,7 @@ public class EventTransmissionService {
     @Transactional
     public void sendEvent(EventLog eventLog) {
         try {
-            nakadiClient.publish(eventLog.getEventType(), singletonList(mapToNakadiPayload(eventLog)));
+            nakadiClient.publish(eventLog.getEventType(), singletonList(mapToNakadiEvent(eventLog)));
             log.info("Event {} locked by {} was sucessfully transmitted to nakadi", eventLog.getId(), eventLog.getLockedBy());
             eventLogRepository.delete(eventLog);
         } catch (IOException e) {
@@ -55,17 +55,13 @@ public class EventTransmissionService {
 
     }
 
-    public NakadiEvent mapToNakadiPayload(final EventLog event) {
-
+    public NakadiEvent mapToNakadiEvent(final EventLog event) {
         final NakadiEvent nakadiEvent = new NakadiEvent();
 
         final NakadiMetadata metadata = new NakadiMetadata();
         metadata.setEid(convertToUUID(event.getId()));
         metadata.setOccuredAt(event.getCreated());
         nakadiEvent.setMetadata(metadata);
-
-        nakadiEvent.setDataOperation(event.getDataOp());
-        nakadiEvent.setDataType(event.getDataType());
 
         HashMap<String, Object> payloadDTO;
         try {
@@ -79,8 +75,6 @@ public class EventTransmissionService {
 
         return nakadiEvent;
     }
-
-
 
     /**
      * Converts a number in UUID format.

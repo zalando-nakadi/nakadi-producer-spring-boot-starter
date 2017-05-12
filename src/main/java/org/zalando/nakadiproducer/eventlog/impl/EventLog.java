@@ -39,10 +39,6 @@ public class EventLog {
 
     private String eventBodyData;
 
-    private String dataType;
-
-    private String dataOp;
-
     private String flowId;
 
     @CreatedDate

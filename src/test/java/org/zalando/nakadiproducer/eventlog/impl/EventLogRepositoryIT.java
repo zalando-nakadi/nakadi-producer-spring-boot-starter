@@ -33,7 +33,6 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
             + "}").replace('\'', '"');
 
     private final String WAREHOUSE_EVENT_TYPE = "wholesale.warehouse-change-event";
-    private final String WAREHOUSE_DATA_TYPE = "wholesale:warehouse";
 
     private Integer id;
 
@@ -43,8 +42,6 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
 
         final EventLog eventLog = EventLog.builder().eventBodyData(WAREHOUSE_EVENT_BODY_DATA)
                                                                      .eventType(WAREHOUSE_EVENT_TYPE)
-                                                                     .dataType(WAREHOUSE_DATA_TYPE)
-                                                                     .dataOp(EventDataOperation.CREATE.toString())
                                                                      .flowId("FLOW_ID").build();
         eventLogRepository.saveAndFlush(eventLog);
         id = eventLog.getId();
@@ -59,8 +56,6 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
     private void compareWithPersistedEvent(final EventLog eventLog) {
         assertThat(eventLog.getEventBodyData(), is(WAREHOUSE_EVENT_BODY_DATA));
         assertThat(eventLog.getEventType(), is(WAREHOUSE_EVENT_TYPE));
-        assertThat(eventLog.getDataType(), is(WAREHOUSE_DATA_TYPE));
-        assertThat(eventLog.getDataOp(), is(EventDataOperation.CREATE.toString()));
     }
 
 }

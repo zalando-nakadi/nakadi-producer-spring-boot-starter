@@ -3,6 +3,9 @@ package org.zalando.nakadiproducer.transmission;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -14,7 +17,7 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 
 public class MockNakadiClient implements NakadiClient {
     private final ObjectMapper objectMapper;
-    private final List<String> sentEvents = new ArrayList<>();
+    private final MultiValueMap<String, String> sentEvents = new LinkedMultiValueMap<>();
 
     public MockNakadiClient() {
         this(createDefaultObjectMapper());
@@ -26,12 +29,12 @@ public class MockNakadiClient implements NakadiClient {
 
     @Override
     public synchronized void publish(String eventType, List<?> nakadiEvents) {
-        nakadiEvents.stream().map(this::transformToJson).forEach(sentEvents::add);
+        nakadiEvents.stream().map(this::transformToJson).forEach(e -> sentEvents.add(eventType, e));
     }
 
-    public synchronized List<String> getSentEvents() {
+    public synchronized List<String> getSentEvents(String eventType) {
         ArrayList<String> events = new ArrayList<>();
-        events.addAll(sentEvents);
+        events.addAll(sentEvents.get(eventType));
         return events;
     }
 

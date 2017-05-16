@@ -47,7 +47,7 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
         eventLogWriter.fireCreateEvent(MY_DATA_CHANGE_EVENT_TYPE, PUBLISHER_DATA_TYPE, payload);
 
         eventTransmitter.sendEvents();
-        List<String> value = nakadiClient.getSentEvents();
+        List<String> value = nakadiClient.getSentEvents(MY_DATA_CHANGE_EVENT_TYPE);
 
         assertThat(value.size(), is(1));
         assertThat(read(value.get(0), "$.data_op"), is("C"));
@@ -61,7 +61,7 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
         eventLogWriter.fireBusinessEvent(MY_BUSINESS_EVENT_TYPE, payload);
 
         eventTransmitter.sendEvents();
-        List<String> value = nakadiClient.getSentEvents();
+        List<String> value = nakadiClient.getSentEvents(MY_BUSINESS_EVENT_TYPE);
 
         assertThat(value.size(), is(1));
         assertThat(read(value.get(0), "$.id"), is(payload.getId()));

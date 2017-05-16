@@ -209,7 +209,7 @@ public class MyIT {
         myTransactionalService.doSomethingAndFireEvent();
 
         eventTransmitter.sendEvents();
-        List<String> jsonStrings = nakadiClient.getSentEvents();
+        List<String> jsonStrings = nakadiClient.getSentEvents("my_event_type");
 
         assertThat(jsonStrings.size(), is(1));
         assertThat(read(jsonStrings.get(0), "$.data_op"), is("C"));

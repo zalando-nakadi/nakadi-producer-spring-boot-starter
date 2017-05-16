@@ -63,24 +63,29 @@ public class NakadiProducerAutoConfiguration {
         };
     }
 
-    @Bean
     @ConditionalOnMissingBean(NakadiClient.class)
-    public NakadiClient nakadiClient(AccessTokenProvider accessTokenProvider, @Value("${nakadi-producer.nakadi-base-uri}") URI nakadiBaseUri) {
-        return new FahrscheinNakadiClient(
-            org.zalando.fahrschein.NakadiClient.builder(nakadiBaseUri)
-                                               .withAccessTokenProvider(accessTokenProvider::getAccessToken)
-                                               .build()
-        );
-    }
-
-    @ConditionalOnClass(name = "org.zalando.stups.tokens.Tokens")
     @Configuration
-    static class StupsTokenConfiguration {
-        @Bean(destroyMethod = "stop")
-        @ConditionalOnProperty({"nakadi-producer.access-token-uri", "nakadi-producer.access-token-scopes"})
-        @ConditionalOnMissingBean(AccessTokenProvider.class)
-        public StupsTokenComponent accessTokenProvider(@Value("${nakadi-producer.access-token-uri}") URI accessTokenUri, @Value("${nakadi-producer.access-token-scopes}") String[] accessTokenScopes) {
-            return new StupsTokenComponent(accessTokenUri, Arrays.asList(accessTokenScopes));
+    static class FahrscheinNakadiClientConfiguration {
+
+        @Bean
+        public NakadiClient nakadiClient(AccessTokenProvider accessTokenProvider, @Value("${nakadi-producer.nakadi-base-uri}") URI nakadiBaseUri) {
+            return new FahrscheinNakadiClient(
+                org.zalando.fahrschein.NakadiClient.builder(nakadiBaseUri)
+                                                   .withAccessTokenProvider(accessTokenProvider::getAccessToken)
+                                                   .build()
+            );
+        }
+
+
+        @ConditionalOnClass(name = "org.zalando.stups.tokens.Tokens")
+        @Configuration
+        static class StupsTokenConfiguration {
+            @Bean(destroyMethod = "stop")
+            @ConditionalOnProperty({"nakadi-producer.access-token-uri", "nakadi-producer.access-token-scopes"})
+            @ConditionalOnMissingBean(AccessTokenProvider.class)
+            public StupsTokenComponent accessTokenProvider(@Value("${nakadi-producer.access-token-uri}") URI accessTokenUri, @Value("${nakadi-producer.access-token-scopes}") String[] accessTokenScopes) {
+                return new StupsTokenComponent(accessTokenUri, Arrays.asList(accessTokenScopes));
+            }
         }
     }
 

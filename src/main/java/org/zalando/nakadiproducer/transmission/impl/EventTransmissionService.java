@@ -20,6 +20,7 @@ import org.zalando.fahrschein.NakadiClient;
 import org.zalando.nakadiproducer.eventlog.impl.EventLog;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -65,7 +66,7 @@ public class EventTransmissionService {
 
         HashMap<String, Object> payloadDTO;
         try {
-            payloadDTO = objectMapper.readValue(event.getEventBodyData(), new LinkedHashMap<String, Object>().getClass());
+            payloadDTO = objectMapper.readValue(event.getEventBodyData(), new TypeReference<LinkedHashMap<String, Object>>() { });
         } catch (IOException e) {
             log.error("An error occurred at JSON deserialization", e);
             throw new UncheckedIOException(e);

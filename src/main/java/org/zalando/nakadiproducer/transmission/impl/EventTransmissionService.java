@@ -16,9 +16,9 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.zalando.fahrschein.NakadiClient;
 import org.zalando.nakadiproducer.eventlog.impl.EventLog;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
+import org.zalando.nakadiproducer.transmission.NakadiClient;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,7 +50,7 @@ public class EventTransmissionService {
             nakadiClient.publish(eventLog.getEventType(), singletonList(mapToNakadiEvent(eventLog)));
             log.info("Event {} locked by {} was sucessfully transmitted to nakadi", eventLog.getId(), eventLog.getLockedBy());
             eventLogRepository.delete(eventLog);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Event {} locked by {} could not be transmitted to nakadi: {}", eventLog.getId(), eventLog.getLockedBy(), e.getMessage());
         }
 

@@ -25,7 +25,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.zalando.fahrschein.NakadiClient;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.flowid.NoopFlowIdComponent;
 import org.zalando.nakadiproducer.flowid.TracerFlowIdComponent;
@@ -34,6 +33,8 @@ import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationEndpoint;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationMvcEndpoint;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventProviderNotImplementedException;
+import org.zalando.nakadiproducer.transmission.NakadiClient;
+import org.zalando.nakadiproducer.transmission.impl.FahrscheinNakadiClient;
 import org.zalando.tracer.Tracer;
 
 @Configuration
@@ -65,9 +66,11 @@ public class NakadiProducerAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(NakadiClient.class)
     public NakadiClient nakadiClient(AccessTokenProvider accessTokenProvider, @Value("${nakadi-producer.nakadi-base-uri}") URI nakadiBaseUri) {
-        return NakadiClient.builder(nakadiBaseUri)
-                           .withAccessTokenProvider(accessTokenProvider::getAccessToken)
-                           .build();
+        return new FahrscheinNakadiClient(
+            org.zalando.fahrschein.NakadiClient.builder(nakadiBaseUri)
+                                               .withAccessTokenProvider(accessTokenProvider::getAccessToken)
+                                               .build()
+        );
     }
 
     @ConditionalOnClass(name = "org.zalando.stups.tokens.Tokens")

@@ -6,15 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.zalando.nakadiproducer.transmission.NakadiClient;
 
 public class FahrscheinNakadiClient implements NakadiClient {
-    private final org.zalando.fahrschein.NakadiClient delegatee;
+    private final org.zalando.fahrschein.NakadiClient delegate;
 
     @Autowired
-    public FahrscheinNakadiClient(org.zalando.fahrschein.NakadiClient delegatee) {
-        this.delegatee = delegatee;
+    public FahrscheinNakadiClient(org.zalando.fahrschein.NakadiClient delegate) {
+        this.delegate = delegate;
     }
 
     @Override
     public void publish(String eventType, List<?> nakadiEvents) throws Exception {
-        delegatee.publish(eventType, nakadiEvents);
+        delegate.publish(eventType, nakadiEvents);
     }
 }

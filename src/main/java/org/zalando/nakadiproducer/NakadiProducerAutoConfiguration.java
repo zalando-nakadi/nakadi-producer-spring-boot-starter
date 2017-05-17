@@ -128,7 +128,7 @@ public class NakadiProducerAutoConfiguration {
     @PostConstruct
     public void migrateFlyway() {
         Flyway flyway = new Flyway();
-        flyway.setLocations("classpath:db_nakadiproducer/migrations/postgresql");
+        flyway.setLocations("classpath:db_nakadiproducer/migrations");
         flyway.setSchemas("nakadi_events");
         flyway.setDataSource(dataSource);
         flyway.migrate();

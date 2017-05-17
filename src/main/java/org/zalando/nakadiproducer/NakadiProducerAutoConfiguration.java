@@ -131,6 +131,8 @@ public class NakadiProducerAutoConfiguration {
         flyway.setLocations("classpath:db_nakadiproducer/migrations");
         flyway.setSchemas("nakadi_events");
         flyway.setDataSource(dataSource);
+        flyway.setBaselineOnMigrate(true);
+        flyway.setBaselineVersionAsString("2133546886.1.0");
         flyway.migrate();
     }
 }

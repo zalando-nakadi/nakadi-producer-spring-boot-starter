@@ -9,6 +9,8 @@ The Transmitter generates a strictly monotonically increasing event id that can 
 
 Be aware that this library **does neither guarantee that events are sent exactly once, nor that they are sent in the order they have been persisted**. This is not a bug but a design decision that allows us to skip and retry sending events later in case of temporary failures. So make sure that your events are designed to be processed out of order.  To help you in this matter, the library generates a *strictly monotonically increasing event id* (field `metadata/eid` in Nakadi's event object) that can be used to reconstruct the message order.
 
+Please also be aware that, when udating between major releases of this lib, you must not jump over a major release (1.0 -> 3.0). Please always deploy the intermediate major releases at least once. You may of course always setup a fresh system with the newest version.
+
 
 ## Prerequisites
 

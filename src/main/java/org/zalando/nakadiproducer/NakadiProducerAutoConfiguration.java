@@ -9,7 +9,10 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
+import javax.sql.DataSource;
 
+import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.ManagementContextConfiguration;
@@ -44,6 +47,9 @@ import org.zalando.tracer.Tracer;
 @ManagementContextConfiguration
 @AutoConfigureAfter(name="org.zalando.tracer.spring.TracerAutoConfiguration")
 public class NakadiProducerAutoConfiguration {
+
+    @Autowired
+    private DataSource dataSource;
 
     @Bean
     @ConditionalOnMissingBean(SnapshotEventProvider.class)
@@ -117,5 +123,14 @@ public class NakadiProducerAutoConfiguration {
     @ConditionalOnEnabledEndpoint("snapshot_event_creation")
     public SnapshotEventCreationMvcEndpoint snapshotEventCreationMvcEndpoint(SnapshotEventCreationEndpoint snapshotEventCreationEndpoint) {
         return new SnapshotEventCreationMvcEndpoint(snapshotEventCreationEndpoint);
+    }
+
+    @PostConstruct
+    public void migrateFlyway() {
+        Flyway flyway = new Flyway();
+        flyway.setLocations("classpath:db_nakadiproducer/migrations/postgresql");
+        flyway.setSchemas("nakadi_events");
+        flyway.setDataSource(dataSource);
+        flyway.migrate();
     }
 }

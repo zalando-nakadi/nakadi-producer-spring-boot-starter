@@ -46,14 +46,7 @@ public class Application {
 }
 ```
 
-The library uses flyway migrations to set up its own database schema. You must therefore make sure that `classpath:db_nakadiproducer/migrations` is present in a `flyway.locations` property:
-
-```yaml
-flyway.locations: 
-  - classpath:db_nakadiproducer/migrations
-  - classpath:my_db/your_services_migrations
-```
-
+The library uses flyway migrations to set up its own database schema `nakadi_events`.
 ### Nakadi communication configuration
 
 You must tell the library, where it can reach your Nakadi instance:

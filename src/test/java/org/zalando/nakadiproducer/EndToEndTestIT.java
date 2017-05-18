@@ -1,24 +1,21 @@
 package org.zalando.nakadiproducer;
 
+import static com.jayway.jsonpath.Criteria.where;
+import static com.jayway.jsonpath.JsonPath.read;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.zalando.fahrschein.NakadiClient;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
+import org.zalando.nakadiproducer.transmission.MockNakadiPublishingClient;
 import org.zalando.nakadiproducer.transmission.impl.EventTransmitter;
-import org.zalando.nakadiproducer.transmission.impl.NakadiEvent;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 
@@ -35,10 +32,14 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
     private EventTransmitter eventTransmitter;
 
     @Autowired
-    private NakadiClient nakadiClient;
+    private MockNakadiPublishingClient nakadiClient;
 
-    @Captor
-    private ArgumentCaptor<List<NakadiEvent>> eventCaptor;
+    @Before
+    @After
+    public void clearNakadiEvents() {
+        eventTransmitter.sendEvents();
+        nakadiClient.clearSentEvents();
+    }
 
     @Test
     public void dataEventsShouldBeSubmittedToNakadi() throws IOException {
@@ -46,15 +47,12 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
         eventLogWriter.fireCreateEvent(MY_DATA_CHANGE_EVENT_TYPE, PUBLISHER_DATA_TYPE, payload);
 
         eventTransmitter.sendEvents();
-
-        verify(nakadiClient).publish(eq(MY_DATA_CHANGE_EVENT_TYPE), eventCaptor.capture());
-        List<NakadiEvent> value = eventCaptor.getValue();
+        List<String> value = nakadiClient.getSentEvents(MY_DATA_CHANGE_EVENT_TYPE);
 
         assertThat(value.size(), is(1));
-        assertThat(value.get(0).any().get("data_op"), is("C"));
-        assertThat(value.get(0).any().get("data_type"), is(PUBLISHER_DATA_TYPE));
-        Map<String, Object> data = (Map<String, Object>) value.get(0).any().get("data");
-        assertThat(data.get("code"), is(CODE));
+        assertThat(read(value.get(0), "$.data_op"), is("C"));
+        assertThat(read(value.get(0), "$.data_type"), is(PUBLISHER_DATA_TYPE));
+        assertThat(read(value.get(0), "$.data.code"), is(CODE));
     }
 
     @Test
@@ -63,20 +61,18 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
         eventLogWriter.fireBusinessEvent(MY_BUSINESS_EVENT_TYPE, payload);
 
         eventTransmitter.sendEvents();
-
-        verify(nakadiClient).publish(eq(MY_BUSINESS_EVENT_TYPE), eventCaptor.capture());
-        List<NakadiEvent> value = eventCaptor.getValue();
+        List<String> value = nakadiClient.getSentEvents(MY_BUSINESS_EVENT_TYPE);
 
         assertThat(value.size(), is(1));
-        assertThat(value.get(0).any().get("data_op"), is(nullValue()));
-        assertThat(value.get(0).any().get("data_type"), is(nullValue()));
-        assertThat(value.get(0).any().get("data"), is(nullValue()));
-        assertThat(value.get(0).any().get("id"), is(payload.getId()));
-        assertThat(value.get(0).any().get("code"), is(payload.getCode()));
-        List<Map<String, Object>> items = (List<Map<String, Object>>) value.get(0).any().get("items");
-        assertThat(items, is(not(nullValue())));
-        assertThat(items.get(0).get("detail"), is(payload.getItems().get(0).getDetail()));
-        Map<String, Object> subclass = (Map<String, Object>) value.get(0).any().get("more");
-        assertThat(subclass.get("info"), is(payload.getMore().getInfo()));
+        assertThat(read(value.get(0), "$.id"), is(payload.getId()));
+        assertThat(read(value.get(0), "$.code"), is(payload.getCode()));
+        assertThat(read(value.get(0), "$.items.length()"), is(3));
+        assertThat(read(value.get(0), "$.items[0].detail"), is(payload.getItems().get(0).getDetail()));
+        assertThat(read(value.get(0), "$.items[1].detail"), is(payload.getItems().get(1).getDetail()));
+        assertThat(read(value.get(0), "$.items[2].detail"), is(payload.getItems().get(2).getDetail()));
+        assertThat(read(value.get(0), "$.more.info"), is(payload.getMore().getInfo()));
+        assertThat(read(value.get(0), "$[?]", where("data_op").exists(true)), is(empty()));
+        assertThat(read(value.get(0), "$[?]", where("data_type").exists(true)), is(empty()));
+        assertThat(read(value.get(0), "$[?]", where("data").exists(true)), is(empty()));
     }
 }

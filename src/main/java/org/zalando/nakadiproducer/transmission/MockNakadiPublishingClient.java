@@ -15,15 +15,15 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 
-public class MockNakadiClient implements NakadiClient {
+public class MockNakadiPublishingClient implements NakadiPublishingClient {
     private final ObjectMapper objectMapper;
     private final MultiValueMap<String, String> sentEvents = new LinkedMultiValueMap<>();
 
-    public MockNakadiClient() {
+    public MockNakadiPublishingClient() {
         this(createDefaultObjectMapper());
     }
 
-    public MockNakadiClient(ObjectMapper objectMapper) {
+    public MockNakadiPublishingClient(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 

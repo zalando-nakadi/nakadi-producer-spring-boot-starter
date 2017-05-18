@@ -181,7 +181,7 @@ This will only  work if your application has configured spring-boot-actuator
 and if it implements the `org.zalando.nakadiproducer.snapshots.SnapshotEventProvider` interface as a Spring Bean. Otherwise, the library will respond with an error message when you request a snapshot creation. 
 
 ## Test support
-This library provides a mock implementation of its Nakadi Client that can be used in integration testing:
+This library provides a mock implementation of its Nakadi client that can be used in integration testing:
 ```java
 public class MyIT {
 
@@ -190,7 +190,7 @@ public class MyIT {
 
     @Autowired
     // Just define it in your tests spring config. It will automatically be picked up by the auto configuration.
-    private MockNakadiClient nakadiClient;
+    private MockNakadiPublishingClient nakadiClient;
 
     @Before
     @After

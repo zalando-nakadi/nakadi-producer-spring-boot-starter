@@ -3,13 +3,13 @@ package org.zalando.nakadiproducer.transmission.impl;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.zalando.nakadiproducer.transmission.NakadiClient;
+import org.zalando.nakadiproducer.transmission.NakadiPublishingClient;
 
-public class FahrscheinNakadiClient implements NakadiClient {
+public class FahrscheinNakadiPublishingClient implements NakadiPublishingClient {
     private final org.zalando.fahrschein.NakadiClient delegate;
 
     @Autowired
-    public FahrscheinNakadiClient(org.zalando.fahrschein.NakadiClient delegate) {
+    public FahrscheinNakadiPublishingClient(org.zalando.fahrschein.NakadiClient delegate) {
         this.delegate = delegate;
     }
 

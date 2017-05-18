@@ -36,8 +36,8 @@ import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationEndpoint;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationMvcEndpoint;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventProviderNotImplementedException;
-import org.zalando.nakadiproducer.transmission.NakadiClient;
-import org.zalando.nakadiproducer.transmission.impl.FahrscheinNakadiClient;
+import org.zalando.nakadiproducer.transmission.NakadiPublishingClient;
+import org.zalando.nakadiproducer.transmission.impl.FahrscheinNakadiPublishingClient;
 import org.zalando.tracer.Tracer;
 
 @Configuration
@@ -69,13 +69,13 @@ public class NakadiProducerAutoConfiguration {
         };
     }
 
-    @ConditionalOnMissingBean(NakadiClient.class)
+    @ConditionalOnMissingBean(NakadiPublishingClient.class)
     @Configuration
     static class FahrscheinNakadiClientConfiguration {
 
         @Bean
-        public NakadiClient nakadiClient(AccessTokenProvider accessTokenProvider, @Value("${nakadi-producer.nakadi-base-uri}") URI nakadiBaseUri) {
-            return new FahrscheinNakadiClient(
+        public NakadiPublishingClient nakadiClient(AccessTokenProvider accessTokenProvider, @Value("${nakadi-producer.nakadi-base-uri}") URI nakadiBaseUri) {
+            return new FahrscheinNakadiPublishingClient(
                 org.zalando.fahrschein.NakadiClient.builder(nakadiBaseUri)
                                                    .withAccessTokenProvider(accessTokenProvider::getAccessToken)
                                                    .build()

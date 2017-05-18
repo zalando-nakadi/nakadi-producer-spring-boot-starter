@@ -14,7 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
-import org.zalando.nakadiproducer.transmission.MockNakadiClient;
+import org.zalando.nakadiproducer.transmission.MockNakadiPublishingClient;
 import org.zalando.nakadiproducer.transmission.impl.EventTransmitter;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
@@ -32,7 +32,7 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
     private EventTransmitter eventTransmitter;
 
     @Autowired
-    private MockNakadiClient nakadiClient;
+    private MockNakadiPublishingClient nakadiClient;
 
     @Before
     @After

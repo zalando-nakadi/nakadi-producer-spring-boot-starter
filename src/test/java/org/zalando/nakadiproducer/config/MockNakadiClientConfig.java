@@ -2,13 +2,13 @@ package org.zalando.nakadiproducer.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.zalando.nakadiproducer.transmission.MockNakadiClient;
-import org.zalando.nakadiproducer.transmission.NakadiClient;
+import org.zalando.nakadiproducer.transmission.MockNakadiPublishingClient;
+import org.zalando.nakadiproducer.transmission.NakadiPublishingClient;
 
 @Configuration
 public class MockNakadiClientConfig {
     @Bean
-    public NakadiClient nakadiClient() {
-        return new MockNakadiClient();
+    public NakadiPublishingClient nakadiClient() {
+        return new MockNakadiPublishingClient();
     }
 }

@@ -15,7 +15,7 @@
 
     <artifactId>nakadi-producer-spring-boot-starter</artifactId>
     <groupId>org.zalando</groupId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.0</version>
     <name>Nakadi Event Producer: Spring Boot Starter</name>
     <description>Spring Boot Auto Configuration for Nakadi event producer</description>
 

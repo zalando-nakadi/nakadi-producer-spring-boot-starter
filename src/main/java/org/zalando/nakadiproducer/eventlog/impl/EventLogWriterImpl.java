@@ -35,35 +35,35 @@ public class EventLogWriterImpl implements EventLogWriter {
     @Transactional
     public void fireCreateEvent(final String eventType, final String dataType, final Object data) {
         final EventLog eventLog = createEventLog(eventType, new DataChangeEventEnvelope(CREATE.toString(), dataType, data));
-        eventLogRepository.save(eventLog);
+        eventLogRepository.persist(eventLog);
     }
 
     @Override
     @Transactional
     public void fireUpdateEvent(final String eventType, final String dataType, final Object data) {
         final EventLog eventLog = createEventLog(eventType, new DataChangeEventEnvelope(UPDATE.toString(), dataType, data));
-        eventLogRepository.save(eventLog);
+        eventLogRepository.persist(eventLog);
     }
 
     @Override
     @Transactional
     public void fireDeleteEvent(final String eventType, final String dataType, final Object data) {
         final EventLog eventLog = createEventLog(eventType, new DataChangeEventEnvelope(DELETE.toString(), dataType, data));
-        eventLogRepository.save(eventLog);
+        eventLogRepository.persist(eventLog);
     }
 
     @Override
     @Transactional
     public void fireSnapshotEvent(final String eventType, final String dataType, final Object data) {
         final EventLog eventLog = createEventLog(eventType, new DataChangeEventEnvelope(SNAPSHOT.toString(), dataType, data));
-        eventLogRepository.save(eventLog);
+        eventLogRepository.persist(eventLog);
     }
 
     @Override
     @Transactional
     public void fireBusinessEvent(final String eventType, Object payload) {
         final EventLog eventLog = createEventLog(eventType, payload);
-        eventLogRepository.save(eventLog);
+        eventLogRepository.persist(eventLog);
     }
 
     private EventLog createEventLog(final String eventType, final Object eventPayload) {

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 /**
  * The {@code SnapshotEventProvider} interface should be implemented by any
@@ -35,7 +34,7 @@ public interface SnapshotEventProvider {
      * @return list of elements ordered by their id
      * @throws UnknownEventTypeException if {@code eventType} is unknown
      */
-    List<Snapshot> getSnapshot(@NotNull String eventType, @Nullable Object withIdGreaterThan);
+    List<Snapshot> getSnapshot(String eventType, @Nullable Object withIdGreaterThan);
 
     Set<String> getSupportedEventTypes();
 

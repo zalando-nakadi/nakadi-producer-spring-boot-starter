@@ -1,0 +1,3 @@
+CREATE TABLE dummy (
+  id NUMBER NOT NULL
+);

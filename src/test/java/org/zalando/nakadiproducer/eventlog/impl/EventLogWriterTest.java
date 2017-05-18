@@ -62,7 +62,7 @@ public class EventLogWriterTest {
     @Test
     public void testFireCreateEvent() throws Exception {
         eventLogWriter.fireCreateEvent(PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, eventPayload);
-        verify(eventLogRepository).save(eventLogCapture.capture());
+        verify(eventLogRepository).persist(eventLogCapture.capture());
 
         assertThat(eventLogCapture.getValue().getEventBodyData(), is(DATA_CHANGE_BODY_DATA.replace("{DATA_OP}", "C")));
         assertThat(eventLogCapture.getValue().getEventType(), is(PUBLISHER_EVENT_TYPE));
@@ -77,7 +77,7 @@ public class EventLogWriterTest {
 
         eventLogWriter.fireUpdateEvent(PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, eventPayload);
 
-        verify(eventLogRepository).save(eventLogCapture.capture());
+        verify(eventLogRepository).persist(eventLogCapture.capture());
 
         assertThat(eventLogCapture.getValue().getEventBodyData(), is(DATA_CHANGE_BODY_DATA.replace("{DATA_OP}", "U")));
         assertThat(eventLogCapture.getValue().getEventType(), is(PUBLISHER_EVENT_TYPE));
@@ -92,7 +92,7 @@ public class EventLogWriterTest {
 
         eventLogWriter.fireDeleteEvent(PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, eventPayload);
 
-        verify(eventLogRepository).save(eventLogCapture.capture());
+        verify(eventLogRepository).persist(eventLogCapture.capture());
 
         assertThat(eventLogCapture.getValue().getEventBodyData(), is(DATA_CHANGE_BODY_DATA.replace("{DATA_OP}", "D")));
         assertThat(eventLogCapture.getValue().getEventType(), is(PUBLISHER_EVENT_TYPE));
@@ -106,7 +106,7 @@ public class EventLogWriterTest {
 
         eventLogWriter.fireSnapshotEvent(PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, eventPayload);
 
-        verify(eventLogRepository).save(eventLogCapture.capture());
+        verify(eventLogRepository).persist(eventLogCapture.capture());
 
         assertThat(eventLogCapture.getValue().getEventBodyData(), is(DATA_CHANGE_BODY_DATA.replace("{DATA_OP}", "S")));
         assertThat(eventLogCapture.getValue().getEventType(), is(PUBLISHER_EVENT_TYPE));
@@ -122,7 +122,7 @@ public class EventLogWriterTest {
 
         eventLogWriter.fireBusinessEvent(PUBLISHER_EVENT_TYPE, mockPayload);
 
-        verify(eventLogRepository).save(eventLogCapture.capture());
+        verify(eventLogRepository).persist(eventLogCapture.capture());
 
         assertThat(eventLogCapture.getValue().getEventBodyData(), is(EVENT_BODY_DATA));
         assertThat(eventLogCapture.getValue().getEventType(), is(PUBLISHER_EVENT_TYPE));

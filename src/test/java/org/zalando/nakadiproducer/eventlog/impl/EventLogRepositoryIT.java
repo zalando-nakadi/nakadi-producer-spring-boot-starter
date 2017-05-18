@@ -43,7 +43,7 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
         final EventLog eventLog = EventLog.builder().eventBodyData(WAREHOUSE_EVENT_BODY_DATA)
                                                                      .eventType(WAREHOUSE_EVENT_TYPE)
                                                                      .flowId("FLOW_ID").build();
-        eventLogRepository.saveAndFlush(eventLog);
+        eventLogRepository.persist(eventLog);
         id = eventLog.getId();
     }
 

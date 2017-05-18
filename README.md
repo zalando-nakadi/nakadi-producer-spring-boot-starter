@@ -178,7 +178,42 @@ This will only  work if your application has configured spring-boot-actuator
 ```
 and if it implements the `org.zalando.nakadiproducer.snapshots.SnapshotEventProvider` interface as a Spring Bean. Otherwise, the library will respond with an error message when you request a snapshot creation. 
 
+## Test support
+This library provides a mock implementation of its Nakadi client that can be used in integration testing:
+```java
+public class MyIT {
 
+    @Autowired
+    private EventTransmitter eventTransmitter;
+
+    @Autowired
+    // Just define it in your tests spring config. It will automatically be picked up by the auto configuration.
+    private MockNakadiPublishingClient nakadiClient;
+
+    @Before
+    @After
+    public void clearNakadiEvents() {
+        eventTransmitter.sendEvents();
+        nakadiClient.clearSentEvents();
+    }
+
+    @Test
+    public void businessEventsShouldBeSubmittedToNakadi() throws IOException {
+        myTransactionalService.doSomethingAndFireEvent();
+
+        eventTransmitter.sendEvents();
+        List<String> jsonStrings = nakadiClient.getSentEvents("my_event_type");
+
+        assertThat(jsonStrings.size(), is(1));
+        assertThat(read(jsonStrings.get(0), "$.data_op"), is("C"));
+        assertThat(read(jsonStrings.get(0), "$.data_type"), is(PUBLISHER_DATA_TYPE));
+        assertThat(read(jsonStrings.get(0), "$.data.id"), is(123));
+        assertThat(read(jsonStrings.get(0), "$.data.items.length()"), is(3));
+        assertThat(read(jsonStrings.get(0), "$.items[0].detail"), is(payload.getItems().get(0).getDetail()));
+    }
+}
+```
+The example above uses `com.jayway.jsonpath:json-path:jar:2.2.0` to parse and test the json results
 ## Build
 
 Build with unit tests and integration tests:

@@ -3,8 +3,6 @@ spring:
   jpa:
     show-sql: true
 
-flyway.locations: classpath:db_nakadiproducer/migrations
-
 logging.level:
   org.springframework.web: 'DEBUG'
 

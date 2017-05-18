@@ -6,6 +6,7 @@ import lombok.Getter;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -34,7 +35,7 @@ public interface SnapshotEventProvider {
      * @return list of elements ordered by their id
      * @throws UnknownEventTypeException if {@code eventType} is unknown
      */
-    List<Snapshot> getSnapshot(String eventType, @Nullable Object withIdGreaterThan);
+    List<Snapshot> getSnapshot(@Nonnull String eventType, @Nullable Object withIdGreaterThan);
 
     Set<String> getSupportedEventTypes();
 

@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
@@ -53,7 +54,7 @@ public class NakadiProducerAutoConfiguration {
         log.error("SnapshotEventProvider interface should be implemented by the service in order to /events/snapshots/{event_type} work");
         return new SnapshotEventProvider() {
             @Override
-            public List<Snapshot> getSnapshot(String eventType, @Nullable Object withIdGreaterThan) {
+            public List<Snapshot> getSnapshot(@Nonnull String eventType, @Nullable Object withIdGreaterThan) {
                 throw new SnapshotEventProviderNotImplementedException();
             }
 

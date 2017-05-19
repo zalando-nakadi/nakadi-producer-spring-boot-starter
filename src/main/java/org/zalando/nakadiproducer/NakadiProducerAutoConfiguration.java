@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.zalando.fahrschein.NakadiClient;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.flowid.NoopFlowIdComponent;
 import org.zalando.nakadiproducer.flowid.TracerFlowIdComponent;
@@ -71,9 +72,9 @@ public class NakadiProducerAutoConfiguration {
     @ConditionalOnMissingBean(NakadiPublishingClient.class)
     public NakadiPublishingClient nakadiClient(AccessTokenProvider accessTokenProvider, @Value("${nakadi-producer.nakadi-base-uri}") URI nakadiBaseUri) {
         return new FahrscheinNakadiPublishingClient(
-            org.zalando.fahrschein.NakadiClient.builder(nakadiBaseUri)
-                                               .withAccessTokenProvider(accessTokenProvider::getAccessToken)
-                                               .build()
+            NakadiClient.builder(nakadiBaseUri)
+                        .withAccessTokenProvider(accessTokenProvider::getAccessToken)
+                        .build()
         );
     }
 

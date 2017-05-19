@@ -19,10 +19,10 @@ This library was tested with Spring Boot 1.5.3.RELEASE and relies on existing co
 This library also uses:
 
 * flyway-core
-* Spring Data JPA
+* Spring JDBC
 * [fahrschein](https://github.com/zalando-incubator/fahrschein) Nakadi client library
 * (Optional) Zalando's tracer-spring-boot-starter
-* (Optional) Zalando's tokens library
+* (Optional) Zalando's tokens library >= 0.10.0
 
 
 ## Usage

@@ -21,6 +21,7 @@ This library also uses:
 * flyway-core
 * Spring JDBC
 * [fahrschein](https://github.com/zalando-incubator/fahrschein) Nakadi client library
+* jackson >= 2.7.0
 * (Optional) Zalando's tracer-spring-boot-starter
 * (Optional) Zalando's tokens library >= 0.10.0
 

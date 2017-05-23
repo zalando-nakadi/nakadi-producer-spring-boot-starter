@@ -29,6 +29,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.zalando.fahrschein.NakadiClient;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
@@ -166,6 +167,7 @@ public class NakadiProducerAutoConfiguration {
     public EventTransmissionService eventTransmissionService(EventLogRepository eventLogRepository, NakadiPublishingClient nakadiPublishingClient, ObjectMapper objectMapper) {
         return new EventTransmissionService(eventLogRepository, nakadiPublishingClient, objectMapper);
     }
+
 
     @PostConstruct
     public void migrateFlyway() {

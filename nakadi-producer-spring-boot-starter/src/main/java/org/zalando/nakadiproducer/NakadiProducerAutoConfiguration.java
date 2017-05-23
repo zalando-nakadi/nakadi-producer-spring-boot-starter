@@ -10,12 +10,8 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
-import javax.sql.DataSource;
 
-import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.callback.FlywayCallback;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.ManagementContextConfiguration;
@@ -26,7 +22,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -59,9 +54,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @ManagementContextConfiguration
 @AutoConfigureAfter(name="org.zalando.tracer.spring.TracerAutoConfiguration")
 public class NakadiProducerAutoConfiguration {
-
-    @Autowired
-    private DataSource dataSource;
 
     @Bean
     @ConditionalOnMissingBean(SnapshotEventProvider.class)
@@ -177,29 +169,9 @@ public class NakadiProducerAutoConfiguration {
         return new NoopFlywayCallback();
     }
 
-    @PostConstruct
-    public void migrateFlyway(ObjectProvider<DataSource> dataSource,
-                              @FlywayDataSource ObjectProvider<DataSource> flywayDataSource,
-                              @NakadiProducerFlywayDatasource ObjectProvider<DataSource> nakadiProducerFlywayDataSource,
-                              @NakadiProducerFlywayCallback FlywayCallback callback) {
-        DataSource effectiveDataSource = nakadiProducerFlywayDataSource.getIfUnique();
-
-        if (effectiveDataSource == null) {
-            effectiveDataSource = flywayDataSource.getIfUnique();
-        }
-
-        if (effectiveDataSource == null) {
-            effectiveDataSource = dataSource.getIfUnique();
-        }
-
-        Flyway flyway = new Flyway();
-        flyway.setLocations("classpath:db_nakadiproducer/migrations");
-        flyway.setSchemas("nakadi_events");
-        flyway.setDataSource(effectiveDataSource);
-        flyway.setCallbacks(callback);
-        flyway.setBaselineOnMigrate(true);
-        flyway.setBaselineVersionAsString("2133546886.1.0");
-        flyway.migrate();
+    @Bean
+    FlywayMigrator flywayMigrator() {
+        return new FlywayMigrator();
     }
 
 }

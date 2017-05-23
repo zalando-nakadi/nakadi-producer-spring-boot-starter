@@ -14,5 +14,5 @@ import org.springframework.beans.factory.annotation.Qualifier;
     ElementType.ANNOTATION_TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Qualifier
-public @interface NakadiProducerFlywayDatasource {
+public @interface NakadiProducerFlywayDataSource {
 }

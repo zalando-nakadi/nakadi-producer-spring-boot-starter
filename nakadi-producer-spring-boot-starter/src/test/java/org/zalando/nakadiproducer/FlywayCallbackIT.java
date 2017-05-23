@@ -1,7 +1,7 @@
 package org.zalando.nakadiproducer;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.sql.Connection;
@@ -18,6 +18,6 @@ public class FlywayCallbackIT extends BaseMockedExternalCommunicationIT {
 
     @Test
     public void flywayCallbackIsCalledIfAnnotatedWithQualifierAnnotation() {
-        verify(flywayCallback, atLeastOnce()).beforeValidate(any(Connection.class));
+        verify(flywayCallback, times(1)).beforeValidate(any(Connection.class));
     }
 }

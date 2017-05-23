@@ -51,7 +51,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Configuration
 @Slf4j
 @ComponentScan
-@ManagementContextConfiguration
 @AutoConfigureAfter(name="org.zalando.tracer.spring.TracerAutoConfiguration")
 public class NakadiProducerAutoConfiguration {
 
@@ -124,17 +123,20 @@ public class NakadiProducerAutoConfiguration {
         }
     }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public SnapshotEventCreationEndpoint snapshotEventCreationEndpoint(SnapshotCreationService snapshotCreationService) {
-        return new SnapshotEventCreationEndpoint(snapshotCreationService);
-    }
+    @ManagementContextConfiguration
+    static class ManagementEndpointConfiguration {
+        @Bean
+        @ConditionalOnMissingBean
+        public SnapshotEventCreationEndpoint snapshotEventCreationEndpoint(SnapshotCreationService snapshotCreationService) {
+            return new SnapshotEventCreationEndpoint(snapshotCreationService);
+        }
 
-    @Bean
-    @ConditionalOnBean(SnapshotEventCreationEndpoint.class)
-    @ConditionalOnEnabledEndpoint("snapshot_event_creation")
-    public SnapshotEventCreationMvcEndpoint snapshotEventCreationMvcEndpoint(SnapshotEventCreationEndpoint snapshotEventCreationEndpoint) {
-        return new SnapshotEventCreationMvcEndpoint(snapshotEventCreationEndpoint);
+        @Bean
+        @ConditionalOnBean(SnapshotEventCreationEndpoint.class)
+        @ConditionalOnEnabledEndpoint("snapshot_event_creation")
+        public SnapshotEventCreationMvcEndpoint snapshotEventCreationMvcEndpoint(SnapshotEventCreationEndpoint snapshotEventCreationEndpoint) {
+            return new SnapshotEventCreationMvcEndpoint(snapshotEventCreationEndpoint);
+        }
     }
 
     @Bean
@@ -171,7 +173,7 @@ public class NakadiProducerAutoConfiguration {
     }
 
     @Bean
-    FlywayMigrator flywayMigrator() {
+    public FlywayMigrator flywayMigrator() {
         return new FlywayMigrator();
     }
 

@@ -78,26 +78,6 @@ nakadi-producer:
 
 If you do not use the STUPS Tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The starter will detect it and call it once for each request to retrieve the token. 
 
-### X-Flow-ID (Optional)
-
-This library supports [tracer-spring-boot-starter](https://github.com/zalando/tracer) (another library from Zalando) that provides a support of `X-Flow-ID` header.
-
-In order to use it you should provide the library as a dependency in your project and configure it:
-
-```xml
-<dependency>
-    <groupId>org.zalando</groupId>
-    <artifactId>tracer-spring-boot-starter</artifactId>
-    <version>${tracer.version}</version>
-</dependency>
-```
-
-```yaml
-tracer:
-  traces:
-    X-Flow-ID: flow-id
-```
-
 ### Creating events
 
 The typical use case for this library is to publish events like creating or updating of some objects.
@@ -153,7 +133,7 @@ You usually should fire those also in the same transaction as you are storing th
 process step the event is reporting.
 
 
-### Event snapshots
+## Event snapshots (optional)
 A Snapshot event is a special type of data change event (data operation) defined by Nakadi.
 It does not represent a change of the state of a resource, but a current snapshot of the state of the resource.
 
@@ -178,6 +158,39 @@ This will only  work if your application has configured spring-boot-actuator
 </dependency>
 ```
 and if it implements the `org.zalando.nakadiproducer.snapshots.SnapshotEventProvider` interface as a Spring Bean. Otherwise, the library will respond with an error message when you request a snapshot creation. 
+
+## X-Flow-ID (Optional)
+
+This library supports [tracer-spring-boot-starter](https://github.com/zalando/tracer) (another library from Zalando) that provides a support of `X-Flow-ID` header.
+
+In order to use it you should provide the library as a dependency in your project and configure it:
+
+```xml
+<dependency>
+    <groupId>org.zalando</groupId>
+    <artifactId>tracer-spring-boot-starter</artifactId>
+    <version>${tracer.version}</version>
+</dependency>
+```
+
+```yaml
+tracer:
+  traces:
+    X-Flow-ID: flow-id
+```
+
+## Customizing Database Setup (optional)
+
+By default, the library will pick up your flyway data source (or the primary data source if no flyway data source is
+configured), create its own schema and start setting up its tables in there. You can customize this process in two ways:
+
+If you want to use a different data source for schema maintainence (for example to use a different username) and 
+configuring the Spring flyway datasource is not enough, your can define a spring bean of type `DataSource` and annotate 
+it with `@NakadiProducerDataSource`.
+
+You may also define a spring bean of type `FlywayCallback` and annotate it with `@NakadiProducerFlywayCallback`. The
+interface provide several hook into the schema management lifecycle that may, for example, be used to
+ `SET ROLE migrator` before and `RESET ROLE` after each migration. 
 
 ## Test support
 This library provides a mock implementation of its Nakadi client that can be used in integration testing:

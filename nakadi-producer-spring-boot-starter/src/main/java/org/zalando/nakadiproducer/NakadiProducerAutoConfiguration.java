@@ -14,6 +14,8 @@ import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.callback.FlywayCallback;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.ManagementContextConfiguration;
@@ -24,6 +26,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -167,14 +170,36 @@ public class NakadiProducerAutoConfiguration {
         return new EventTransmissionService(eventLogRepository, nakadiPublishingClient, objectMapper);
     }
 
+    @Bean
+    @NakadiProducerFlywayCallback
+    @ConditionalOnMissingBean(value = FlywayCallback.class, annotation = NakadiProducerFlywayCallback.class)
+    public FlywayCallback nakadiProducerFlywayCallback() {
+        return new NoopFlywayCallback();
+    }
+
     @PostConstruct
-    public void migrateFlyway() {
+    public void migrateFlyway(ObjectProvider<DataSource> dataSource,
+                              @FlywayDataSource ObjectProvider<DataSource> flywayDataSource,
+                              @NakadiProducerFlywayDatasource ObjectProvider<DataSource> nakadiProducerFlywayDataSource,
+                              @NakadiProducerFlywayCallback FlywayCallback callback) {
+        DataSource effectiveDataSource = nakadiProducerFlywayDataSource.getIfUnique();
+
+        if (effectiveDataSource == null) {
+            effectiveDataSource = flywayDataSource.getIfUnique();
+        }
+
+        if (effectiveDataSource == null) {
+            effectiveDataSource = dataSource.getIfUnique();
+        }
+
         Flyway flyway = new Flyway();
         flyway.setLocations("classpath:db_nakadiproducer/migrations");
         flyway.setSchemas("nakadi_events");
-        flyway.setDataSource(dataSource);
+        flyway.setDataSource(effectiveDataSource);
+        flyway.setCallbacks(callback);
         flyway.setBaselineOnMigrate(true);
         flyway.setBaselineVersionAsString("2133546886.1.0");
         flyway.migrate();
     }
+
 }

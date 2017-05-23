@@ -164,14 +164,6 @@ public class NakadiProducerAutoConfiguration {
         return new EventTransmissionService(eventLogRepository, nakadiPublishingClient, objectMapper);
     }
 
-
-    @Bean
-    @NakadiProducerFlywayCallback
-    @ConditionalOnMissingBean(value = FlywayCallback.class, annotation = NakadiProducerFlywayCallback.class)
-    public FlywayCallback nakadiProducerFlywayCallback() {
-        return new NoopFlywayCallback();
-    }
-
     @Bean
     public FlywayMigrator flywayMigrator() {
         return new FlywayMigrator();

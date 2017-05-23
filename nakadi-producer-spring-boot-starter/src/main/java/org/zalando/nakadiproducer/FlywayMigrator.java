@@ -21,7 +21,7 @@ public class FlywayMigrator {
     @Autowired
     private DataSource dataSource;
 
-    @Autowired
+    @Autowired(required = false)
     @NakadiProducerFlywayCallback
     private FlywayCallback callback;
 
@@ -46,7 +46,9 @@ public class FlywayMigrator {
 
         flyway.setLocations("classpath:db_nakadiproducer/migrations");
         flyway.setSchemas("nakadi_events");
-        flyway.setCallbacks(callback);
+        if (callback != null) {
+            flyway.setCallbacks(callback);
+        }
         flyway.setBaselineOnMigrate(true);
         flyway.setBaselineVersionAsString("2133546886.1.0");
         flyway.migrate();

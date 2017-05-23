@@ -10,7 +10,7 @@ import org.flywaydb.core.api.callback.FlywayCallback;
 import org.junit.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-public class FlywayCallbackIT extends BaseMockedExternalCommunicationIT {
+public class NakadiProducerFlywayCallbackIT extends BaseMockedExternalCommunicationIT {
 
     @MockBean
     @NakadiProducerFlywayCallback

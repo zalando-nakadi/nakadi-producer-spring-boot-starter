@@ -7,9 +7,8 @@ import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.callback.FlywayCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.flyway.FlywayProperties;
 
-@Component
 public class FlywayMigrator {
     @Autowired(required = false)
     @NakadiProducerFlywayDataSource
@@ -26,22 +25,27 @@ public class FlywayMigrator {
     @NakadiProducerFlywayCallback
     private FlywayCallback callback;
 
+    @Autowired
+    private FlywayProperties flywayProperties;
+
     @PostConstruct
     public void migrateFlyway() {
-        DataSource effectiveDataSource = this.nakadiProducerFlywayDataSource;
-
-        if (effectiveDataSource == null) {
-            effectiveDataSource = flywayDataSource;
-        }
-
-        if (effectiveDataSource == null) {
-            effectiveDataSource = dataSource;
-        }
-
         Flyway flyway = new Flyway();
+
+        if (this.nakadiProducerFlywayDataSource != null) {
+            flyway.setDataSource(nakadiProducerFlywayDataSource);
+        } else if (this.flywayProperties.isCreateDataSource()) {
+            flyway.setDataSource(this.flywayProperties.getUrl(), this.flywayProperties.getUser(),
+                this.flywayProperties.getPassword(),
+                this.flywayProperties.getInitSqls().toArray(new String[0]));
+        } else if (this.flywayDataSource != null) {
+            flyway.setDataSource(this.flywayDataSource);
+        } else {
+            flyway.setDataSource(dataSource);
+        }
+
         flyway.setLocations("classpath:db_nakadiproducer/migrations");
         flyway.setSchemas("nakadi_events");
-        flyway.setDataSource(effectiveDataSource);
         flyway.setCallbacks(callback);
         flyway.setBaselineOnMigrate(true);
         flyway.setBaselineVersionAsString("2133546886.1.0");

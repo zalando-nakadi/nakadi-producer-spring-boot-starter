@@ -73,7 +73,7 @@ public class SnapshotCreationServiceTest {
         // when snapshot returns 5 item stream
         when(snapshotEventProvider.getSnapshot(PUBLISHER_EVENT_TYPE, null)).thenReturn(eventPayloads.subList(0, 3));
         when(snapshotEventProvider.getSnapshot(PUBLISHER_EVENT_TYPE, 2)).thenReturn(eventPayloads.subList(3, 5));
-        //when(snapshotEventProvider.getSnapshot(PUBLISHER_EVENT_TYPE, 5)).thenReturn(Collections.emptyList());
+        when(snapshotEventProvider.getSnapshot(PUBLISHER_EVENT_TYPE, 4)).thenReturn(Collections.emptyList());
 
         // create a snapshot
         eventTransmissionService.createSnapshotEvents(PUBLISHER_EVENT_TYPE);

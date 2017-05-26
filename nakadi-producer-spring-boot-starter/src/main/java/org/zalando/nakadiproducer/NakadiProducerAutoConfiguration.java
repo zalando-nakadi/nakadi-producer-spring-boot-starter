@@ -10,10 +10,7 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
-import javax.sql.DataSource;
 
-import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.ManagementContextConfiguration;
@@ -53,12 +50,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Configuration
 @Slf4j
 @ComponentScan
-@ManagementContextConfiguration
 @AutoConfigureAfter(name="org.zalando.tracer.spring.TracerAutoConfiguration")
 public class NakadiProducerAutoConfiguration {
-
-    @Autowired
-    private DataSource dataSource;
 
     @Bean
     @ConditionalOnMissingBean(SnapshotEventProvider.class)
@@ -129,17 +122,20 @@ public class NakadiProducerAutoConfiguration {
         }
     }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public SnapshotEventCreationEndpoint snapshotEventCreationEndpoint(SnapshotCreationService snapshotCreationService) {
-        return new SnapshotEventCreationEndpoint(snapshotCreationService);
-    }
+    @ManagementContextConfiguration
+    static class ManagementEndpointConfiguration {
+        @Bean
+        @ConditionalOnMissingBean
+        public SnapshotEventCreationEndpoint snapshotEventCreationEndpoint(SnapshotCreationService snapshotCreationService) {
+            return new SnapshotEventCreationEndpoint(snapshotCreationService);
+        }
 
-    @Bean
-    @ConditionalOnBean(SnapshotEventCreationEndpoint.class)
-    @ConditionalOnEnabledEndpoint("snapshot_event_creation")
-    public SnapshotEventCreationMvcEndpoint snapshotEventCreationMvcEndpoint(SnapshotEventCreationEndpoint snapshotEventCreationEndpoint) {
-        return new SnapshotEventCreationMvcEndpoint(snapshotEventCreationEndpoint);
+        @Bean
+        @ConditionalOnBean(SnapshotEventCreationEndpoint.class)
+        @ConditionalOnEnabledEndpoint("snapshot_event_creation")
+        public SnapshotEventCreationMvcEndpoint snapshotEventCreationMvcEndpoint(SnapshotEventCreationEndpoint snapshotEventCreationEndpoint) {
+            return new SnapshotEventCreationMvcEndpoint(snapshotEventCreationEndpoint);
+        }
     }
 
     @Bean
@@ -167,15 +163,9 @@ public class NakadiProducerAutoConfiguration {
         return new EventTransmissionService(eventLogRepository, nakadiPublishingClient, objectMapper);
     }
 
-
-    @PostConstruct
-    public void migrateFlyway() {
-        Flyway flyway = new Flyway();
-        flyway.setLocations("classpath:db_nakadiproducer/migrations");
-        flyway.setSchemas("nakadi_events");
-        flyway.setDataSource(dataSource);
-        flyway.setBaselineOnMigrate(true);
-        flyway.setBaselineVersionAsString("2133546886.1.0");
-        flyway.migrate();
+    @Bean
+    public FlywayMigrator flywayMigrator() {
+        return new FlywayMigrator();
     }
+
 }

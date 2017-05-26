@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
- * Qualifier annotation for a FlywayCallback to be injected in to nakadi-producers Flyway instance.
+ * Qualifier annotation for a FlywayCallback to be injected in to nakadi-producer's Flyway instance.
  */
 @Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.TYPE,
     ElementType.ANNOTATION_TYPE })

@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
- * Qualifier annotation for a DataSource to be used by nakadi-producers Flyway instance.
+ * Qualifier annotation for a DataSource to be used by nakadi-producer's Flyway instance.
  */
 @Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.TYPE,
     ElementType.ANNOTATION_TYPE })

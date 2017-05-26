@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres;
 
@@ -24,8 +25,8 @@ public class FlywayDataSourceIT extends BaseMockedExternalCommunicationIT {
         verify(dataSource, atLeastOnce()).getConnection();
     }
 
-    @org.springframework.context.annotation.Configuration
-    public static class Configuration {
+    @Configuration
+    public static class Config {
         @Autowired
         EmbeddedPostgres embeddedPostgres;
 

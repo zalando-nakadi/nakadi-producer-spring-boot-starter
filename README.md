@@ -22,8 +22,8 @@ This library also uses:
 * Spring JDBC
 * [fahrschein](https://github.com/zalando-incubator/fahrschein) Nakadi client library
 * jackson >= 2.7.0
-* (Optional) Zalando's tracer-spring-boot-starter
-* (Optional) Zalando's tokens library >= 0.10.0
+* (optional) Zalando's tracer-spring-boot-starter
+* (optional) Zalando's tokens library >= 0.10.0
 
 
 ## Usage
@@ -159,7 +159,7 @@ This will only  work if your application has configured spring-boot-actuator
 ```
 and if it implements the `org.zalando.nakadiproducer.snapshots.SnapshotEventProvider` interface as a Spring Bean. Otherwise, the library will respond with an error message when you request a snapshot creation. 
 
-## X-Flow-ID (Optional)
+## X-Flow-ID (optional)
 
 This library supports [tracer-spring-boot-starter](https://github.com/zalando/tracer) (another library from Zalando) that provides a support of `X-Flow-ID` header.
 

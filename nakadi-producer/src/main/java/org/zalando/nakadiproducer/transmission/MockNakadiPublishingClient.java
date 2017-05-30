@@ -34,7 +34,10 @@ public class MockNakadiPublishingClient implements NakadiPublishingClient {
 
     public synchronized List<String> getSentEvents(String eventType) {
         ArrayList<String> events = new ArrayList<>();
-        events.addAll(sentEvents.get(eventType));
+        List<String> sentEvents = this.sentEvents.get(eventType);
+        if (sentEvents != null) {
+            events.addAll(sentEvents);
+        }
         return events;
     }
 

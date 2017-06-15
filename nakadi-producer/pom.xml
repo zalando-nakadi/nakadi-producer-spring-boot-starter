@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.zalando</groupId>
         <artifactId>nakadi-producer-reactor</artifactId>
-        <version>4.0.1</version>
+        <version>4.0.2</version>
     </parent>
 
     <artifactId>nakadi-producer</artifactId>
@@ -78,6 +78,11 @@
             <artifactId>junit</artifactId>
             <version>4.12</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+        	<groupId>com.jayway.jsonpath</groupId>
+        	<artifactId>json-path</artifactId>
+        	<scope>test</scope>
         </dependency>
     </dependencies>
 

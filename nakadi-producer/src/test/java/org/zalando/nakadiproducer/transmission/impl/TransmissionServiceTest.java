@@ -1,7 +1,9 @@
 package org.zalando.nakadiproducer.transmission.impl;
 
+import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.JsonPath.read;
 import static java.time.Instant.now;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -35,7 +37,7 @@ public class TransmissionServiceTest {
     }
 
     @Test
-    public void testFlowId() throws JsonProcessingException {
+    public void testWithFlowId() throws JsonProcessingException {
         String flowId = "XYZ";
         String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
         EventLog ev = new EventLog(27, "type", payloadString, flowId, now(), now(), null, null);
@@ -45,6 +47,18 @@ public class TransmissionServiceTest {
         List<String> events = publishingClient.getSentEvents("type");
         assertThat(events, hasSize(1));
         assertThat(read(events.get(0), "$.metadata.flow_id"), is(flowId));
+    }
+
+    @Test
+    public void testWithoutFlowId() throws JsonProcessingException {
+        String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
+        EventLog ev = new EventLog(27, "type", payloadString, null, now(), now(), null, null);
+
+        service.sendEvent(ev);
+
+        List<String> events = publishingClient.getSentEvents("type");
+        assertThat(events, hasSize(1));
+        assertThat(read(events.get(0), "$.metadata.[?]", where("flow_id").exists(true)), is(empty()));
     }
 
 }

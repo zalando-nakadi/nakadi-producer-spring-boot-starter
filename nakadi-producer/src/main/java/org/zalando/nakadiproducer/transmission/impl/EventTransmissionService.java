@@ -62,6 +62,7 @@ public class EventTransmissionService {
         final NakadiMetadata metadata = new NakadiMetadata();
         metadata.setEid(convertToUUID(event.getId()));
         metadata.setOccuredAt(event.getCreated());
+        metadata.setFlowId(event.getFlowId());
         nakadiEvent.setMetadata(metadata);
 
         HashMap<String, Object> payloadDTO;

@@ -1,11 +1,11 @@
 package org.zalando.nakadiproducer.transmission.impl;
 
-import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.JsonPath.read;
 import static java.time.Instant.now;
-import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -21,7 +21,7 @@ import org.zalando.nakadiproducer.util.Fixture;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class TransmissionServiceTest {
+public class EventTransmissionServiceTest {
 
     private EventTransmissionService service;
     private EventLogRepository repo;
@@ -58,7 +58,7 @@ public class TransmissionServiceTest {
 
         List<String> events = publishingClient.getSentEvents("type");
         assertThat(events, hasSize(1));
-        assertThat(read(events.get(0), "$.metadata.[?]", where("flow_id").exists(true)), is(empty()));
+        assertThat(read(events.get(0), "$.metadata"), not(hasKey("flow_id")));
     }
 
 }

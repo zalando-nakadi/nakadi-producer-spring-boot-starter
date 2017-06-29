@@ -1,5 +1,6 @@
 package org.zalando.nakadiproducer.snapshots.impl;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Matchers.eq;
@@ -20,7 +21,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
@@ -38,8 +38,7 @@ public class SnapshotCreationServiceTest {
     @Mock
     private EventLogWriter eventLogWriter;
 
-    @InjectMocks
-    private SnapshotCreationService eventTransmissionService;
+    private SnapshotCreationService snapshotCreationService;
 
     private MockPayload eventPayload;
 
@@ -53,13 +52,15 @@ public class SnapshotCreationServiceTest {
     public void setUp() throws Exception {
         eventPayload = Fixture.mockPayload(1, "mockedcode", true,
             Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
+        when(snapshotEventProvider.getSupportedEventType()).thenReturn(PUBLISHER_EVENT_TYPE);
+        snapshotCreationService = new SnapshotCreationService(asList(snapshotEventProvider), eventLogWriter);
     }
 
     @Test
     public void testCreateSnapshotEvents() {
-        when(snapshotEventProvider.getSnapshot(PUBLISHER_EVENT_TYPE, null)).thenReturn(Collections.singletonList(new Snapshot(1, PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, eventPayload)));
+        when(snapshotEventProvider.getSnapshot(null)).thenReturn(Collections.singletonList(new Snapshot(1, PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, eventPayload)));
 
-        eventTransmissionService.createSnapshotEvents(PUBLISHER_EVENT_TYPE);
+        snapshotCreationService.createSnapshotEvents(PUBLISHER_EVENT_TYPE);
 
         verify(eventLogWriter).fireSnapshotEvent(eq(PUBLISHER_EVENT_TYPE), eq(PUBLISHER_DATA_TYPE), listEventLogCaptor.capture());
         assertThat(listEventLogCaptor.getValue(), is(eventPayload));
@@ -71,15 +72,15 @@ public class SnapshotCreationServiceTest {
         final List<Snapshot> eventPayloads = Fixture.mockSnapshotList(5);
 
         // when snapshot returns 5 item stream
-        when(snapshotEventProvider.getSnapshot(PUBLISHER_EVENT_TYPE, null)).thenReturn(eventPayloads.subList(0, 3));
-        when(snapshotEventProvider.getSnapshot(PUBLISHER_EVENT_TYPE, 2)).thenReturn(eventPayloads.subList(3, 5));
-        when(snapshotEventProvider.getSnapshot(PUBLISHER_EVENT_TYPE, 4)).thenReturn(Collections.emptyList());
+        when(snapshotEventProvider.getSnapshot(null)).thenReturn(eventPayloads.subList(0, 3));
+        when(snapshotEventProvider.getSnapshot(2)).thenReturn(eventPayloads.subList(3, 5));
+        when(snapshotEventProvider.getSnapshot(4)).thenReturn(Collections.emptyList());
 
         // create a snapshot
-        eventTransmissionService.createSnapshotEvents(PUBLISHER_EVENT_TYPE);
+        snapshotCreationService.createSnapshotEvents(PUBLISHER_EVENT_TYPE);
 
         // verify that all returned events got written
-        verify(eventLogWriter, times(5)).fireSnapshotEvent(isA(String.class), eq(PUBLISHER_DATA_TYPE), isA(MockPayload.class));
+        verify(eventLogWriter, times(5)).fireSnapshotEvent(eq(PUBLISHER_EVENT_TYPE), eq(PUBLISHER_DATA_TYPE), isA(MockPayload.class));
     }
 
 }

@@ -1,15 +1,12 @@
 package org.zalando.nakadiproducer;
 
+import static java.util.Collections.emptyList;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +35,6 @@ import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationEndpoint;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationMvcEndpoint;
-import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventProviderNotImplementedException;
 import org.zalando.nakadiproducer.transmission.NakadiPublishingClient;
 import org.zalando.nakadiproducer.transmission.impl.EventTransmissionService;
 import org.zalando.nakadiproducer.transmission.impl.EventTransmitter;
@@ -52,23 +48,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @ComponentScan
 @AutoConfigureAfter(name="org.zalando.tracer.spring.TracerAutoConfiguration")
 public class NakadiProducerAutoConfiguration {
-
-    @Bean
-    @ConditionalOnMissingBean(SnapshotEventProvider.class)
-    public SnapshotEventProvider snapshotEventProvider() {
-        log.error("SnapshotEventProvider interface should be implemented by the service in order to /events/snapshots/{event_type} work");
-        return new SnapshotEventProvider() {
-            @Override
-            public List<Snapshot> getSnapshot(@Nonnull String eventType, @Nullable Object withIdGreaterThan) {
-                throw new SnapshotEventProviderNotImplementedException();
-            }
-
-            @Override
-            public Set<String> getSupportedEventTypes() {
-                return Collections.emptySet();
-            }
-        };
-    }
 
     @ConditionalOnMissingBean(NakadiPublishingClient.class)
     @Configuration
@@ -139,8 +118,8 @@ public class NakadiProducerAutoConfiguration {
     }
 
     @Bean
-    public SnapshotCreationService snapshotCreationService(SnapshotEventProvider snapshotEventProvider, EventLogWriter eventLogWriter) {
-        return new SnapshotCreationService(snapshotEventProvider, eventLogWriter);
+    public SnapshotCreationService snapshotCreationService(Optional<List<SnapshotEventProvider>> snapshotEventProviders, EventLogWriter eventLogWriter) {
+        return new SnapshotCreationService(snapshotEventProviders.orElse(emptyList()), eventLogWriter);
     }
 
     @Bean

@@ -1,12 +1,13 @@
 package org.zalando.nakadiproducer;
 
-import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +32,10 @@ import org.zalando.nakadiproducer.eventlog.impl.EventLogWriterImpl;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.flowid.NoopFlowIdComponent;
 import org.zalando.nakadiproducer.flowid.TracerFlowIdComponent;
+import org.zalando.nakadiproducer.snapshots.SimpleSnapshotEventGenerator;
+import org.zalando.nakadiproducer.snapshots.Snapshot;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationEndpoint;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationMvcEndpoint;
@@ -118,8 +122,33 @@ public class NakadiProducerAutoConfiguration {
     }
 
     @Bean
-    public SnapshotCreationService snapshotCreationService(Optional<List<SnapshotEventGenerator>> snapshotEventProviders, EventLogWriter eventLogWriter) {
-        return new SnapshotCreationService(snapshotEventProviders.orElse(emptyList()), eventLogWriter);
+    public SnapshotCreationService snapshotCreationService(Optional<List<SnapshotEventGenerator>> snapshotEventGenerators, Optional<SnapshotEventProvider> snapshotEventProvider, EventLogWriter eventLogWriter) {
+        Stream<SnapshotEventGenerator> legacyGenerators = snapshotEventProvider.map(this::wrapInSnapshotEventGenerators).orElse(Stream.empty());
+        Stream<SnapshotEventGenerator> nonLegacyGenerators = snapshotEventGenerators.map(List::stream).orElse(Stream.empty());
+        List<SnapshotEventGenerator> allGenerators = Stream.concat(legacyGenerators, nonLegacyGenerators).collect(toList());
+        return new SnapshotCreationService(allGenerators, eventLogWriter);
+    }
+
+    private Stream<SnapshotEventGenerator> wrapInSnapshotEventGenerators(SnapshotEventProvider p) {
+        return p.getSupportedEventTypes().stream()
+                .map(t -> wrapInSnapshotEventGenerator(p, t));
+    }
+
+    private SnapshotEventGenerator wrapInSnapshotEventGenerator(SnapshotEventProvider provider, String eventType) {
+        return new SimpleSnapshotEventGenerator(
+            eventType,
+            (cursor) -> createNonLegacySnapshots(provider, eventType, cursor)
+        );
+    }
+
+    private List<Snapshot> createNonLegacySnapshots(SnapshotEventProvider provider, String eventType, Object cursor) {
+        return provider.getSnapshot(eventType, cursor).stream()
+         .map(this::mapLegacyToNewSnapshot)
+         .collect(toList());
+    }
+
+    private Snapshot mapLegacyToNewSnapshot(SnapshotEventProvider.Snapshot snapshot) {
+        return new Snapshot(snapshot.getId(), snapshot.getEventType(), snapshot.getDataType(), snapshot.getData());
     }
 
     @Bean

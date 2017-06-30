@@ -24,8 +24,8 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
+import org.zalando.nakadiproducer.snapshots.Snapshot;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
-import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator.Snapshot;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 

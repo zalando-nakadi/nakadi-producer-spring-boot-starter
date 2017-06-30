@@ -1,8 +1,5 @@
 package org.zalando.nakadiproducer.snapshots;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 import java.util.List;
 
 /**
@@ -34,14 +31,5 @@ public interface SnapshotEventGenerator {
     List<Snapshot> generateSnapshots(Object withIdGreaterThan);
 
     String getSupportedEventType();
-
-    @AllArgsConstructor
-    @Getter
-    class Snapshot {
-        private Object id;
-        private String eventType;
-        private String dataType;
-        private Object data;
-    }
 
 }

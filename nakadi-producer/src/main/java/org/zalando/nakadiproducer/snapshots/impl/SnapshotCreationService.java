@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
+import org.zalando.nakadiproducer.snapshots.Snapshot;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
-import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator.Snapshot;
 import org.zalando.nakadiproducer.snapshots.UnknownEventTypeException;
 
 public class SnapshotCreationService {

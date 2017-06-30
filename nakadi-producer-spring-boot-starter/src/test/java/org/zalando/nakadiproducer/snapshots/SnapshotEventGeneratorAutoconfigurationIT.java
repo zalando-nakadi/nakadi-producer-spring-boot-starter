@@ -3,6 +3,9 @@ package org.zalando.nakadiproducer.snapshots;
 import static org.junit.Assert.fail;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,12 @@ public class SnapshotEventGeneratorAutoconfigurationIT extends BaseMockedExterna
         // expect no exceptions
         snapshotCreationService.createSnapshotEvents("B");
 
+        // expect no exceptions
+        snapshotCreationService.createSnapshotEvents("C");
+
+        // expect no exceptions
+        snapshotCreationService.createSnapshotEvents("D");
+
         try {
             snapshotCreationService.createSnapshotEvents("not defined");
         } catch (UnknownEventTypeException e) {
@@ -44,6 +53,27 @@ public class SnapshotEventGeneratorAutoconfigurationIT extends BaseMockedExterna
         @Bean
         public SnapshotEventGenerator snapshotEventProviderB() {
             return new SimpleSnapshotEventGenerator("B", (x) -> Collections.emptyList());
+        }
+
+        @Bean
+        public SnapshotEventProvider snapshotEventProviderCandD() {
+            return new SnapshotEventProvider() {
+                @Override
+                public List<Snapshot> getSnapshot(String eventType, Object withIdGreaterThan) {
+                    if (!getSupportedEventTypes().contains(eventType)) {
+                        throw new UnknownEventTypeException(eventType);
+                    }
+                    return Collections.emptyList();
+                }
+
+                @Override
+                public Set<String> getSupportedEventTypes() {
+                    HashSet<String> types = new HashSet<>();
+                    types.add("C");
+                    types.add("D");
+                    return types;
+                }
+            };
         }
     }
 }

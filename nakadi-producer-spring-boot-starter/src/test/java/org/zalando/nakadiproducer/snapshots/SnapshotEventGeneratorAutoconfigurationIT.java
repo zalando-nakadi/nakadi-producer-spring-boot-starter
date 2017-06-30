@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.zalando.nakadiproducer.BaseMockedExternalCommunicationIT;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
 
-public class SnapshotEventProviderAutoconfigurationIT extends BaseMockedExternalCommunicationIT {
+public class SnapshotEventGeneratorAutoconfigurationIT extends BaseMockedExternalCommunicationIT {
 
     @Autowired
     SnapshotCreationService snapshotCreationService;
@@ -37,13 +37,13 @@ public class SnapshotEventProviderAutoconfigurationIT extends BaseMockedExternal
     public static class Config {
 
         @Bean
-        public SnapshotEventProvider snapshotEventProviderA() {
-            return new SimpleSnapshotEventProvider("A", (x) -> Collections.emptyList());
+        public SnapshotEventGenerator snapshotEventProviderA() {
+            return new SimpleSnapshotEventGenerator("A", (x) -> Collections.emptyList());
         }
 
         @Bean
-        public SnapshotEventProvider snapshotEventProviderB() {
-            return new SimpleSnapshotEventProvider("B", (x) -> Collections.emptyList());
+        public SnapshotEventGenerator snapshotEventProviderB() {
+            return new SimpleSnapshotEventGenerator("B", (x) -> Collections.emptyList());
         }
     }
 }

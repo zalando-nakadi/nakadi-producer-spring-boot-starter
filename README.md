@@ -157,12 +157,12 @@ This will only  work if your application has configured spring-boot-actuator
     <artifactId>spring-boot-starter-actuator</artifactId>
 </dependency>
 ```
-and if one or more Spring Beans implement the `org.zalando.nakadiproducer.snapshots.SnapshotEventProvider` interface. Otherwise, the library will respond with an error message when you request a snapshot creation.
+and if one or more Spring Beans implement the `org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator` interface. Otherwise, the library will respond with an error message when you request a snapshot creation.
 
 We provide a `SimpleSnapshotEventProvider` to ease bean creation using a more functional Style: 
 ```java
 @Bean
-public SnapshotEventProvider snapshotEventProvider(MyService service) {
+public SnapshotEventGenerator snapshotEventGenerator(MyService service) {
     return new SimpleSnapshotEventProvider("event type", service::createSnapshotEvents);
 }
 ```

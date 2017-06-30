@@ -31,7 +31,7 @@ import org.zalando.nakadiproducer.eventlog.impl.EventLogWriterImpl;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.flowid.NoopFlowIdComponent;
 import org.zalando.nakadiproducer.flowid.TracerFlowIdComponent;
-import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationEndpoint;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationMvcEndpoint;
@@ -118,7 +118,7 @@ public class NakadiProducerAutoConfiguration {
     }
 
     @Bean
-    public SnapshotCreationService snapshotCreationService(Optional<List<SnapshotEventProvider>> snapshotEventProviders, EventLogWriter eventLogWriter) {
+    public SnapshotCreationService snapshotCreationService(Optional<List<SnapshotEventGenerator>> snapshotEventProviders, EventLogWriter eventLogWriter) {
         return new SnapshotCreationService(snapshotEventProviders.orElse(emptyList()), eventLogWriter);
     }
 

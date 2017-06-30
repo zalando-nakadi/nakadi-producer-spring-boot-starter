@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.zalando</groupId>
         <artifactId>nakadi-producer-reactor</artifactId>
-        <version>5.0.0</version>
+        <version>4.1.0</version>
     </parent>
 
     <artifactId>nakadi-producer-spring-boot-starter</artifactId>

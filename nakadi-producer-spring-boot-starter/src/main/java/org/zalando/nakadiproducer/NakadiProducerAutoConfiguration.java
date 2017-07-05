@@ -1,7 +1,6 @@
 package org.zalando.nakadiproducer;
 
 import static java.util.stream.Collectors.toList;
-import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -48,7 +47,6 @@ import org.zalando.tracer.Tracer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
-@Slf4j
 @ComponentScan
 @AutoConfigureAfter(name="org.zalando.tracer.spring.TracerAutoConfiguration")
 public class NakadiProducerAutoConfiguration {

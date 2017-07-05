@@ -3,7 +3,7 @@ package org.zalando.nakadiproducer.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider.Snapshot;
+import org.zalando.nakadiproducer.snapshots.Snapshot;
 
 public class Fixture {
 

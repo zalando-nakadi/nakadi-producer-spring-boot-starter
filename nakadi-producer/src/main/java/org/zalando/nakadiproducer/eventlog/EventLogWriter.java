@@ -2,6 +2,8 @@ package org.zalando.nakadiproducer.eventlog;
 
 import javax.transaction.Transactional;
 
+import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
+
 /**
  * The main user interface for this library. Autowire an instance of this
  * interface into your service, and call one of the methods whenever you want to
@@ -92,7 +94,7 @@ public interface EventLogWriter {
      * <p>
      * Normally applications don't have to call this themselves, instead they
      * should implement the
-     * {@link org.zalando.nakadiproducer.snapshots.SnapshotEventProvider}
+     * {@link SnapshotEventGenerator}
      * interface to add support for snapshot creation via the actuator endpoint.
      * </p>
      *

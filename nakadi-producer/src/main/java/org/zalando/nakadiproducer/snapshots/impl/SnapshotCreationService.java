@@ -1,27 +1,44 @@
 package org.zalando.nakadiproducer.snapshots.impl;
 
+import static java.util.Collections.unmodifiableSet;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
+
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
-import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
-import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider.Snapshot;
+import org.zalando.nakadiproducer.snapshots.Snapshot;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
+import org.zalando.nakadiproducer.snapshots.UnknownEventTypeException;
 
 public class SnapshotCreationService {
 
-    private final SnapshotEventProvider snapshotEventProvider;
+    private final Map<String, SnapshotEventGenerator> snapshotEventProviders;
 
     private final EventLogWriter eventLogWriter;
 
-    public SnapshotCreationService(SnapshotEventProvider snapshotEventProvider, EventLogWriter eventLogWriter) {
-        this.snapshotEventProvider = snapshotEventProvider;
+    public SnapshotCreationService(List<SnapshotEventGenerator> snapshotEventGenerators, EventLogWriter eventLogWriter) {
+        this.snapshotEventProviders = snapshotEventGenerators.stream()
+                                                             .collect(
+                                                                toMap(
+                                                                    SnapshotEventGenerator::getSupportedEventType,
+                                                                    identity()
+                                                                )
+                                                            );
         this.eventLogWriter = eventLogWriter;
     }
 
     public void createSnapshotEvents(final String eventType) {
+        SnapshotEventGenerator snapshotEventGenerator = snapshotEventProviders.get(eventType);
+        if (snapshotEventGenerator == null) {
+            throw new UnknownEventTypeException(eventType);
+        }
+
         Object lastProcessedId = null;
         do {
-            List<Snapshot> snapshots = snapshotEventProvider.getSnapshot(eventType, lastProcessedId);
+            List<Snapshot> snapshots = snapshotEventGenerator.generateSnapshots(lastProcessedId);
             if (snapshots.isEmpty()) {
                 break;
             }
@@ -34,6 +51,6 @@ public class SnapshotCreationService {
     }
 
     public Set<String> getSupportedEventTypes() {
-        return snapshotEventProvider.getSupportedEventTypes();
+        return unmodifiableSet(snapshotEventProviders.keySet());
     }
 }

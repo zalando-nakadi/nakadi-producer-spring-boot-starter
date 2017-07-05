@@ -10,7 +10,10 @@ import java.util.Set;
  * The {@code SnapshotEventProvider} interface should be implemented by any
  * Event Producer that wants to support snapshot events feature. The
  * class must define a method {@code getSnapshot}.
+ *
+ * @deprecated Please use one or more {@link SnapshotEventGenerator} instances instead
  */
+@Deprecated
 public interface SnapshotEventProvider {
 
     /**
@@ -32,12 +35,15 @@ public interface SnapshotEventProvider {
      * @return list of elements ordered by their id
      * @throws UnknownEventTypeException if {@code eventType} is unknown
      */
+    @Deprecated
     List<Snapshot> getSnapshot(String eventType, Object withIdGreaterThan);
 
+    @Deprecated
     Set<String> getSupportedEventTypes();
 
     @AllArgsConstructor
     @Getter
+    @Deprecated
     class Snapshot {
         private Object id;
         private String eventType;

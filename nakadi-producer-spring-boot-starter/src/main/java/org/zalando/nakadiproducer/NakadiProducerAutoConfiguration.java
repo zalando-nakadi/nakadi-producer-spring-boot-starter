@@ -1,15 +1,12 @@
 package org.zalando.nakadiproducer;
 
-import lombok.extern.slf4j.Slf4j;
+import static java.util.stream.Collectors.toList;
 
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,11 +31,13 @@ import org.zalando.nakadiproducer.eventlog.impl.EventLogWriterImpl;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.flowid.NoopFlowIdComponent;
 import org.zalando.nakadiproducer.flowid.TracerFlowIdComponent;
+import org.zalando.nakadiproducer.snapshots.SimpleSnapshotEventGenerator;
+import org.zalando.nakadiproducer.snapshots.Snapshot;
+import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationEndpoint;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationMvcEndpoint;
-import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventProviderNotImplementedException;
 import org.zalando.nakadiproducer.transmission.NakadiPublishingClient;
 import org.zalando.nakadiproducer.transmission.impl.EventTransmissionService;
 import org.zalando.nakadiproducer.transmission.impl.EventTransmitter;
@@ -48,27 +47,9 @@ import org.zalando.tracer.Tracer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
-@Slf4j
 @ComponentScan
 @AutoConfigureAfter(name="org.zalando.tracer.spring.TracerAutoConfiguration")
 public class NakadiProducerAutoConfiguration {
-
-    @Bean
-    @ConditionalOnMissingBean(SnapshotEventProvider.class)
-    public SnapshotEventProvider snapshotEventProvider() {
-        log.error("SnapshotEventProvider interface should be implemented by the service in order to /events/snapshots/{event_type} work");
-        return new SnapshotEventProvider() {
-            @Override
-            public List<Snapshot> getSnapshot(@Nonnull String eventType, @Nullable Object withIdGreaterThan) {
-                throw new SnapshotEventProviderNotImplementedException();
-            }
-
-            @Override
-            public Set<String> getSupportedEventTypes() {
-                return Collections.emptySet();
-            }
-        };
-    }
 
     @ConditionalOnMissingBean(NakadiPublishingClient.class)
     @Configuration
@@ -76,22 +57,21 @@ public class NakadiProducerAutoConfiguration {
     static class FahrscheinNakadiClientConfiguration {
 
         @Bean
-        public NakadiPublishingClient nakadiClient(AccessTokenProvider accessTokenProvider, @Value("${nakadi-producer.nakadi-base-uri}") URI nakadiBaseUri) {
-            return new FahrscheinNakadiPublishingClient(
-                NakadiClient.builder(nakadiBaseUri)
-                                                   .withAccessTokenProvider(accessTokenProvider::getAccessToken)
-                                                   .build()
-            );
+        public NakadiPublishingClient nakadiClient(AccessTokenProvider accessTokenProvider,
+                @Value("${nakadi-producer.nakadi-base-uri}") URI nakadiBaseUri) {
+            return new FahrscheinNakadiPublishingClient(NakadiClient.builder(nakadiBaseUri)
+                    .withAccessTokenProvider(accessTokenProvider::getAccessToken).build());
         }
-
 
         @ConditionalOnClass(name = "org.zalando.stups.tokens.Tokens")
         @Configuration
         static class StupsTokenConfiguration {
             @Bean(destroyMethod = "stop")
-            @ConditionalOnProperty({"nakadi-producer.access-token-uri", "nakadi-producer.access-token-scopes"})
+            @ConditionalOnProperty({ "nakadi-producer.access-token-uri", "nakadi-producer.access-token-scopes" })
             @ConditionalOnMissingBean(AccessTokenProvider.class)
-            public StupsTokenComponent accessTokenProvider(@Value("${nakadi-producer.access-token-uri}") URI accessTokenUri, @Value("${nakadi-producer.access-token-scopes}") String[] accessTokenScopes) {
+            public StupsTokenComponent accessTokenProvider(
+                    @Value("${nakadi-producer.access-token-uri}") URI accessTokenUri,
+                    @Value("${nakadi-producer.access-token-scopes}") String[] accessTokenScopes) {
                 return new StupsTokenComponent(accessTokenUri, Arrays.asList(accessTokenScopes));
             }
         }
@@ -126,25 +106,69 @@ public class NakadiProducerAutoConfiguration {
     static class ManagementEndpointConfiguration {
         @Bean
         @ConditionalOnMissingBean
-        public SnapshotEventCreationEndpoint snapshotEventCreationEndpoint(SnapshotCreationService snapshotCreationService) {
+        public SnapshotEventCreationEndpoint snapshotEventCreationEndpoint(
+                SnapshotCreationService snapshotCreationService) {
             return new SnapshotEventCreationEndpoint(snapshotCreationService);
         }
 
         @Bean
         @ConditionalOnBean(SnapshotEventCreationEndpoint.class)
         @ConditionalOnEnabledEndpoint("snapshot_event_creation")
-        public SnapshotEventCreationMvcEndpoint snapshotEventCreationMvcEndpoint(SnapshotEventCreationEndpoint snapshotEventCreationEndpoint) {
+        public SnapshotEventCreationMvcEndpoint snapshotEventCreationMvcEndpoint(
+                SnapshotEventCreationEndpoint snapshotEventCreationEndpoint) {
             return new SnapshotEventCreationMvcEndpoint(snapshotEventCreationEndpoint);
         }
     }
 
     @Bean
-    public SnapshotCreationService snapshotCreationService(SnapshotEventProvider snapshotEventProvider, EventLogWriter eventLogWriter) {
-        return new SnapshotCreationService(snapshotEventProvider, eventLogWriter);
+    public SnapshotCreationService snapshotCreationService(
+            Optional<List<SnapshotEventGenerator>> snapshotEventGenerators,
+            Optional<SnapshotEventProvider> snapshotEventProvider, EventLogWriter eventLogWriter) {
+        final Stream<SnapshotEventGenerator> legacyGenerators =
+                snapshotEventProvider.map(this::wrapInSnapshotEventGenerators)
+                                     .orElseGet(Stream::empty);
+        final Stream<SnapshotEventGenerator> nonLegacyGenerators =
+                snapshotEventGenerators.map(List::stream)
+                                       .orElseGet(Stream::empty);
+        final List<SnapshotEventGenerator> allGenerators =
+                Stream.concat(legacyGenerators, nonLegacyGenerators)
+                      .collect(toList());
+        return new SnapshotCreationService(allGenerators, eventLogWriter);
+    }
+
+    /**
+     * This method (and the following three) support the legacy {@link SnapshotEventProvider} interface,
+     * mapping it to the new logic (several {@link SnapshotEventGenerator}s).
+     *
+     * It will be removed when we don't support that interface anymore.
+     */
+    private Stream<SnapshotEventGenerator> wrapInSnapshotEventGenerators(SnapshotEventProvider p) {
+        return p.getSupportedEventTypes()
+                .stream()
+                .map(t -> wrapInSnapshotEventGenerator(p, t));
+    }
+
+    private SnapshotEventGenerator wrapInSnapshotEventGenerator(SnapshotEventProvider provider, String eventType) {
+        return new SimpleSnapshotEventGenerator(
+            eventType,
+            (cursor) -> createNonLegacySnapshots(provider, eventType, cursor)
+        );
+    }
+
+    private List<Snapshot> createNonLegacySnapshots(SnapshotEventProvider provider, String eventType, Object cursor) {
+        return provider.getSnapshot(eventType, cursor)
+                       .stream()
+                       .map(this::mapLegacyToNewSnapshot)
+                       .collect(toList());
+    }
+
+    private Snapshot mapLegacyToNewSnapshot(SnapshotEventProvider.Snapshot snapshot) {
+        return new Snapshot(snapshot.getId(), snapshot.getEventType(), snapshot.getDataType(), snapshot.getData());
     }
 
     @Bean
-    public EventLogWriter eventLogWriter(EventLogRepository eventLogRepository, ObjectMapper objectMapper, FlowIdComponent flowIdComponent) {
+    public EventLogWriter eventLogWriter(EventLogRepository eventLogRepository, ObjectMapper objectMapper,
+            FlowIdComponent flowIdComponent) {
         return new EventLogWriterImpl(eventLogRepository, objectMapper, flowIdComponent);
     }
 
@@ -159,7 +183,8 @@ public class NakadiProducerAutoConfiguration {
     }
 
     @Bean
-    public EventTransmissionService eventTransmissionService(EventLogRepository eventLogRepository, NakadiPublishingClient nakadiPublishingClient, ObjectMapper objectMapper) {
+    public EventTransmissionService eventTransmissionService(EventLogRepository eventLogRepository,
+            NakadiPublishingClient nakadiPublishingClient, ObjectMapper objectMapper) {
         return new EventTransmissionService(eventLogRepository, nakadiPublishingClient, objectMapper);
     }
 

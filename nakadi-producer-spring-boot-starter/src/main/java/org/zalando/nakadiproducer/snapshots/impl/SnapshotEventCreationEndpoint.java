@@ -1,12 +1,12 @@
 package org.zalando.nakadiproducer.snapshots.impl;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 import java.util.Set;
 
 import org.springframework.boot.actuate.endpoint.AbstractEndpoint;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 @ConfigurationProperties("endpoints.snapshot-event-creation")
 public class SnapshotEventCreationEndpoint extends AbstractEndpoint<SnapshotEventCreationEndpoint.SnapshotReport> {
@@ -22,8 +22,8 @@ public class SnapshotEventCreationEndpoint extends AbstractEndpoint<SnapshotEven
         return new SnapshotReport(snapshotCreationService.getSupportedEventTypes());
     }
 
-    public void invoke(String eventType) {
-        snapshotCreationService.createSnapshotEvents(eventType);
+    public void invoke(String eventType, String filter) {
+        snapshotCreationService.createSnapshotEvents(eventType, filter);
     }
 
 

@@ -22,20 +22,20 @@ public class SnapshotEventGeneratorAutoconfigurationIT extends BaseMockedExterna
     @Test
     public void picksUpDefinedSnapshotEventProviders() {
         // expect no exceptions
-        snapshotCreationService.createSnapshotEvents("A");
+        snapshotCreationService.createSnapshotEvents("A", "");
 
         // expect no exceptions
-        snapshotCreationService.createSnapshotEvents("B");
+        snapshotCreationService.createSnapshotEvents("B", "");
 
         // expect no exceptions
-        snapshotCreationService.createSnapshotEvents("C");
+        snapshotCreationService.createSnapshotEvents("C", "");
 
         // expect no exceptions
-        snapshotCreationService.createSnapshotEvents("D");
+        snapshotCreationService.createSnapshotEvents("D", "");
 
         try {
-            snapshotCreationService.createSnapshotEvents("not defined");
-        } catch (UnknownEventTypeException e) {
+            snapshotCreationService.createSnapshotEvents("not defined", "");
+        } catch (final UnknownEventTypeException e) {
             return;
         }
 
@@ -68,7 +68,7 @@ public class SnapshotEventGeneratorAutoconfigurationIT extends BaseMockedExterna
 
                 @Override
                 public Set<String> getSupportedEventTypes() {
-                    HashSet<String> types = new HashSet<>();
+                    final HashSet<String> types = new HashSet<>();
                     types.add("C");
                     types.add("D");
                     return types;

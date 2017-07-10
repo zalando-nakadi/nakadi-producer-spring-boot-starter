@@ -14,7 +14,7 @@ Please also be aware that, when udating between major releases of this lib, you 
 
 ## Prerequisites
 
-This library was tested with Spring Boot 1.5.3.RELEASE and relies on existing configured PostgreSQL DataSource.
+This library was tested with Spring Boot 1.5.3.RELEASE and relies on an existing configured PostgreSQL DataSource.
 
 This library also uses:
 
@@ -84,7 +84,7 @@ The typical use case for this library is to publish events like creating or upda
 
 In order to store events you can autowire the [`EventLogWriter`](src/main/java/org/zalando/nakadiproducer/eventlog/EventLogWriter.java) service and use its methods: `fireCreateEvent`, `fireUpdateEvent`, `fireDeleteEvent`, `fireSnapshotEvent` or `fireBusinessEvent`.
 
-You normally don't need to call `fireSnapshotEvent` directly, see below for [snapshot creation](#event-snapshots).
+You normally don't need to call `fireSnapshotEvent` directly, see below for [snapshot creation](#event-snapshots-optional).
 
 
 Example of using `fireCreateEvent`:
@@ -148,7 +148,7 @@ will return a list of all event types available for snapshot creation and
 
     POST localhost:7979/snapshot_event_creation/my.event-type
 
-will trigger a snapshot for the event type `my.event-type`.
+will trigger a snapshot for the event type `my.event-type`. The (optional) request body is a "filter specifier".
 
 This will only  work if your application has configured spring-boot-actuator
 ```xml
@@ -157,9 +157,10 @@ This will only  work if your application has configured spring-boot-actuator
     <artifactId>spring-boot-starter-actuator</artifactId>
 </dependency>
 ```
-and if one or more Spring Beans implement the `org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator` interface. Otherwise, the library will respond with an error message when you request a snapshot creation.
+and if one or more Spring Beans implement the `org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator` interface. Otherwise (or if the generator is not for the event type you requested), the library will respond with an error message when you request a snapshot creation.
+The request body (the "filter specifier") of the trigger request will be passed as a string parameter to the SnapshotEventGenerator's `generateSnapshots` method.
 
-We provide a `SimpleSnapshotEventGenerator` to ease bean creation using a more functional Style: 
+We provide a `SimpleSnapshotEventGenerator` to ease bean creation using a more functional style:
 ```java
 @Bean
 public SnapshotEventGenerator snapshotEventGenerator(MyService service) {

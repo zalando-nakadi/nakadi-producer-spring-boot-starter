@@ -7,7 +7,6 @@ import lombok.Getter;
 @Getter
 public class Snapshot {
     private Object id;
-    private String eventType;
     private String dataType;
     private Object data;
 }

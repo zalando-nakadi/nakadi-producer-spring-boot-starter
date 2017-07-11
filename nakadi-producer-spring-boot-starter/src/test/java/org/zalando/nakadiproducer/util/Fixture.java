@@ -26,9 +26,10 @@ public class Fixture {
     }
 
     public static List<Snapshot> mockSnapshotList(Integer size) {
-        List<Snapshot> list = new ArrayList<>();
+        final List<Snapshot> list = new ArrayList<>();
         for (int i = 0; i < size; i++) {
-            list.add(new Snapshot(i, PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, mockPayload(i + 1, "code" + i, true, mockSubClass("some info " + i), mockSubList(3, "some detail for code" + i))));
+            list.add(new Snapshot(i, PUBLISHER_DATA_TYPE, mockPayload(i + 1, "code" + i, true,
+                    mockSubClass("some info " + i), mockSubList(3, "some detail for code" + i))));
         }
         return list;
     }
@@ -46,7 +47,7 @@ public class Fixture {
     }
 
     public static List<MockPayload.SubListItem> mockSubList(Integer size, String detail) {
-        List<MockPayload.SubListItem> items = new ArrayList<>();
+        final List<MockPayload.SubListItem> items = new ArrayList<>();
         for (int i = 0; i < size; i++) {
             items.add(mockSubListItem(detail + i));
         }

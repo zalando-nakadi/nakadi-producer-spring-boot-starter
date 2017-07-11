@@ -40,10 +40,13 @@ public interface SnapshotEventGenerator {
      *
      * @param filter
      *            a filter for the snapshot generation mechanism. This value is
-     *            simply passed through from the REST endpoint (or other
-     *            triggering mechanism), so implementations can interpret it in
-     *            whatever way you want (even ignore it). All calls for one
-     *            snapshot generation will receive the same string.
+     *            simply passed through from the request body of the REST
+     *            endpoint (or from any other triggering mechanism). If there
+     *            was no request body, this will be {@code null}.
+     *
+     *            Implementors can interpret it in whatever way they want (even
+     *            ignore it). All calls for one snapshot generation will receive
+     *            the same string.
      *
      * @return list of elements (wrapped in Snapshot objects) ordered by their
      *         ID.

@@ -163,7 +163,7 @@ public class NakadiProducerAutoConfiguration {
     }
 
     private Snapshot mapLegacyToNewSnapshot(SnapshotEventProvider.Snapshot snapshot) {
-        return new Snapshot(snapshot.getId(), snapshot.getEventType(), snapshot.getDataType(), snapshot.getData());
+        return new Snapshot(snapshot.getId(), snapshot.getDataType(), snapshot.getData());
     }
 
     @Bean

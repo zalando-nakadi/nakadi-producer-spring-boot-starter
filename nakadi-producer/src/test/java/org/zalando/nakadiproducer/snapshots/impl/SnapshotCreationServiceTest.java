@@ -62,7 +62,7 @@ public class SnapshotCreationServiceTest {
         final String filter = "exampleFilter";
 
         when(snapshotEventGenerator.generateSnapshots(null, filter)).thenReturn(
-                singletonList(new Snapshot(1, PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE, eventPayload)));
+                singletonList(new Snapshot(1, PUBLISHER_DATA_TYPE, eventPayload)));
 
         snapshotCreationService.createSnapshotEvents(PUBLISHER_EVENT_TYPE, filter);
 

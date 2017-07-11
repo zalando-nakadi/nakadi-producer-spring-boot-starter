@@ -21,7 +21,7 @@ public class SnapshotEventCreationMvcEndpoint extends EndpointMvcAdapter {
     @ResponseBody
     @HypermediaDisabled
     public ResponseEntity<?> createSnapshot(@PathVariable String eventType,
-            @RequestBody String filter) {
+            @RequestBody(required = false) String filter) {
         if (!this.delegate.isEnabled()) {
             // Shouldn't happen - MVC endpoint shouldn't be registered when delegate's
             // disabled

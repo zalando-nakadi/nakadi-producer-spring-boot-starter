@@ -19,31 +19,38 @@ public class SnapshotCreationService {
 
     private final EventLogWriter eventLogWriter;
 
-    public SnapshotCreationService(List<SnapshotEventGenerator> snapshotEventGenerators, EventLogWriter eventLogWriter) {
+    /**
+     * Creates the service.
+     *
+     * @param snapshotEventGenerators
+     *            the event generators. Each of them must have a different
+     *            supported event type.
+     * @param eventLogWriter
+     *            The event log writer to which the newly generated snapshot
+     *            events are pushed.
+     *            @throws IllegalStateException if two event generators declare to be responsible for the same event type.
+     */
+    public SnapshotCreationService(List<SnapshotEventGenerator> snapshotEventGenerators,
+            EventLogWriter eventLogWriter) {
         this.snapshotEventProviders = snapshotEventGenerators.stream()
-                                                             .collect(
-                                                                toMap(
-                                                                    SnapshotEventGenerator::getSupportedEventType,
-                                                                    identity()
-                                                                )
-                                                            );
+                .collect(toMap(SnapshotEventGenerator::getSupportedEventType, identity()));
         this.eventLogWriter = eventLogWriter;
     }
 
-    public void createSnapshotEvents(final String eventType) {
-        SnapshotEventGenerator snapshotEventGenerator = snapshotEventProviders.get(eventType);
+    public void createSnapshotEvents(final String eventType, String filter) {
+        final SnapshotEventGenerator snapshotEventGenerator = snapshotEventProviders.get(eventType);
         if (snapshotEventGenerator == null) {
             throw new UnknownEventTypeException(eventType);
         }
 
         Object lastProcessedId = null;
         do {
-            List<Snapshot> snapshots = snapshotEventGenerator.generateSnapshots(lastProcessedId);
+            final List<Snapshot> snapshots = snapshotEventGenerator.generateSnapshots(lastProcessedId, filter);
             if (snapshots.isEmpty()) {
                 break;
             }
 
-            for (Snapshot snapshot : snapshots) {
+            for (final Snapshot snapshot : snapshots) {
                 eventLogWriter.fireSnapshotEvent(eventType, snapshot.getDataType(), snapshot.getData());
                 lastProcessedId = snapshot.getId();
             }

@@ -246,7 +246,12 @@ public class MyIT {
 ```
 The example above uses `com.jayway.jsonpath:json-path:jar:2.2.0` to parse and test the json results
 
-## Build
+## Contributing
+
+We welcome contributions. If you have an idea of what the library should do, please have a look into our [Issues](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/issues?utf8=%E2%9C%93&q=is%3Aissue) to see whether it was already proposed before, and otherwise open an issue.
+We also welcome pull requests (for your issues or even for issues from others).
+
+### Build
 
 Build with unit tests and integration tests:
 
@@ -254,12 +259,21 @@ Build with unit tests and integration tests:
 ./mvnw clean install
 ```
 
+This will sign the created artifact, which is needed for publication to Maven Central.
 If the GPG integration causes headaches (and you do not plan to publish the created artifact to maven central anyway), 
 you can skip gpg signing:
 
 ```shell
 ./mvnw -Dgpg.skip=true clean install
 ```
+
+### Thanks
+
+We (the [maintainers](MAINTAINERS)) want to thank our main contributors:
+
+* Alexander Libin (@qlibin), who created a similar predecessor library (tarbela-producer-spring-boot-starter, now not public anymore), from which this one was forked.
+* Lucas Medeiros de Azevedo (@wormangel), who added support for business events.
+
 
 ## License
 

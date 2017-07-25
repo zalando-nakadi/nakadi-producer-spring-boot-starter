@@ -1,4 +1,7 @@
+
+
 # nakadi-producer-spring-boot-starter
+
 Nakadi event producer library as a Spring boot starter.
 
 [Nakadi](https://github.com/zalando/nakadi) is a distributed event bus that implements a RESTful API abstraction instead of Kafka-like queues.
@@ -11,7 +14,18 @@ This project is mature, used in production in some services at Zalando, and in a
 
 Be aware that this library **does neither guarantee that events are sent exactly once, nor that they are sent in the order they have been persisted**. This is not a bug but a design decision that allows us to skip and retry sending events later in case of temporary failures. So make sure that your events are designed to be processed out of order.  To help you in this matter, the library generates a *strictly monotonically increasing event id* (field `metadata/eid` in Nakadi's event object) that can be used to reconstruct the message order.
 
-Please also be aware that, when udating between major releases of this lib, you must not jump over a major release (1.0 -> 3.0). Please always deploy the intermediate major releases at least once. You will find migration instructions between major release in [the release notes](https://github.com/zalando-incubator/nakadi-producer-spring-boot-starter/releases). You may of course always setup a fresh system with the newest version.
+## Versioning
+
+This library follows the [semantic versioning](http://semver.org/) schema. A major version change means either an
+incompatible change in the API, or some incompatible behavioral change (e.g. the database usage), minor versions
+mean new features without breaking compatibility, and patch versions are backwards compatible bug fixes.
+
+Please also be aware that, when udating between major releases of this lib, you must not jump over a major
+release (1.0 → 3.0). Please always deploy the intermediate major releases at least once – otherwise you might
+lose events. You will find migration instructions between major release in
+[the release notes](https://github.com/zalando-incubator/nakadi-producer-spring-boot-starter/releases).
+
+You may of course always setup a fresh system with the newest version.
 
 
 ## Prerequisites

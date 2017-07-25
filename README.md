@@ -32,14 +32,14 @@ This library also uses:
 
 ### Setup
 
-Include the library in your `pom.xml`:
+If you are using maven, include the library in your `pom.xml`:
 ```xml
 <dependency>
     <groupId>org.zalando</groupId>
     <artifactId>nakadi-producer-spring-boot-starter</artifactId>
     <version>${nakadi-producer.version}</version>
 </dependency>
-``` 
+```
 
 Use `@EnableNakadiProducer` annotation to activate spring boot starter auto configuration:
 ```java
@@ -248,7 +248,9 @@ The example above uses `com.jayway.jsonpath:json-path:jar:2.2.0` to parse and te
 
 ## Contributing
 
-We welcome contributions. If you have an idea of what the library should do, please have a look into our [Issues](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/issues?utf8=%E2%9C%93&q=is%3Aissue) to see whether it was already proposed before, and otherwise open an issue.
+We welcome contributions. If you have an idea of what the library should do, please have a look into our
+[Issues](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/issues?utf8=%E2%9C%93&q=is%3Aissue)
+to see whether it was already proposed before, and otherwise open an issue.
 We also welcome pull requests (for your issues or even for issues from others).
 
 ### Build
@@ -271,14 +273,19 @@ you can skip gpg signing:
 
 We (the [maintainers](MAINTAINERS)) want to thank our main contributors:
 
-* Alexander Libin (@qlibin), who created a similar predecessor library (tarbela-producer-spring-boot-starter, now not public anymore), from which this one was forked.
+* Alexander Libin (@qlibin), who created a similar predecessor library (tarbela-producer-spring-boot-starter,
+  now not public anymore), from which this one was forked.
 * Lucas Medeiros de Azevedo (@wormangel), who added support for business events.
 
 ### Contact
 
-For all questions, bug reports, proposals, etc., please [create an issue](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/issues/new). We try to react to new issues latest at the next working day.
+For all questions, bug reports, proposals, etc., please
+[create an issue](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/issues/new).
+We try to react to new issues latest at the next working day.
 
-If you need to contact the maintainers confidentially, please use the email addresses in the [MAINTAINERS](MAINTAINERS) file. In case of a security issue, please also send a copy to tech-security@zalando.de.
+If you need to contact the maintainers confidentially, please use the email addresses
+in the [MAINTAINERS](MAINTAINERS) file. In case of a security issue, please also send
+a copy to tech-security@zalando.de.
 
 
 ## License

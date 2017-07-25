@@ -29,6 +29,9 @@ This library also uses:
 
 
 ## Usage
+
+### Setup
+
 Include the library in your `pom.xml`:
 ```xml
 <dependency>
@@ -50,6 +53,7 @@ public class Application {
 ```
 
 The library uses flyway migrations to set up its own database schema `nakadi_events`.
+
 ### Nakadi communication configuration
 
 You must tell the library, where it can reach your Nakadi instance:
@@ -135,7 +139,8 @@ You usually should fire those also in the same transaction as you are storing th
 process step the event is reporting.
 
 
-## Event snapshots (optional)
+### Event snapshots (optional)
+
 A Snapshot event is a special type of data change event (data operation) defined by Nakadi.
 It does not represent a change of the state of a resource, but a current snapshot of the state of the resource.
 
@@ -170,7 +175,7 @@ public SnapshotEventGenerator snapshotEventGenerator(MyService service) {
 }
 ```
 
-## X-Flow-ID (optional)
+### X-Flow-ID (optional)
 
 This library supports [tracer-spring-boot-starter](https://github.com/zalando/tracer) (another library from Zalando) that provides a support of `X-Flow-ID` header.
 
@@ -190,7 +195,7 @@ tracer:
     X-Flow-ID: flow-id
 ```
 
-## Customizing Database Setup (optional)
+### Customizing Database Setup (optional)
 
 By default, the library will pick up your flyway data source (or the primary data source if no flyway data source is
 configured), create its own schema and start setting up its tables in there. You can customize this process in two ways:
@@ -203,7 +208,8 @@ You may also define a spring bean of type `FlywayCallback` and annotate it with 
 interface provide several hook into the schema management lifecycle that may, for example, be used to
  `SET ROLE migrator` before and `RESET ROLE` after each migration. 
 
-## Test support
+### Test support
+
 This library provides a mock implementation of its Nakadi client that can be used in integration testing:
 ```java
 public class MyIT {
@@ -239,6 +245,7 @@ public class MyIT {
 }
 ```
 The example above uses `com.jayway.jsonpath:json-path:jar:2.2.0` to parse and test the json results
+
 ## Build
 
 Build with unit tests and integration tests:

@@ -261,7 +261,9 @@ public class MyIT {
     }
 }
 ```
-The example above uses `com.jayway.jsonpath:json-path:jar:2.2.0` to parse and test the json results
+The example above uses `com.jayway.jsonpath:json-path:jar:2.2.0` to parse and test the json results.
+
+Note that you should disable the scheduled event transmission for the test (e.g. by setting `nakadi-producer.scheduled-transmission-enabled:false`), as that might interfere with the manual transmission and the clearing in the test setup, leading to events from one test showing up in the next test, depending on timing issues.
 
 ## Contributing
 

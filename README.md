@@ -1,4 +1,10 @@
+[![build status badge](https://img.shields.io/travis/zalando-nakadi/nakadi-producer-spring-boot-starter.svg?label=Travis%20Build)](https://travis-ci.org/zalando-nakadi/nakadi-producer-spring-boot-starter/branches)
+[![last Github release badge](https://img.shields.io/github/release/zalando-nakadi/nakadi-producer-spring-boot-starter.svg?label=Last%20Release)](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/releases)
+![last maven central release badge](https://img.shields.io/maven-central/v/org.zalando/nakadi-producer-spring-boot-starter.svg)
+[![MIT license](https://img.shields.io/github/license/zalando-nakadi/nakadi-producer-spring-boot-starter.svg)](LICENSE)
+
 # nakadi-producer-spring-boot-starter
+
 Nakadi event producer library as a Spring boot starter.
 
 [Nakadi](https://github.com/zalando/nakadi) is a distributed event bus that implements a RESTful API abstraction instead of Kafka-like queues.
@@ -7,9 +13,22 @@ The goal of this Spring Boot starter is to simplify the integration between even
 
 The Transmitter generates a strictly monotonically increasing event id that can be used for ordering the events during retrieval. It is not guaranteed, that events will be sent to Nakadi in the order they have been produced. If an event could not be sent to Nakadi, the library will periodically retry the transmission.
 
+This project is mature, used in production in some services at Zalando, and in active development.
+
 Be aware that this library **does neither guarantee that events are sent exactly once, nor that they are sent in the order they have been persisted**. This is not a bug but a design decision that allows us to skip and retry sending events later in case of temporary failures. So make sure that your events are designed to be processed out of order.  To help you in this matter, the library generates a *strictly monotonically increasing event id* (field `metadata/eid` in Nakadi's event object) that can be used to reconstruct the message order.
 
-Please also be aware that, when udating between major releases of this lib, you must not jump over a major release (1.0 -> 3.0). Please always deploy the intermediate major releases at least once. You will find migration instructions between major release in [the release notes](https://github.com/zalando-incubator/nakadi-producer-spring-boot-starter/releases). You may of course always setup a fresh system with the newest version.
+## Versioning
+
+This library follows the [semantic versioning](http://semver.org/) schema. A major version change means either an
+incompatible change in the API, or some incompatible behavioral change (e.g. the database usage), minor versions
+mean new features without breaking compatibility, and patch versions are backwards compatible bug fixes.
+
+Please also be aware that, when udating between major releases of this lib, you must not jump over a major
+release (1.0 → 3.0). Please always deploy the intermediate major releases at least once – otherwise you might
+lose events. You will find migration instructions between major release in
+[the release notes](https://github.com/zalando-incubator/nakadi-producer-spring-boot-starter/releases).
+
+You may of course always setup a fresh system with the newest version.
 
 
 ## Prerequisites
@@ -27,14 +46,17 @@ This library also uses:
 
 
 ## Usage
-Include the library in your `pom.xml`:
+
+### Setup
+
+If you are using maven, include the library in your `pom.xml`:
 ```xml
 <dependency>
     <groupId>org.zalando</groupId>
     <artifactId>nakadi-producer-spring-boot-starter</artifactId>
     <version>${nakadi-producer.version}</version>
 </dependency>
-``` 
+```
 
 Use `@EnableNakadiProducer` annotation to activate spring boot starter auto configuration:
 ```java
@@ -48,6 +70,7 @@ public class Application {
 ```
 
 The library uses flyway migrations to set up its own database schema `nakadi_events`.
+
 ### Nakadi communication configuration
 
 You must tell the library, where it can reach your Nakadi instance:
@@ -133,7 +156,8 @@ You usually should fire those also in the same transaction as you are storing th
 process step the event is reporting.
 
 
-## Event snapshots (optional)
+### Event snapshots (optional)
+
 A Snapshot event is a special type of data change event (data operation) defined by Nakadi.
 It does not represent a change of the state of a resource, but a current snapshot of the state of the resource.
 
@@ -168,7 +192,7 @@ public SnapshotEventGenerator snapshotEventGenerator(MyService service) {
 }
 ```
 
-## X-Flow-ID (optional)
+### X-Flow-ID (optional)
 
 This library supports [tracer-spring-boot-starter](https://github.com/zalando/tracer) (another library from Zalando) that provides a support of `X-Flow-ID` header.
 
@@ -188,7 +212,7 @@ tracer:
     X-Flow-ID: flow-id
 ```
 
-## Customizing Database Setup (optional)
+### Customizing Database Setup (optional)
 
 By default, the library will pick up your flyway data source (or the primary data source if no flyway data source is
 configured), create its own schema and start setting up its tables in there. You can customize this process in two ways:
@@ -201,7 +225,8 @@ You may also define a spring bean of type `FlywayCallback` and annotate it with 
 interface provide several hook into the schema management lifecycle that may, for example, be used to
  `SET ROLE migrator` before and `RESET ROLE` after each migration. 
 
-## Test support
+### Test support
+
 This library provides a mock implementation of its Nakadi client that can be used in integration testing:
 ```java
 public class MyIT {
@@ -240,7 +265,14 @@ The example above uses `com.jayway.jsonpath:json-path:jar:2.2.0` to parse and te
 
 Note that you should disable the scheduled event transmission for the test (e.g. by setting `nakadi-producer.scheduled-transmission-enabled:false`), as that might interfere with the manual transmission and the clearing in the test setup, leading to events from one test showing up in the next test, depending on timing issues.
 
-## Build
+## Contributing
+
+We welcome contributions. If you have an idea of what the library should do, please have a look into our
+[Issues](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/issues?utf8=%E2%9C%93&q=is%3Aissue)
+to see whether it was already proposed before, and otherwise open an issue.
+We also welcome pull requests (for your issues or even for issues from others).
+
+### Build
 
 Build with unit tests and integration tests:
 
@@ -248,12 +280,32 @@ Build with unit tests and integration tests:
 ./mvnw clean install
 ```
 
+This will sign the created artifact, which is needed for publication to Maven Central.
 If the GPG integration causes headaches (and you do not plan to publish the created artifact to maven central anyway), 
 you can skip gpg signing:
 
 ```shell
 ./mvnw -Dgpg.skip=true clean install
 ```
+
+### Thanks
+
+We (the [maintainers](MAINTAINERS)) want to thank our main contributors:
+
+* Alexander Libin (@qlibin), who created a similar predecessor library (tarbela-producer-spring-boot-starter,
+  now not public anymore), from which this one was forked.
+* Lucas Medeiros de Azevedo (@wormangel), who added support for business events.
+
+### Contact
+
+For all questions, bug reports, proposals, etc., please
+[create an issue](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/issues/new).
+We try to react to new issues latest at the next working day.
+
+If you need to contact the maintainers confidentially, please use the email addresses
+in the [MAINTAINERS](MAINTAINERS) file. In case of a security issue, please also send
+a copy to tech-security@zalando.de.
+
 
 ## License
 

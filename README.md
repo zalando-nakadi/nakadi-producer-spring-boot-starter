@@ -267,10 +267,11 @@ Note that you should disable the scheduled event transmission for the test (e.g.
 
 ## Contributing
 
-We welcome contributions. If you have an idea of what the library should do, please have a look into our
-[Issues](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/issues?utf8=%E2%9C%93&q=is%3Aissue)
-to see whether it was already proposed before, and otherwise open an issue.
-We also welcome pull requests (for your issues or even for issues from others).
+We welcome contributions.
+ 
+If you have an idea of what the library should do, please have a look into our [Issues][issues] to see whether it was already proposed before, and otherwise open an issue. We also welcome pull requests (for your issues or even for issues from others).
+
+If you want to support us, we collected a few [open issues that should be easy to contribute][help-wanted]. 
 
 ### Build
 
@@ -316,3 +317,6 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+[issues]: https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/issues?utf8=%E2%9C%93&q=is%3Aissue
+[help-wanted]: https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/labels/help%20wanted

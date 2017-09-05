@@ -272,6 +272,8 @@ We welcome contributions. If you have an idea of what the library should do, ple
 to see whether it was already proposed before, and otherwise open an issue.
 We also welcome pull requests (for your issues or even for issues from others).
 
+In the interest of fostering an open and welcoming environment, we follow and enforce our [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ### Build
 
 Build with unit tests and integration tests:

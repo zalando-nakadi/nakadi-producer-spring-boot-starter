@@ -273,6 +273,8 @@ If you have an idea of what the library should do, please have a look into our [
 
 If you want to support us, we collected a few [open issues that should be easy to contribute][help-wanted]. 
 
+In the interest of fostering an open and welcoming environment, we follow and enforce our [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ### Build
 
 Build with unit tests and integration tests:

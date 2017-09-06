@@ -5,11 +5,16 @@
 
 # nakadi-producer-spring-boot-starter
 
-Nakadi event producer library as a Spring boot starter.
-
 [Nakadi](https://github.com/zalando/nakadi) is a distributed event bus that implements a RESTful API abstraction instead of Kafka-like queues.
 
-The goal of this Spring Boot starter is to simplify the integration between event producer and Nakadi. New events are persisted in a log table as part of the producing JDBC transaction. They will then be sent asynchonously to Nakadi after the transaction completed. If the transaction is rolled back, the events will vanish too. As a result, events will always be sent if and only if the transaction succeeded.
+The goal of this Spring Boot starter is to simplify the reliable integration between event producer and Nakadi. When we send events from a transactional application, a few recurring challenges appear:
+- we have to make sure that events from a transaction get sent, when the transaction has been committed,
+- we have to make sure that events from a transaction do not get sent, when the transaction has been rolled back,
+- we have to make sure that events get sent, even if an error occurred while sending the event,
+- we want to give the client a way to infer the order in which the events occured and
+- it is very comfortable for initial data loads and error recovery to be able to generate snapshots of the current db state as events.
+
+We solved these challenges by persisting new events in a log table as part of the producing JDBC transaction. They will then be sent asynchonously to Nakadi after the transaction completed. If the transaction is rolled back, the events will vanish too. As a result, events will always be sent if and only if the transaction succeeded.
 
 The Transmitter generates a strictly monotonically increasing event id that can be used for ordering the events during retrieval. It is not guaranteed, that events will be sent to Nakadi in the order they have been produced. If an event could not be sent to Nakadi, the library will periodically retry the transmission.
 

@@ -14,7 +14,7 @@ The goal of this Spring Boot starter is to simplify the reliable integration bet
 - we want to give the event consumer a way to infer the order in which the events occurred and
 - it is very comfortable for initial data loads and error recovery to be able to generate snapshots of the current db state as events.
 
-There are [some projects](https://zalando.github.io/nakadi/manual.html#using_clients), that implement clients for the Nakadi REST API, but none of them solves the mentioned issues. 
+There are already [multiple clients for the Nakadi REST API](https://zalando.github.io/nakadi/manual.html#using_clients), but none of them solves the mentioned issues. 
 
 We solved them by persisting new events in a log table as part of the producing JDBC transaction. They will then be sent asynchonously to Nakadi after the transaction completed. If the transaction is rolled back, the events will vanish too. As a result, events will always be sent if and only if the transaction succeeded.
 

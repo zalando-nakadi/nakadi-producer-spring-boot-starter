@@ -70,6 +70,9 @@ For a pull request to be merged, it needs at least two comments with just a ":+1
 
 Just as for issues, the maintainers try to respond to every pull request in 72 hours (excluding weekends).
 
+### Code Style
+We do not follow a particular standard here. Please have a look around in the files you are changing and respect and adapt to the code style you find there.
+
 ## Conduct
 
 In the interest of fostering an open and welcoming environment, we follow and enforce our [Code of Conduct](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/blob/master/CODE_OF_CONDUCT.md).

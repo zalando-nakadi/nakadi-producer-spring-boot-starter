@@ -11,7 +11,7 @@ The goal of this Spring Boot starter is to simplify the reliable integration bet
 - we have to make sure that events from a transaction get sent, when the transaction has been committed,
 - we have to make sure that events from a transaction do not get sent, when the transaction has been rolled back,
 - we have to make sure that events get sent, even if an error occurred while sending the event,
-- we want to give the client a way to infer the order in which the events occurred and
+- we want to give the event consumer a way to infer the order in which the events occurred and
 - it is very comfortable for initial data loads and error recovery to be able to generate snapshots of the current db state as events.
 
 We solved these challenges by persisting new events in a log table as part of the producing JDBC transaction. They will then be sent asynchonously to Nakadi after the transaction completed. If the transaction is rolled back, the events will vanish too. As a result, events will always be sent if and only if the transaction succeeded.

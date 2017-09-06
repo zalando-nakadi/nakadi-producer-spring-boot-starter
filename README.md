@@ -272,7 +272,7 @@ Note that you should disable the scheduled event transmission for the test (e.g.
 
 ## Contributing
 
-We welcome contributions.
+We welcome contributions. Please have a look at our [contribution guidelines](CONTRIBUTING.md).
  
 If you have an idea of what the library should do, please have a look into our [Issues][issues] to see whether it was already proposed before, and otherwise open an issue. We also welcome pull requests (for your issues or even for issues from others).
 

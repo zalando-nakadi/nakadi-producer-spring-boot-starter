@@ -54,6 +54,9 @@ Please add some text in the initial comment of the pull request describing why y
 
 If you are implementing an issue, please mention its number in the PR comment, so reviewers (and people digging through the history later) can look up what this is about. (This will also create a link in the other direction, which is useful for people finding the issue first.)
 
+### Code Style
+We do not follow a particular standard here. Please have a look around in the files you are changing and respect and adapt to the code style you find there.
+
 ### Commit messages
 
 Please try to explain why you did your changes in the commit messages. If you are implementing an issue, include its number in the message.
@@ -69,9 +72,6 @@ The changed code from your pull request will be automatically run on our continu
 For a pull request to be merged, it needs at least two comments with just a ":+1:" in them (you can type `:+1:`) from members of the Zalando Github organization (i.e. software engineers at Zalando), then a maintainer can merge it. We also appreciate other interested persons to review our and other's code (but for compliance reasons, their :+1: don't count).
 
 Just as for issues, the maintainers try to respond to every pull request in 72 hours (excluding weekends).
-
-### Code Style
-We do not follow a particular standard here. Please have a look around in the files you are changing and respect and adapt to the code style you find there.
 
 ## Conduct
 

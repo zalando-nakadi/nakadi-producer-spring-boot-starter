@@ -42,6 +42,8 @@ For bug fixes and small improvements where you already know how to implement the
 
 For features where you would have to invest more work, or where you need help in finding the right way of doing it, please open an issue first so we can discuss whether it goes into the direction we want to go, and so the maintainers can give you hints on where to start. (Just mention in the issue that you are willing to work on this, and whether you need some support.)
 
+If you want to contribute, but don't know what, all [issues labeled with "help wanted"](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/labels/help%20wanted) are good to start with.
+
 ### Pull requests
 
 New contributors, please fork the project, then create a branch in your fork with a suitable name, add one or more commits with your change, and open the pull request from there. Regular contributors can get write access to the main repository to be able to create feature branches there. (This makes it easier for multiple people to collaborate on one branch.)
@@ -67,3 +69,7 @@ The changed code from your pull request will be automatically run on our continu
 For a pull request to be merged, it needs at least two comments with just a ":+1:" in them (you can type `:+1:`) from members of the Zalando Github organization (i.e. software engineers at Zalando), then a maintainer can merge it. We also appreciate other interested persons to review our and other's code (but for compliance reasons, their :+1: don't count).
 
 Just as for issues, the maintainers try to respond to every pull request in 72 hours (excluding weekends).
+
+## Conduct
+
+In the interest of fostering an open and welcoming environment, we follow and enforce our [Code of Conduct](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/blob/master/CODE_OF_CONDUCT.md).

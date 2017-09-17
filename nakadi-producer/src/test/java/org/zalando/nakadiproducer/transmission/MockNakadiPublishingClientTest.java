@@ -67,7 +67,7 @@ public class MockNakadiPublishingClientTest {
     @Getter
     @Setter
     public static class Event {
-        String attribute;
+        private String attribute;
     }
 
 }

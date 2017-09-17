@@ -17,7 +17,7 @@ import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
 public class SnapshotEventGeneratorAutoconfigurationIT extends BaseMockedExternalCommunicationIT {
 
     @Autowired
-    SnapshotCreationService snapshotCreationService;
+    private SnapshotCreationService snapshotCreationService;
 
     @Test
     public void picksUpDefinedSnapshotEventProviders() {

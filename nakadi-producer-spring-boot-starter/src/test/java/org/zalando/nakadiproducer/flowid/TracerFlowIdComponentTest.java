@@ -9,7 +9,6 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.flowid.TracerFlowIdComponent;
 import org.zalando.tracer.Tracer;
 
@@ -17,7 +16,7 @@ import org.zalando.tracer.Tracer;
 public class TracerFlowIdComponentTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    Tracer tracer;
+    private Tracer tracer;
 
     @Test
     public void makeSureItWorks() {

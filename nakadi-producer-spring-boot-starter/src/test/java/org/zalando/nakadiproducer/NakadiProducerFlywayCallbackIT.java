@@ -14,7 +14,7 @@ public class NakadiProducerFlywayCallbackIT extends BaseMockedExternalCommunicat
 
     @MockBean
     @NakadiProducerFlywayCallback
-    FlywayCallback flywayCallback;
+    private FlywayCallback flywayCallback;
 
     @Test
     public void flywayCallbackIsCalledIfAnnotatedWithQualifierAnnotation() {

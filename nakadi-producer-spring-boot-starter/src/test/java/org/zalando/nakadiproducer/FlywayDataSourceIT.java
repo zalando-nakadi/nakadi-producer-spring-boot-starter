@@ -18,7 +18,7 @@ import com.opentable.db.postgres.embedded.EmbeddedPostgres;
 public class FlywayDataSourceIT extends BaseMockedExternalCommunicationIT {
     @Autowired
     @NakadiProducerFlywayDataSource
-    DataSource dataSource;
+    private DataSource dataSource;
 
     @Test
     public void usesNakadiProducerDataSourceIfAnnotatedWithQualifier() throws SQLException {

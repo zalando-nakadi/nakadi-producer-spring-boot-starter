@@ -11,11 +11,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @AllArgsConstructor
 class DataChangeEventEnvelope {
     @JsonProperty("data_op")
-    String dataOp;
+    private String dataOp;
 
     @JsonProperty("data_type")
-    String dataType;
+    private String dataType;
 
     @JsonProperty("data")
-    Object data;
+    private Object data;
 }

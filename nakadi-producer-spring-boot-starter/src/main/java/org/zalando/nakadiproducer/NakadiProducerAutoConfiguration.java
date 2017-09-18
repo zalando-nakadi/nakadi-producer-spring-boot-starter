@@ -88,7 +88,7 @@ public class NakadiProducerAutoConfiguration {
     @Configuration
     static class TracerConfiguration {
         @Autowired(required = false)
-        Tracer tracer;
+        private Tracer tracer;
 
         @SuppressWarnings("SpringJavaAutowiringInspection")
         @ConditionalOnMissingBean(FlowIdComponent.class)

@@ -24,13 +24,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class EventTransmissionServiceTest {
 
     private EventTransmissionService service;
-    private EventLogRepository repo;
     private MockNakadiPublishingClient publishingClient;
     private ObjectMapper mapper;
 
     @Before
     public void setUp() {
-        repo = mock(EventLogRepository.class);
+        EventLogRepository repo = mock(EventLogRepository.class);
         publishingClient = new MockNakadiPublishingClient();
         mapper = new ObjectMapper();
         service = new EventTransmissionService(repo, publishingClient, mapper);

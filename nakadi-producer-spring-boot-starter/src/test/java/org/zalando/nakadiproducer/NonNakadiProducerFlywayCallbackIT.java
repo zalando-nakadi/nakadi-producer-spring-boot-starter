@@ -13,7 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 public class NonNakadiProducerFlywayCallbackIT extends BaseMockedExternalCommunicationIT {
 
     @MockBean
-    FlywayCallback flywayCallback;
+    private FlywayCallback flywayCallback;
 
     @Test
     public void flywayCallbackIsNotUsedIfNotAnnotatedWithQualifierAnnotation() {

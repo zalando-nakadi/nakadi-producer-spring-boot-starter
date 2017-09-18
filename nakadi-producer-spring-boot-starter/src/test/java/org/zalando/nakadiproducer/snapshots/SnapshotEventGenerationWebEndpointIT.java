@@ -33,7 +33,7 @@ public class SnapshotEventGenerationWebEndpointIT {
     private int managementPort;
 
     @Autowired
-    SnapshotEventGenerator snapshotEventGenerator;
+    private SnapshotEventGenerator snapshotEventGenerator;
 
     @Test
     public void passesRequestBodyIfPresent() {
@@ -57,7 +57,7 @@ public class SnapshotEventGenerationWebEndpointIT {
     @Configuration
     public static class Config {
         @Bean
-        SnapshotEventGenerator snapshotEventGenerator() {
+        public SnapshotEventGenerator snapshotEventGenerator() {
             SnapshotEventGenerator mock = mock(SnapshotEventGenerator.class);
             when(mock.getSupportedEventType()).thenReturn(MY_EVENT_TYPE);
             return mock;

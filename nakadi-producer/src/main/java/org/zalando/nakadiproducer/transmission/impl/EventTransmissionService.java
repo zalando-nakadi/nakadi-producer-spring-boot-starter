@@ -48,7 +48,7 @@ public class EventTransmissionService {
     public void sendEvent(EventLog eventLog) {
         try {
             nakadiPublishingClient.publish(eventLog.getEventType(), singletonList(mapToNakadiEvent(eventLog)));
-            log.info("Event {} locked by {} was sucessfully transmitted to nakadi", eventLog.getId(), eventLog.getLockedBy());
+            log.info("Event {} locked by {} was successfully transmitted to nakadi", eventLog.getId(), eventLog.getLockedBy());
             eventLogRepository.delete(eventLog);
         } catch (Exception e) {
             log.error("Event {} locked by {} could not be transmitted to nakadi: {}", eventLog.getId(), eventLog.getLockedBy(), e.getMessage());

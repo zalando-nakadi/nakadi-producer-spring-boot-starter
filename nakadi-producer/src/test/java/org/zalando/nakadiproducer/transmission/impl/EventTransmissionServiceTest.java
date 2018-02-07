@@ -82,4 +82,22 @@ public class EventTransmissionServiceTest {
         verifyNoMoreInteractions(repo);
     }
 
+    @Test
+    public void shouldNotSendEventsWithExpiredLock() throws JsonProcessingException {
+        // given an event...
+        String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
+        // ... whose lock expires already expired
+        EventLog ev = new EventLog(27, "type", payloadString, null, now(), now(), null, now().minus(1, SECONDS));
+
+        // when the service is asked to send the event
+        service.sendEvent(ev);
+
+        // then event should not have been sent...
+        List<String> events = publishingClient.getSentEvents("type");
+        assertThat(events, is(empty()));
+
+        // ... and not been deleted
+        verifyNoMoreInteractions(repo);
+    }
+
 }

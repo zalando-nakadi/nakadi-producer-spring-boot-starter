@@ -10,23 +10,24 @@ import org.zalando.nakadiproducer.transmission.NakadiPublishingClient;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.UUID;
 
-import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.util.Collections.singletonList;
 
 @Slf4j
 public class EventTransmissionService {
 
-    private EventLogRepository eventLogRepository;
+    private final EventLogRepository eventLogRepository;
+    private final NakadiPublishingClient nakadiPublishingClient;
+    private final ObjectMapper objectMapper;
 
-    private NakadiPublishingClient nakadiPublishingClient;
-
-    private ObjectMapper objectMapper;
+    private Clock clock = Clock.systemDefaultZone();
 
     public EventTransmissionService(EventLogRepository eventLogRepository, NakadiPublishingClient nakadiPublishingClient, ObjectMapper objectMapper) {
         this.eventLogRepository = eventLogRepository;
@@ -86,6 +87,14 @@ public class EventTransmissionService {
         nakadiEvent.setData(payloadDTO);
 
         return nakadiEvent;
+    }
+
+    private Instant now() {
+        return clock.instant();
+    }
+
+    public void overrideClock(Clock clock) {
+        this.clock = clock;
     }
 
     /**

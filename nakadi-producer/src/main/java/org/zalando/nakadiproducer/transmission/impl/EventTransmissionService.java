@@ -1,34 +1,33 @@
 package org.zalando.nakadiproducer.transmission.impl;
 
-import static java.time.temporal.ChronoUnit.MINUTES;
-import static java.util.Collections.singletonList;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.zalando.nakadiproducer.eventlog.impl.EventLog;
+import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
+import org.zalando.nakadiproducer.transmission.NakadiPublishingClient;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.UUID;
 
-import javax.transaction.Transactional;
-
-import org.zalando.nakadiproducer.eventlog.impl.EventLog;
-import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
-import org.zalando.nakadiproducer.transmission.NakadiPublishingClient;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static java.time.temporal.ChronoUnit.MINUTES;
+import static java.util.Collections.singletonList;
 
 @Slf4j
 public class EventTransmissionService {
 
-    private EventLogRepository eventLogRepository;
+    private final EventLogRepository eventLogRepository;
+    private final NakadiPublishingClient nakadiPublishingClient;
+    private final ObjectMapper objectMapper;
 
-    private NakadiPublishingClient nakadiPublishingClient;
-
-    private ObjectMapper objectMapper;
+    private Clock clock = Clock.systemDefaultZone();
 
     public EventTransmissionService(EventLogRepository eventLogRepository, NakadiPublishingClient nakadiPublishingClient, ObjectMapper objectMapper) {
         this.eventLogRepository = eventLogRepository;
@@ -40,12 +39,17 @@ public class EventTransmissionService {
     public Collection<EventLog> lockSomeEvents() {
         String lockId = UUID.randomUUID().toString();
         log.debug("Locking events for replication with lockId {}", lockId);
-        eventLogRepository.lockSomeMessages(lockId, Instant.now(), Instant.now().plus(10, MINUTES));
-        return eventLogRepository.findByLockedByAndLockedUntilGreaterThan(lockId, Instant.now());
+        eventLogRepository.lockSomeMessages(lockId, now(), now().plus(10, MINUTES));
+        return eventLogRepository.findByLockedByAndLockedUntilGreaterThan(lockId, now());
     }
 
     @Transactional
     public void sendEvent(EventLog eventLog) {
+        if (lockNearlyExpired(eventLog)) {
+            // to avoid that two instances process this event, we skip it
+            return;
+        }
+
         try {
             nakadiPublishingClient.publish(eventLog.getEventType(), singletonList(mapToNakadiEvent(eventLog)));
             log.info("Event {} locked by {} was successfully transmitted to nakadi", eventLog.getId(), eventLog.getLockedBy());
@@ -54,6 +58,13 @@ public class EventTransmissionService {
             log.error("Event {} locked by {} could not be transmitted to nakadi: {}", eventLog.getId(), eventLog.getLockedBy(), e.getMessage());
         }
 
+    }
+
+    private boolean lockNearlyExpired(EventLog eventLog) {
+        // since clocks never work exactly synchronous and sending the event also takes some time, we include a minute
+        // of safety buffer here. This is still not 100% precise, but since we require events to be consumed idempotent,
+        // sending one event twice wont hurt much.
+        return now().isAfter(eventLog.getLockedUntil().minus(1, MINUTES));
     }
 
     public NakadiEvent mapToNakadiEvent(final EventLog event) {
@@ -76,6 +87,14 @@ public class EventTransmissionService {
         nakadiEvent.setData(payloadDTO);
 
         return nakadiEvent;
+    }
+
+    private Instant now() {
+        return clock.instant();
+    }
+
+    public void overrideClock(Clock clock) {
+        this.clock = clock;
     }
 
     /**

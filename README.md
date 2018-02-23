@@ -46,10 +46,11 @@ This library also uses:
 
 * flyway-core
 * Spring JDBC
-* [fahrschein](https://github.com/zalando-incubator/fahrschein) Nakadi client library
+* [fahrschein](https://github.com/zalando-nakadi/fahrschein) Nakadi client library
 * jackson >= 2.7.0
-* (optional) Zalando's tracer-spring-boot-starter
-* (optional) Zalando's tokens library >= 0.10.0
+* (optional) Zalando's [tracer-spring-boot-starter](https://github.com/zalando/tracer)
+* (optional) Zalando's [tokens library](https://github.com/zalando/tokens) >= 0.10.0
+    * Please note that [tokens-spring-boot-starter](https://github.com/zalando-stups/spring-boot-zalando-stups-tokens) 0.10.0 comes with tokens 0.9.9, which is not enough. You can manually add tokens 0.10.0 with that starter, though.
 
 
 ## Usage

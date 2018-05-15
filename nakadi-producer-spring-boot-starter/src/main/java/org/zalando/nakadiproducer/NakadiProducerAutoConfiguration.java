@@ -57,7 +57,7 @@ public class NakadiProducerAutoConfiguration {
     static class FahrscheinNakadiClientConfiguration {
 
         @Bean
-        public NakadiPublishingClient nakadiClient(AccessTokenProvider accessTokenProvider,
+        public NakadiPublishingClient nakadiProducerPublishingClient(AccessTokenProvider accessTokenProvider,
                 @Value("${nakadi-producer.nakadi-base-uri}") URI nakadiBaseUri) {
             return new FahrscheinNakadiPublishingClient(NakadiClient.builder(nakadiBaseUri)
                     .withAccessTokenProvider(accessTokenProvider::getAccessToken).build());

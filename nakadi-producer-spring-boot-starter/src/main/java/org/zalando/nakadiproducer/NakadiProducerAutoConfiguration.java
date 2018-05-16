@@ -19,7 +19,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -47,7 +46,6 @@ import org.zalando.tracer.Tracer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
-@ComponentScan
 @AutoConfigureAfter(name="org.zalando.tracer.spring.TracerAutoConfiguration")
 public class NakadiProducerAutoConfiguration {
 
@@ -180,6 +178,12 @@ public class NakadiProducerAutoConfiguration {
     @Bean
     public EventTransmitter eventTransmitter(EventTransmissionService eventTransmissionService) {
         return new EventTransmitter(eventTransmissionService);
+    }
+
+    @Bean
+    public EventTransmissionScheduler eventTransmissionScheduler(EventTransmitter eventTransmitter,
+            @Value("${nakadi-producer.scheduled-transmission-enabled:true}") boolean scheduledTransmissionEnabled) {
+        return new EventTransmissionScheduler(eventTransmitter, scheduledTransmissionEnabled);
     }
 
     @Bean

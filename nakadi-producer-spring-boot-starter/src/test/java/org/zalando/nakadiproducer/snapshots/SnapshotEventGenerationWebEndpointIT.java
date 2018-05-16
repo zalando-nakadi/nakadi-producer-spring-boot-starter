@@ -22,7 +22,7 @@ import org.zalando.nakadiproducer.config.EmbeddedDataSourceConfig;
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = { "management.security.enabled=false", "zalando.team.id:alpha-local-testing", "nakadi-producer.scheduled-transmission-enabled:false" },
-    classes = { TestApplication.class, EmbeddedDataSourceConfig.class }
+    classes = { TestApplication.class, EmbeddedDataSourceConfig.class, SnapshotEventGenerationWebEndpointIT.Config.class }
 )
 public class SnapshotEventGenerationWebEndpointIT {
 

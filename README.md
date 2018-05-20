@@ -102,10 +102,10 @@ This starter will detect and auto configure it. To do so, it needs to know the a
 ```yaml
 nakadi-producer:
   access-token-uri: https://token.auth.example.org/oauth2/access_token
-  access-token-scopes: uid, nakadi.event_stream.write
+  access-token-scopes: uid
 ```
 
-(Note that in the future you'll need a specific scope for writing to each event stream.)
+(Since [July 2017](https://github.com/zalando/nakadi/pull/692), Nakadi doesn't require any scopes other than the pseudo-scope `uid` for writing events, [the authorization is instead based on event-type configuration using the service's uid](https://nakadi.io/manual.html#using_authorization).)
 
 If you do not use the STUPS Tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The starter will detect it and call it once for each request to retrieve the token. 
 

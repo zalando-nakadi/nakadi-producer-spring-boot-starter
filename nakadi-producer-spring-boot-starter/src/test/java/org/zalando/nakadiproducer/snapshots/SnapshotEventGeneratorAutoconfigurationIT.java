@@ -11,9 +11,11 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ContextConfiguration;
 import org.zalando.nakadiproducer.BaseMockedExternalCommunicationIT;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
 
+@ContextConfiguration(classes=SnapshotEventGeneratorAutoconfigurationIT.Config.class)
 public class SnapshotEventGeneratorAutoconfigurationIT extends BaseMockedExternalCommunicationIT {
 
     @Autowired

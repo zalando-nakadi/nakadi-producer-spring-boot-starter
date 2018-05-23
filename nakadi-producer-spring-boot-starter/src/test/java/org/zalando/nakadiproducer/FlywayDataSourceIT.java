@@ -12,9 +12,11 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ContextConfiguration;
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres;
 
+@ContextConfiguration(classes=FlywayDataSourceIT.Config.class)
 public class FlywayDataSourceIT extends BaseMockedExternalCommunicationIT {
     @Autowired
     @NakadiProducerFlywayDataSource

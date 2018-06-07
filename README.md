@@ -145,15 +145,20 @@ public class SomeYourService {
 **Note:** The parameters to the `fire*Event` methods (except for business events) are the following:
 
 * **eventType** - event type name string that determines to which channel/topic the event will get sent.
-                  That event type name needs to exist at Nakadi.
+   That event type name needs to exist at Nakadi.
 * **dataType** - data type name string that will end up as the `data_type` property of the data change event.
-                  ([It is not really clear what this property is used for](https://github.com/zalando/nakadi/issues/382),
-                   but it is required.)
+   ([It is not really clear what this property is used for](https://github.com/zalando/nakadi/issues/382),
+    but it is required.)
 * **data** - event data payload itself, which will end up in the `data` property of the data change event.
-              This should be an object representing the resource which was created/updated/deleted.
-              This doesn't necessarily have to be the same object as you store in your DB, it can be a different
-              class which is optimized for JSON serialization. Its JSON serialization should confirm to the
-              JSON schema defined at the event type definition in Nakadi.
+    This should be an object representing the resource which was created/updated/deleted.
+    This doesn't necessarily have to be the same object as you store in your DB, it can be a different
+    class which is optimized for JSON serialization.
+      
+    It will be serialized using the default Jackson ObjectMapper bean – so make sure all properties
+    which should be in the event are accessible (usually via public getters), or annotated with the
+    usual Jackson annotations. The JSON serialization should confirm to the JSON schema defined at
+    the event type definition in Nakadi.
+
 
 The choice of the method (*Create/Update/Delete/Snapshot*) event will determine the `data_op` field of the event.
 

@@ -98,14 +98,21 @@ token. The easiest way to do so is to include the [Zalando Tokens library](https
 </dependency>
 ```
 
-This starter will detect and auto configure it. To do so, it needs to know the address of your oAuth2 server and a comma separated list of scopes it should request:
+This starter will detect and auto configure it. To do so, it needs to know the address of your oAuth2 server:
 ```yaml
 nakadi-producer:
   access-token-uri: https://token.auth.example.org/oauth2/access_token
-  access-token-scopes: uid
 ```
 
-(Since [July 2017](https://github.com/zalando/nakadi/pull/692), Nakadi doesn't require any scopes other than the pseudo-scope `uid` for writing events, [the authorization is instead based on event-type configuration using the service's uid](https://nakadi.io/manual.html#using_authorization).)
+Since [July 2017](https://github.com/zalando/nakadi/pull/692), Nakadi (at least in the version operated at Zalando) doesn't require any scopes other than the pseudo-scope `uid` for writing events, [the authorization is instead based on event-type configuration using the service's uid](https://nakadi.io/manual.html#using_authorization).
+
+If your Nakadi installation needs real scopes for submitting events, you can provide them via configuration, too (as a comma-separated list):
+
+```yaml
+nakadi-producer:
+  access-token-uri: https://token.auth.example.org/oauth2/access_token
+  access-token-scopes: my.scope.name,other.scope.name
+```
 
 If you do not use the STUPS Tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The starter will detect it and call it once for each request to retrieve the token. 
 

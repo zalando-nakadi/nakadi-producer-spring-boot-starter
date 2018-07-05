@@ -85,17 +85,16 @@ The library uses flyway migrations to set up its own database schema `nakadi_eve
 
 ### Nakadi communication configuration
 
-By default, Nakadi-producer-spring-boot starter uses the Fahrschein library to submit its events. It needs some configuration to know how to do this – we describe three ways here (basically in order of ease of use):
+By default, Nakadi-producer-spring-boot starter uses the Fahrschein library to submit its events. It needs some configuration to know how to do this – we support two ways:
 
 * Using existing Fahrschein setup
 * Letting this library set things up
-* Implement Nakadi communication yourself
 
 #### Using existing Fahrschein setup
 
 If you are already using the [Fahrschein library](https://github.com/zalando-nakadi/fahrschein) directly (e.g. for event consumption) and have already a configured `org.zalando.fahrschein.NakadiClient` object, just make sure it is available as a Spring bean. Nakadi-Producer-Spring-Boot-Starter will pick it up and use it directly.
 
-The configurations in the next section are then not needed at all.
+The configuration in the next section is then not needed at all.
 
 #### Letting this library set things up 
 
@@ -137,25 +136,6 @@ nakadi-producer:
 
 If you do not use the STUPS Tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The starter will detect it and call it once for each request to retrieve the token. 
 
-#### Implement Nakadi communication yourself
-
-If you don't like Fahrschein, you can implement the communication with Nakadi yourself. Just provide an implementation of the `NakadiPublishingClient` interface as a Spring bean. Nakadi-producer-spring-boot-starter will just use that bean. (This is used in the [test support](#test-support) described below.)
-
-You can then also exclude the Fahrschein dependency: 
-
-```xml
-<dependency>
-    <groupId>org.zalando</groupId>
-    <artifactId>nakadi-producer-spring-boot-starter</artifactId>
-    <version>${nakadi-producer.version}</version>
-    <exclusions>
-        <exclusion>
-            <groupId>org.zalando</groupId>
-            <artifactId>fahrschein</artifactId>
-        <exclusion>
-    </exclusions>
-</dependency>
-```
 
 ### Creating events
 

@@ -49,10 +49,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @AutoConfigureAfter(name="org.zalando.tracer.spring.TracerAutoConfiguration")
 public class NakadiProducerAutoConfiguration {
 
-    @ConditionalOnMissingBean(NakadiPublishingClient.class)
+    @ConditionalOnMissingBean({NakadiPublishingClient.class, NakadiClient.class})
     @Configuration
-    @Import(FahrscheinNakadiClientConfiguration.StupsTokenConfiguration.class)
-    static class FahrscheinNakadiClientConfiguration {
+    @Import(FahrscheinWithTokensNakadiClientConfiguration.StupsTokenConfiguration.class)
+    static class FahrscheinWithTokensNakadiClientConfiguration {
 
         @Bean
         public NakadiPublishingClient nakadiProducerPublishingClient(AccessTokenProvider accessTokenProvider,
@@ -72,6 +72,17 @@ public class NakadiProducerAutoConfiguration {
                     @Value("${nakadi-producer.access-token-scopes:uid}") String[] accessTokenScopes) {
                 return new StupsTokenComponent(accessTokenUri, Arrays.asList(accessTokenScopes));
             }
+        }
+    }
+
+    @ConditionalOnMissingBean(NakadiPublishingClient.class)
+    @ConditionalOnBean(NakadiClient.class)
+    @Configuration
+    static class ExistingFahrscheinNakadiClientConfiguration {
+
+        @Bean
+        public NakadiPublishingClient nakadiProducerPublishingClient(NakadiClient fahrscheinNakadiClient) {
+            return new FahrscheinNakadiPublishingClient(fahrscheinNakadiClient);
         }
     }
 

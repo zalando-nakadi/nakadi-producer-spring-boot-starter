@@ -1,0 +1,4 @@
+nakadi-producer:
+  access-token-uri: http://localhost:1234
+  nakadi-base-uri: https://nakadi.example.org:5432
+management.endpoints.web.exposure.include: snapshot-event-creation

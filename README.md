@@ -40,7 +40,8 @@ You may of course always setup a fresh system with the newest version.
 
 ## Prerequisites
 
-This library was tested with Spring Boot 1.5.3.RELEASE and relies on an existing configured PostgreSQL DataSource.
+This library was tested with Spring Boot 2.0.3.RELEASE and relies on an existing configured PostgreSQL DataSource. If
+you are still using Spring Boot 1.x, please use version 4.2.0 ([Release Notes](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/releases/tag/4.2.0), [Documentation](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/blob/4.2.0/README.md)) versions of this library.
 
 This library also uses:
 
@@ -50,7 +51,7 @@ This library also uses:
 * jackson >= 2.7.0
 * (optional) Zalando's [tracer-spring-boot-starter](https://github.com/zalando/tracer)
 * (optional) Zalando's [tokens library](https://github.com/zalando/tokens) >= 0.10.0
-    * Please note that [tokens-spring-boot-starter](https://github.com/zalando-stups/spring-boot-zalando-stups-tokens) 0.10.0 comes with tokens 0.9.9, which is not enough. You can manually add tokens 0.10.0 with that starter, though.
+    * Please note that [tokens-spring-boot-starter](https://github.com/zalando-stups/spring-boot-zalando-stups-tokens) 0.10.0 comes with tokens 0.9.9, which is not enough. You can manually add tokens 0.10.0 with that starter, though. To be used in zalandos k8s environment, you must at least use 0.11.0.
 
 
 ## Usage
@@ -207,20 +208,25 @@ creation is a irregular, manually triggered maintenance task.
 
 This library provides a Spring Boot Actuator endpoint named `snapshot_event_creation` that can be used to trigger a Snapshot for a given event type. Assuming your management port is set to `7979`,
 
-    GET localhost:7979/snapshot_event_creation
+    GET localhost:7979/actuator/snapshot-event-creation
 
 will return a list of all event types available for snapshot creation and 
 
     POST localhost:7979/snapshot_event_creation/my.event-type
 
-will trigger a snapshot for the event type `my.event-type`. The (optional) request body is a "filter specifier".
+will trigger a snapshot for the event type `my.event-type`. There is an optional request parameter called "filter" that
+will be passed to your application to implement some application specific event filtering logic.
 
-This will only  work if your application has configured spring-boot-actuator
+This will only  work if your application has configured spring-boot-actuator,
 ```xml
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-actuator</artifactId>
 </dependency>
+```
+your `application.properties` includes
+``` 
+management.endpoints.web.exposure.include=snapshot-event-creation,your-other-endpoints,...`
 ```
 and if one or more Spring Beans implement the `org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator` interface. Otherwise (or if the generator is not for the event type you requested), the library will respond with an error message when you request a snapshot creation.
 The request body (the "filter specifier") of the trigger request will be passed as a string parameter to the SnapshotEventGenerator's `generateSnapshots` method.
@@ -259,12 +265,12 @@ By default, the library will pick up your flyway data source (or the primary dat
 configured), create its own schema and start setting up its tables in there. You can customize this process in two ways:
 
 If you want to use a different data source for schema maintainence (for example to use a different username) and 
-configuring the Spring flyway datasource is not enough, your can define a spring bean of type `DataSource` and annotate 
+configuring the Spring Flyway datasource is not enough, your can define a spring bean of type `DataSource` and annotate 
 it with `@NakadiProducerDataSource`.
 
-You may also define a spring bean of type `FlywayCallback` and annotate it with `@NakadiProducerFlywayCallback`. The
-interface provide several hook into the schema management lifecycle that may, for example, be used to
- `SET ROLE migrator` before and `RESET ROLE` after each migration. 
+You may also define a spring bean of type `NakadiProducerFlywayCallback`. The interface provides several hooks into the
+schema management lifecycle that may, for example, be used to `SET ROLE migrator` before and `RESET ROLE` after each
+migration. 
 
 ### Test support
 

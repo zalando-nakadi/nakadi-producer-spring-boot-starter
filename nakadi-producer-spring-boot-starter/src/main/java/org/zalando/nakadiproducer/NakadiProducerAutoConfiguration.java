@@ -1,18 +1,15 @@
 package org.zalando.nakadiproducer;
 
-import static java.util.stream.Collectors.toList;
-
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.autoconfigure.ManagementContextConfiguration;
-import org.springframework.boot.actuate.condition.ConditionalOnEnabledEndpoint;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -30,13 +27,9 @@ import org.zalando.nakadiproducer.eventlog.impl.EventLogWriterImpl;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.flowid.NoopFlowIdComponent;
 import org.zalando.nakadiproducer.flowid.TracerFlowIdComponent;
-import org.zalando.nakadiproducer.snapshots.SimpleSnapshotEventGenerator;
-import org.zalando.nakadiproducer.snapshots.Snapshot;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
-import org.zalando.nakadiproducer.snapshots.SnapshotEventProvider;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationEndpoint;
-import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationMvcEndpoint;
 import org.zalando.nakadiproducer.transmission.NakadiPublishingClient;
 import org.zalando.nakadiproducer.transmission.impl.EventTransmissionService;
 import org.zalando.nakadiproducer.transmission.impl.EventTransmitter;
@@ -111,68 +104,21 @@ public class NakadiProducerAutoConfiguration {
         }
     }
 
-    @ManagementContextConfiguration
-    static class ManagementEndpointConfiguration {
-        @Bean
-        @ConditionalOnMissingBean
-        public SnapshotEventCreationEndpoint snapshotEventCreationEndpoint(
-                SnapshotCreationService snapshotCreationService) {
-            return new SnapshotEventCreationEndpoint(snapshotCreationService);
-        }
-
-        @Bean
-        @ConditionalOnBean(SnapshotEventCreationEndpoint.class)
-        @ConditionalOnEnabledEndpoint("snapshot_event_creation")
-        public SnapshotEventCreationMvcEndpoint snapshotEventCreationMvcEndpoint(
-                SnapshotEventCreationEndpoint snapshotEventCreationEndpoint) {
-            return new SnapshotEventCreationMvcEndpoint(snapshotEventCreationEndpoint);
-        }
+    @Bean
+    @ConditionalOnMissingBean
+    public SnapshotEventCreationEndpoint snapshotEventCreationEndpoint(
+            SnapshotCreationService snapshotCreationService) {
+        return new SnapshotEventCreationEndpoint(snapshotCreationService);
     }
 
     @Bean
     public SnapshotCreationService snapshotCreationService(
             Optional<List<SnapshotEventGenerator>> snapshotEventGenerators,
-            Optional<SnapshotEventProvider> snapshotEventProvider, EventLogWriter eventLogWriter) {
-        final Stream<SnapshotEventGenerator> legacyGenerators =
-                snapshotEventProvider.map(this::wrapInSnapshotEventGenerators)
-                                     .orElseGet(Stream::empty);
-        final Stream<SnapshotEventGenerator> nonLegacyGenerators =
-                snapshotEventGenerators.map(List::stream)
-                                       .orElseGet(Stream::empty);
-        final List<SnapshotEventGenerator> allGenerators =
-                Stream.concat(legacyGenerators, nonLegacyGenerators)
-                      .collect(toList());
-        return new SnapshotCreationService(allGenerators, eventLogWriter);
-    }
-
-    /**
-     * This method (and the following three) support the legacy {@link SnapshotEventProvider} interface,
-     * mapping it to the new logic (several {@link SnapshotEventGenerator}s).
-     *
-     * It will be removed when we don't support that interface anymore.
-     */
-    private Stream<SnapshotEventGenerator> wrapInSnapshotEventGenerators(SnapshotEventProvider p) {
-        return p.getSupportedEventTypes()
-                .stream()
-                .map(t -> wrapInSnapshotEventGenerator(p, t));
-    }
-
-    private SnapshotEventGenerator wrapInSnapshotEventGenerator(SnapshotEventProvider provider, String eventType) {
-        return new SimpleSnapshotEventGenerator(
-            eventType,
-            (cursor) -> createNonLegacySnapshots(provider, eventType, cursor)
+            EventLogWriter eventLogWriter) {
+        return new SnapshotCreationService(
+                snapshotEventGenerators.orElse(Collections.emptyList()),
+                eventLogWriter
         );
-    }
-
-    private List<Snapshot> createNonLegacySnapshots(SnapshotEventProvider provider, String eventType, Object cursor) {
-        return provider.getSnapshot(eventType, cursor)
-                       .stream()
-                       .map(this::mapLegacyToNewSnapshot)
-                       .collect(toList());
-    }
-
-    private Snapshot mapLegacyToNewSnapshot(SnapshotEventProvider.Snapshot snapshot) {
-        return new Snapshot(snapshot.getId(), snapshot.getDataType(), snapshot.getData());
     }
 
     @Bean

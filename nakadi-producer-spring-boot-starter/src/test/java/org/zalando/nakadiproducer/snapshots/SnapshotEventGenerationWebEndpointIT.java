@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.autoconfigure.LocalManagementPort;
+import org.springframework.boot.actuate.autoconfigure.web.server.LocalManagementPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,13 +21,13 @@ import org.zalando.nakadiproducer.config.EmbeddedDataSourceConfig;
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = { "management.security.enabled=false", "zalando.team.id:alpha-local-testing", "nakadi-producer.scheduled-transmission-enabled:false" },
+    properties = { "management.security.enabled=false", "zalando.team.id:alpha-local-testing", "nakadi-producer.scheduled-transmission-enabled:false", "management.endpoints.web.exposure.include:snapshot-event-creation" },
     classes = { TestApplication.class, EmbeddedDataSourceConfig.class, SnapshotEventGenerationWebEndpointIT.Config.class }
 )
 public class SnapshotEventGenerationWebEndpointIT {
 
     private static final String MY_EVENT_TYPE = "my.event-type";
-    private static final String MY_REQUEST_BODY = "my request body";
+    private static final String filter = "myRequestBody";
 
     @LocalManagementPort
     private int managementPort;
@@ -36,20 +36,21 @@ public class SnapshotEventGenerationWebEndpointIT {
     private SnapshotEventGenerator snapshotEventGenerator;
 
     @Test
-    public void passesRequestBodyIfPresent() {
+    public void passesFilterIfPresent() {
         given().baseUri("http://localhost:" + managementPort)
-               .body(MY_REQUEST_BODY)
-        .when().post("/snapshot_event_creation/" + MY_EVENT_TYPE)
-        .then().statusCode(200);
+                .contentType("application/json")
+        .when().post("/actuator/snapshot-event-creation/" + MY_EVENT_TYPE + "?filter=" + filter)
+        .then().statusCode(204);
 
-        verify(snapshotEventGenerator).generateSnapshots(null, MY_REQUEST_BODY);
+        verify(snapshotEventGenerator).generateSnapshots(null, filter);
     }
 
     @Test
-    public void passesNullIfNoRequestBodyPresent() {
+    public void passesNullIfNoFilterIsPresent() {
         given().baseUri("http://localhost:" + managementPort)
-               .when().post("/snapshot_event_creation/" + MY_EVENT_TYPE)
-               .then().statusCode(200);
+               .contentType("application/json")
+               .when().post("/actuator/snapshot-event-creation/" + MY_EVENT_TYPE)
+               .then().statusCode(204);
 
         verify(snapshotEventGenerator).generateSnapshots(null, null);
     }

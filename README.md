@@ -40,8 +40,8 @@ You may of course always setup a fresh system with the newest version.
 
 ## Prerequisites
 
-This library was tested with Spring Boot 2.0.3.RELEASE and relies on an existing configured PostgreSQL DataSource. If
-you are still using Spring Boot 1.x, please use version 4.2.0 ([Release Notes](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/releases/tag/4.2.0), [Documentation](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/blob/4.2.0/README.md)) versions of this library.
+This library was tested with Spring Boot 2.0.3.RELEASE and relies on an existing configured PostgreSQL DataSource. 
+**If you are still using Spring Boot 1.x, please use versions < 20.0.0, they are still actively maintained ([Documentation](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/tree/spring-boot-1)).**
 
 This library also uses:
 

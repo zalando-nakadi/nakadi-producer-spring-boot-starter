@@ -121,7 +121,7 @@ nakadi-producer:
   access-token-uri: https://token.auth.example.org/oauth2/access_token
 ```
 
-If your application is running in Zalandos Kubernetes environment, you also have to configure the credential rotation:
+If your application is running in Zalando's Kubernetes environment, you also have to configure the credential rotation:
 ```yaml
 apiVersion: "zalando.org/v1"
 kind: PlatformCredentialsSet

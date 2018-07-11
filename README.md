@@ -99,16 +99,13 @@ The configuration in the next section is then not needed at all.
 
 #### Letting this library set things up 
 
-If you want Nakadi-Producer-Spring-Boot-Starter to configure the connection to Nakadi, you'll need to set some properties
-(and/or create beans).
-
 You must tell the library, where it can reach your Nakadi instance:
 ```yaml
 nakadi-producer:
   nakadi-base-uri: https://nakadi.example.org
 ```
 
-Since the communication between your application and Nakadi is secured using OAuth2, you must also provide a OAuth2
+Since the communication between your application and Nakadi is secured using OAuth2, you must also provide an OAuth2
 token. The easiest way to do so is to include the [Zalando Tokens library](https://github.com/zalando/tokens) into your classpath:
 
 ```xml
@@ -124,6 +121,20 @@ This starter will detect and auto configure it. To do so, it needs to know the a
 nakadi-producer:
   access-token-uri: https://token.auth.example.org/oauth2/access_token
 ```
+
+If your application is running in Zalando's Kubernetes environment, you also have to configure the credential rotation:
+```yaml
+apiVersion: "zalando.org/v1"
+kind: PlatformCredentialsSet
+metadata:
+   name: {{{APPLICATION}}}-credentials
+spec:
+   application: {{{KIO_NAME}}}
+   token_version: v2
+   tokens:
+     nakadi:
+       privileges: []
+``` 
 
 Since [July 2017](https://github.com/zalando/nakadi/pull/692), Nakadi (at least in the version operated at Zalando) doesn't require any scopes other than the pseudo-scope `uid` for writing events, [the authorization is instead based on event-type configuration using the service's uid](https://nakadi.io/manual.html#using_authorization).
 

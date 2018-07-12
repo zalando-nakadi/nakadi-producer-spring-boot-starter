@@ -32,7 +32,7 @@ public class ApplicationIT {
     }
 
     @Test
-    public void foo() {
+    public void shouldSuccessfullyStartAndSnapshotCanBeTriggered() {
         given().baseUri("http://localhost:" + localManagementPort).contentType("application/json")
         .when().post("/actuator/snapshot-event-creation/eventtype")
         .then().statusCode(204);

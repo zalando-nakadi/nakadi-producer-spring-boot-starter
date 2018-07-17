@@ -223,7 +223,7 @@ This library provides a Spring Boot Actuator endpoint named `snapshot_event_crea
 
 will return a list of all event types available for snapshot creation and 
 
-    POST localhost:7979/snapshot_event_creation/my.event-type
+    POST localhost:7979/actuator/snapshot-event-creation/my.event-type
 
 will trigger a snapshot for the event type `my.event-type`. There is an optional request parameter called "filter" that
 will be passed to your application to implement some application specific event filtering logic.

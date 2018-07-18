@@ -212,7 +212,8 @@ process step the event is reporting.
 ### Event snapshots (optional)
 
 A Snapshot event is a special type of data change event (data operation) defined by Nakadi.
-It does not represent a change of the state of a resource, but a current snapshot of the state of the resource.
+It does not represent a change of the state of a resource, but a current snapshot of its state. It can be usefull to
+bootstrap a new consumer or to recover from inconsistencies between sender and consumer after an incident.
 
 You can create snapshot events programmatically (using EventLogWriter.fireSnapshotEvent), but usually snapshot event
 creation is a irregular, manually triggered maintenance task.
@@ -225,10 +226,16 @@ will return a list of all event types available for snapshot creation and
 
     POST localhost:7979/actuator/snapshot-event-creation/my.event-type
 
-will trigger a snapshot for the event type `my.event-type`. There is an optional request parameter called "filter" that
-will be passed to your application to implement some application specific event filtering logic.
+will trigger a snapshot for the event type `my.event-type`. You can change the port, the authentication scheme and the
+path prefix as part of your Spring Boot Actuator configuration.
 
-This will only  work if your application has configured spring-boot-actuator,
+You can provide an optional filter specifier that will be passed to your application to implement any application 
+specific event/entity filtering logic.  It can be provided either as a request parameter called `filter`, or as a
+request body
+
+    {"filter":"myFilter"}
+
+This endpoint will only work if your application includes spring-boot-actuator,
 ```xml
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -239,8 +246,9 @@ your `application.properties` includes
 ``` 
 management.endpoints.web.exposure.include=snapshot-event-creation,your-other-endpoints,...`
 ```
-and if one or more Spring Beans implement the `org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator` interface. Otherwise (or if the generator is not for the event type you requested), the library will respond with an error message when you request a snapshot creation.
-The request body (the "filter specifier") of the trigger request will be passed as a string parameter to the SnapshotEventGenerator's `generateSnapshots` method.
+and if one or more Spring Beans implement the `org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator` interface.
+The optional filter specifier of the trigger request will be passed as a string parameter to the
+SnapshotEventGenerator's `generateSnapshots` method and may be null, if none is given.
 
 We provide a `SimpleSnapshotEventGenerator` to ease bean creation using a more functional style:
 ```java

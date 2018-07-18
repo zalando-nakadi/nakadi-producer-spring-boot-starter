@@ -1,6 +1,7 @@
 package org.zalando.nakadiproducer;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -9,6 +10,7 @@ import java.sql.Connection;
 import org.flywaydb.core.api.configuration.ConfigurationAware;
 import org.flywaydb.core.api.configuration.FlywayConfiguration;
 import org.junit.Test;
+import org.mockito.InOrder;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 
@@ -29,7 +31,10 @@ public class NakadiProducerFlywayCallbackIT extends BaseMockedExternalCommunicat
     @Test
     @DirtiesContext // Needed to make sure that flyway gets executed for each of the tests and Callbacks are called again
     public void flywayConfigurationIsSetIfCallbackIsConfigurationAware() {
-        verify(configurationAwareNakadiProducerFlywayCallback).setFlywayConfiguration(any(FlywayConfiguration.class));
+        InOrder inOrder = inOrder(configurationAwareNakadiProducerFlywayCallback);
+        inOrder.verify(configurationAwareNakadiProducerFlywayCallback).setFlywayConfiguration(any(FlywayConfiguration.class));
+        inOrder.verify(configurationAwareNakadiProducerFlywayCallback, times(1)).beforeMigrate(any(Connection.class));
+
     }
 
     public interface ConfigurationAwareNakadiProducerFlywayCallback extends NakadiProducerFlywayCallback, ConfigurationAware {

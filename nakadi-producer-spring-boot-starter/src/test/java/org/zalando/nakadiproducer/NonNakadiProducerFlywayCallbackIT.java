@@ -36,6 +36,6 @@ public class NonNakadiProducerFlywayCallbackIT {
     public void ourOwnFlywayConfigurationStillWorksFineWhenSpringsFlywayAutoconfigIsDisabled() {
         // Yes, this is redundant to the other test in here.
         // We consider it important to document the requirement, so it is here nonetheless.
-        // This test does just enough to test it.
+        // The test setup done by the class annotations does just enough to test it
     }
 }

@@ -21,35 +21,35 @@ public interface NakadiProducerFlywayCallback {
      *
      * @param connection A valid connection to the database.
      */
-    void beforeClean(Connection connection);
+    default void beforeClean(Connection connection) {}
 
     /**
      * Runs after the clean task executes.
      *
      * @param connection A valid connection to the database.
      */
-    void afterClean(Connection connection);
+    default void afterClean(Connection connection) {};
 
     /**
      * Runs before the migrate task executes.
      *
      * @param connection A valid connection to the database.
      */
-    void beforeMigrate(Connection connection);
+    default void beforeMigrate(Connection connection) {};
 
     /**
      * Runs after the migrate task executes.
      *
      * @param connection A valid connection to the database.
      */
-    void afterMigrate(Connection connection);
+    default void afterMigrate(Connection connection) {}
 
     /**
      * Runs before the undo task executes.
      *
      * @param connection A valid connection to the database.
      */
-    void beforeUndo(Connection connection);
+    default void beforeUndo(Connection connection) {}
 
     /**
      * Runs before each migration script is undone.
@@ -57,7 +57,7 @@ public interface NakadiProducerFlywayCallback {
      * @param connection A valid connection to the database.
      * @param info The current MigrationInfo for the migration to be undone.
      */
-    void beforeEachUndo(Connection connection, MigrationInfo info);
+    default void beforeEachUndo(Connection connection, MigrationInfo info) {}
 
     /**
      * Runs after each migration script is undone.
@@ -65,14 +65,14 @@ public interface NakadiProducerFlywayCallback {
      * @param connection A valid connection to the database.
      * @param info The current MigrationInfo for the migration just undone.
      */
-    void afterEachUndo(Connection connection, MigrationInfo info);
+    default void afterEachUndo(Connection connection, MigrationInfo info) {}
 
     /**
      * Runs after the undo task executes.
      *
      * @param connection A valid connection to the database.
      */
-    void afterUndo(Connection connection);
+    default void afterUndo(Connection connection) {}
 
     /**
      * Runs before each migration script is executed.
@@ -80,7 +80,7 @@ public interface NakadiProducerFlywayCallback {
      * @param connection A valid connection to the database.
      * @param info The current MigrationInfo for this migration.
      */
-    void beforeEachMigrate(Connection connection, MigrationInfo info);
+    default void beforeEachMigrate(Connection connection, MigrationInfo info) {}
 
     /**
      * Runs after each migration script is executed.
@@ -88,61 +88,61 @@ public interface NakadiProducerFlywayCallback {
      * @param connection A valid connection to the database.
      * @param info The current MigrationInfo for this migration.
      */
-    void afterEachMigrate(Connection connection, MigrationInfo info);
+    default  void afterEachMigrate(Connection connection, MigrationInfo info) {}
 
     /**
      * Runs before the validate task executes.
      *
      * @param connection A valid connection to the database.
      */
-    void beforeValidate(Connection connection);
+    default void beforeValidate(Connection connection) {}
 
     /**
      * Runs after the validate task executes.
      *
      * @param connection A valid connection to the database.
      */
-    void afterValidate(Connection connection);
+    default void afterValidate(Connection connection) {}
 
     /**
      * Runs before the baseline task executes.
      *
      * @param connection A valid connection to the database.
      */
-    void beforeBaseline(Connection connection);
+    default void beforeBaseline(Connection connection) {}
 
     /**
      * Runs after the baseline task executes.
      *
      * @param connection A valid connection to the database.
      */
-    void afterBaseline(Connection connection);
+    default void afterBaseline(Connection connection) {}
 
     /**
      * Runs before the repair task executes.
      *
      * @param connection A valid connection to the database.
      */
-    void beforeRepair(Connection connection);
+    default void beforeRepair(Connection connection) {}
 
     /**
      * Runs after the repair task executes.
      *
      * @param connection A valid connection to the database.
      */
-    void afterRepair(Connection connection);
+    default void afterRepair(Connection connection) {}
 
     /**
      * Runs before the info task executes.
      *
      * @param connection A valid connection to the database.
      */
-    void beforeInfo(Connection connection);
+    default void beforeInfo(Connection connection) {}
 
     /**
      * Runs after the info task executes.
      *
      * @param connection A valid connection to the database.
      */
-    void afterInfo(Connection connection);
+    default void afterInfo(Connection connection) {}
 }

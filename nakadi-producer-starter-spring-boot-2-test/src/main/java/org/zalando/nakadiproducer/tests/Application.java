@@ -39,16 +39,13 @@ public class Application {
 
     @Bean
     public SnapshotEventGenerator snapshotEventGenerator() {
-        return new SimpleSnapshotEventGenerator("eventtype", new BiFunction<Object, String, List<Snapshot>>() {
-            @Override
-            public List<Snapshot> apply(Object withIdGreaterThan, String filter) {
-                if (withIdGreaterThan == null) {
-                    return Collections.singletonList(new Snapshot("1", "foo", (Object) filter));
-                } else if (withIdGreaterThan.equals("1")) {
-                    return Collections.singletonList(new Snapshot("2", "foo", (Object) filter));
-                } else {
-                    return new ArrayList<>();
-                }
+        return new SimpleSnapshotEventGenerator("eventtype", (withIdGreaterThan, filter) -> {
+            if (withIdGreaterThan == null) {
+                return Collections.singletonList(new Snapshot("1", "foo", (Object) filter));
+            } else if (withIdGreaterThan.equals("1")) {
+                return Collections.singletonList(new Snapshot("2", "foo", (Object) filter));
+            } else {
+                return new ArrayList<>();
             }
         });
 

@@ -29,7 +29,7 @@ public class FlywayMigrator {
     private DataSource dataSource;
 
     @Autowired(required = false)
-    private List<NakadiProducerFlywayCallback> callback;
+    private List<NakadiProducerFlywayCallback> callbacks;
 
     @Autowired(required = false)
     private FlywayProperties flywayProperties;
@@ -52,8 +52,8 @@ public class FlywayMigrator {
 
         flyway.setLocations("classpath:db_nakadiproducer/migrations");
         flyway.setSchemas("nakadi_events");
-        if (callback != null) {
-            flyway.setCallbacks(callback.stream().map(FlywayCallbackAdaptor::new).toArray(FlywayCallback[]::new));
+        if (callbacks != null) {
+            flyway.setCallbacks(callbacks.stream().map(FlywayCallbackAdapter::new).toArray(FlywayCallback[]::new));
         }
 
         flyway.setBaselineOnMigrate(true);
@@ -61,11 +61,11 @@ public class FlywayMigrator {
         flyway.migrate();
     }
 
-    private static class FlywayCallbackAdaptor extends BaseFlywayCallback {
+    private static class FlywayCallbackAdapter extends BaseFlywayCallback {
 
         private NakadiProducerFlywayCallback callback;
 
-        private FlywayCallbackAdaptor(NakadiProducerFlywayCallback callback) {
+        private FlywayCallbackAdapter(NakadiProducerFlywayCallback callback) {
             this.callback = callback;
         }
 

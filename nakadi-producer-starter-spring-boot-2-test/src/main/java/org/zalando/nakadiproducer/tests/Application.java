@@ -15,8 +15,6 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.function.BiFunction;
 
 @EnableAutoConfiguration
 @EnableNakadiProducer

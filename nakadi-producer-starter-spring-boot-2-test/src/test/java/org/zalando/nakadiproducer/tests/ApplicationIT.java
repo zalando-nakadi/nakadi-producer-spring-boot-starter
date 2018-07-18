@@ -28,7 +28,7 @@ public class ApplicationIT {
 
     @BeforeClass
     public static void fakeCredentialsDir() {
-        environmentVariables.set("CREDENTIALS_DIR", new File("src/main/resources/tokens").getAbsolutePath());
+        environmentVariables.set("CREDENTIALS_DIR", new File("src/main/test/tokens").getAbsolutePath());
     }
 
     @Test

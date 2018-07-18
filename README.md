@@ -16,7 +16,7 @@ The goal of this Spring Boot starter is to simplify the reliable integration bet
 
 There are already [multiple clients for the Nakadi REST API](https://zalando.github.io/nakadi/manual.html#using_clients), but none of them solves the mentioned issues. 
 
-We solved them by persisting new events in a log table as part of the producing JDBC transaction. They will then be sent asynchonously to Nakadi after the transaction completed. If the transaction is rolled back, the events will vanish too. As a result, events will always be sent if and only if the transaction succeeded.
+We solved them by persisting new events in a log table as part of the producing JDBC transaction. They will then be sent asynchronously to Nakadi after the transaction completed. If the transaction is rolled back, the events will vanish too. As a result, events will always be sent if and only if the transaction succeeded.
 
 The Transmitter generates a strictly monotonically increasing event id that can be used for ordering the events during retrieval. It is not guaranteed, that events will be sent to Nakadi in the order they have been produced. If an event could not be sent to Nakadi, the library will periodically retry the transmission.
 
@@ -51,14 +51,14 @@ This library also uses:
 * jackson >= 2.7.0
 * (optional) Zalando's [tracer-spring-boot-starter](https://github.com/zalando/tracer)
 * (optional) Zalando's [tokens library](https://github.com/zalando/tokens) >= 0.10.0
-    * Please note that [tokens-spring-boot-starter](https://github.com/zalando-stups/spring-boot-zalando-stups-tokens) 0.10.0 comes with tokens 0.9.9, which is not enough. You can manually add tokens 0.10.0 with that starter, though. To be used in zalandos k8s environment, you must at least use 0.11.0.
+    * Please note that [tokens-spring-boot-starter](https://github.com/zalando-stups/spring-boot-zalando-stups-tokens) 0.10.0 comes with tokens 0.9.9, which is not enough. You can manually add tokens 0.10.0 with that starter, though. To be used in zalando's k8s environment, you must at least use 0.11.0.
 
 
 ## Usage
 
 ### Setup
 
-If you are using maven, include the library in your `pom.xml`:
+If you are using Maven, include the library in your `pom.xml`:
 
 ```xml
 <dependency>
@@ -82,7 +82,7 @@ public class Application {
 }
 ```
 
-The library uses flyway migrations to set up its own database schema `nakadi_events`.
+The library uses Flyway migrations to set up its own database schema `nakadi_events`.
 
 ### Nakadi communication configuration
 
@@ -212,7 +212,7 @@ process step the event is reporting.
 ### Event snapshots (optional)
 
 A Snapshot event is a special type of data change event (data operation) defined by Nakadi.
-It does not represent a change of the state of a resource, but a current snapshot of its state. It can be usefull to
+It does not represent a change of the state of a resource, but a current snapshot of its state. It can be useful to
 bootstrap a new consumer or to recover from inconsistencies between sender and consumer after an incident.
 
 You can create snapshot events programmatically (using EventLogWriter.fireSnapshotEvent), but usually snapshot event
@@ -283,7 +283,7 @@ tracer:
 By default, the library will pick up your flyway data source (or the primary data source if no flyway data source is
 configured), create its own schema and start setting up its tables in there. You can customize this process in two ways:
 
-If you want to use a different data source for schema maintainence (for example to use a different username) and 
+If you want to use a different data source for schema maintenance (for example to use a different username) and 
 configuring the Spring Flyway datasource is not enough, your can define a spring bean of type `DataSource` and annotate 
 it with `@NakadiProducerDataSource`.
 

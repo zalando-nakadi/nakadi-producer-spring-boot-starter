@@ -230,7 +230,7 @@ will trigger a snapshot for the event type `my.event-type`. You can change the p
 path prefix as part of your Spring Boot Actuator configuration.
 
 You can provide an optional filter specifier that will be passed to your application to implement any application 
-specific event/entity filtering logic.  It can be provided either as a request parameter called `filter`, or as a
+specific event/entity filtering logic.  It can be provided either as a query parameter called `filter`, or as a
 request body
 
     {"filter":"myFilter"}

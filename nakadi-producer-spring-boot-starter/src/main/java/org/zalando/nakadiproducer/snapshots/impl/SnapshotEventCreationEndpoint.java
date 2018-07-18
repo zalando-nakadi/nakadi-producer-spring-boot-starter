@@ -25,7 +25,12 @@ public class SnapshotEventCreationEndpoint {
     }
 
     @WriteOperation
-    public void createFilteredSnapshotEvents(@Selector String arg0, @Nullable String filter) {
+    public void createFilteredSnapshotEvents(
+            // this is the event type. Could have a better name, but since Spring Boot relies on the -parameters
+            // compiler flag being set to resolve path parameter names, it would then get trickier to reliably run this
+            // Test in the IDE. So let's stick with arg0 for now.
+            @Selector String arg0,
+            @Nullable String filter) {
         snapshotCreationService.createSnapshotEvents(arg0, filter);
     }
 

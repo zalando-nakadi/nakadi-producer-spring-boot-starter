@@ -12,9 +12,11 @@ import org.flywaydb.core.api.configuration.FlywayConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
 import org.springframework.boot.autoconfigure.flyway.FlywayProperties;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.Optional;
 
 public class FlywayMigrator {
     @Autowired(required = false)
@@ -31,8 +33,11 @@ public class FlywayMigrator {
     @Autowired(required = false)
     private List<NakadiProducerFlywayCallback> callbacks;
 
-    @Autowired(required = false)
+    @Autowired
     private FlywayProperties flywayProperties;
+
+    @Autowired
+    private DataSourceProperties dataSourceProperties;
 
     @PostConstruct
     public void migrateFlyway() {
@@ -41,9 +46,11 @@ public class FlywayMigrator {
         if (this.nakadiProducerFlywayDataSource != null) {
             flyway.setDataSource(nakadiProducerFlywayDataSource);
         } else if (this.flywayProperties != null && this.flywayProperties.isCreateDataSource()) {
-            flyway.setDataSource(this.flywayProperties.getUrl(), this.flywayProperties.getUser(),
-                this.flywayProperties.getPassword(),
-                this.flywayProperties.getInitSqls().toArray(new String[0]));
+            flyway.setDataSource(
+                    Optional.ofNullable(this.flywayProperties.getUrl()).orElse(dataSourceProperties.getUrl()),
+                    Optional.ofNullable(this.flywayProperties.getUser()).orElse(dataSourceProperties.getUsername()),
+                    Optional.ofNullable(this.flywayProperties.getPassword()).orElse(dataSourceProperties.getPassword()),
+                    this.flywayProperties.getInitSqls().toArray(new String[0]));
         } else if (this.flywayDataSource != null) {
             flyway.setDataSource(this.flywayDataSource);
         } else {

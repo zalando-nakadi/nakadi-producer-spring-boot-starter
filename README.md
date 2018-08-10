@@ -70,18 +70,6 @@ If you are using Maven, include the library in your `pom.xml`:
 
 The latest available version is visible in the Maven central badge at the top of this README. 
 
-Use `@EnableNakadiProducer` annotation to activate spring boot starter auto configuration:
-
-```java
-@SpringBootApplication
-@EnableNakadiProducer
-public class Application {
-    public static void main(final String[] args) {
-        SpringApplication.run(TestApplication.class, args);
-    }
-}
-```
-
 The library uses Flyway migrations to set up its own database schema `nakadi_events`.
 
 ### Nakadi communication configuration

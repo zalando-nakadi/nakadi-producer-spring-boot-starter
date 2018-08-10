@@ -15,7 +15,10 @@ import static io.restassured.RestAssured.given;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
-        classes = Application.class,
+        // This line looks like that by intention: We want to test that the MockNakadiPublishingClient will be picked up
+        // by our starter *even if* it has been defined *after* the application itself. This has been a problem until
+        // this commit.
+        classes = { Application.class, MockNakadiConfig.class },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 public class ApplicationIT {

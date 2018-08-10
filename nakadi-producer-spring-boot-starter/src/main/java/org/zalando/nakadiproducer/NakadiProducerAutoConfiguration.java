@@ -14,6 +14,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.flyway.FlywayProperties;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -41,6 +44,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Configuration
 @AutoConfigureAfter(name="org.zalando.tracer.spring.TracerAutoConfiguration")
 @EnableScheduling
+@EnableConfigurationProperties({ DataSourceProperties.class, FlywayProperties.class })
 public class NakadiProducerAutoConfiguration {
 
     @ConditionalOnMissingBean({NakadiPublishingClient.class, NakadiClient.class})

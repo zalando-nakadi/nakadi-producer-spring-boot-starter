@@ -116,13 +116,9 @@ token. The easiest way to do so is to include the [Zalando Tokens library](https
 </dependency>
 ```
 
-This starter will detect and auto configure it. To do so, it needs to know the address of your oAuth2 server:
-```yaml
-nakadi-producer:
-  access-token-uri: https://token.auth.example.org/oauth2/access_token
-```
+This starter will detect and auto configure it.
 
-If your application is running in Zalando's Kubernetes environment, you also have to configure the credential rotation:
+If your application is running in Zalando's Kubernetes environment, you have to configure the credential rotation:
 ```yaml
 apiVersion: "zalando.org/v1"
 kind: PlatformCredentialsSet
@@ -136,18 +132,27 @@ spec:
        privileges: []
 ``` 
 
+If your application is running in Zalando's STUPS environment (or you provide tokens via your own oAuth server) it needs
+to know the address of your oAuth2 server:
+```yaml
+nakadi-producer:
+ access-token-uri: https://token.auth.example.org/oauth2/access_token
+```
+
+#### OAuth (scope) configuration in a non-Zalando environment
+Please consult the [manual of Zalando's tokens library](https://github.com/zalando/tokens) for more configuration options (like `CREDENTIALS_DIR` or via environment variables.
+
 Since [July 2017](https://github.com/zalando/nakadi/pull/692), Nakadi (at least in the version operated at Zalando) doesn't require any scopes other than the pseudo-scope `uid` for writing events, [the authorization is instead based on event-type configuration using the service's uid](https://nakadi.io/manual.html#using_authorization).
 
 If your Nakadi installation needs real scopes for submitting events, you can provide them via configuration, too (as a comma-separated list):
 
 ```yaml
 nakadi-producer:
-  access-token-uri: https://token.auth.example.org/oauth2/access_token
   access-token-scopes: my.scope.name,other.scope.name
-```
+``` 
 
-If you do not use the STUPS Tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The starter will detect it and call it once for each request to retrieve the token. 
-
+#### Implement Nakadi authentication yourself
+If you do not use the STUPS Tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The starter will detect it and call it once for each request to retrieve the token.
 
 ### Creating events
 

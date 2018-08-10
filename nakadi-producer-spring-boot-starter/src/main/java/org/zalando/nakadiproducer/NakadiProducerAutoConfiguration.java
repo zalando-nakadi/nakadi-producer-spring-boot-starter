@@ -57,10 +57,9 @@ public class NakadiProducerAutoConfiguration {
         @Configuration
         static class StupsTokenConfiguration {
             @Bean(destroyMethod = "stop")
-            @ConditionalOnProperty({ "nakadi-producer.access-token-uri" })
             @ConditionalOnMissingBean(AccessTokenProvider.class)
             public StupsTokenComponent accessTokenProvider(
-                    @Value("${nakadi-producer.access-token-uri}") URI accessTokenUri,
+                    @Value("${nakadi-producer.access-token-uri:http://nakadi-producer.access-token-uri.not-set}") URI accessTokenUri,
                     @Value("${nakadi-producer.access-token-scopes:uid}") String[] accessTokenScopes) {
                 return new StupsTokenComponent(accessTokenUri, Arrays.asList(accessTokenScopes));
             }

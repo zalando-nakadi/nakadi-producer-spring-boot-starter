@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.zalando.fahrschein.NakadiClient;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
@@ -39,6 +40,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 @AutoConfigureAfter(name="org.zalando.tracer.spring.TracerAutoConfiguration")
+@EnableScheduling
 public class NakadiProducerAutoConfiguration {
 
     @ConditionalOnMissingBean({NakadiPublishingClient.class, NakadiClient.class})

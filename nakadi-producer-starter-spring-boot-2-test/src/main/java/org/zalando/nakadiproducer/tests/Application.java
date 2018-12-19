@@ -26,8 +26,8 @@ public class Application {
 
     @Bean
     @Primary
-    public DataSource dataSource() throws IOException {
-        return embeddedPostgres().getPostgresDatabase();
+    public DataSource dataSource(EmbeddedPostgres postgres) throws IOException {
+        return postgres.getPostgresDatabase();
     }
 
     @Bean
@@ -39,9 +39,9 @@ public class Application {
     public SnapshotEventGenerator snapshotEventGenerator() {
         return new SimpleSnapshotEventGenerator("eventtype", (withIdGreaterThan, filter) -> {
             if (withIdGreaterThan == null) {
-                return Collections.singletonList(new Snapshot("1", "foo", (Object) filter));
+                return Collections.singletonList(new Snapshot("1", "foo", filter));
             } else if (withIdGreaterThan.equals("1")) {
-                return Collections.singletonList(new Snapshot("2", "foo", (Object) filter));
+                return Collections.singletonList(new Snapshot("2", "foo", filter));
             } else {
                 return new ArrayList<>();
             }

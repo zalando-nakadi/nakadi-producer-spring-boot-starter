@@ -47,7 +47,7 @@ public class Application {
         // Todo: Test that some events arrive at a local nakadi mock
     }
 
-    static class Data {
+    public static class Data {
         public String id;
         public String filter;
         public Data(String id, String filter) {

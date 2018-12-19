@@ -11,27 +11,26 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.zalando.nakadi_mock.EventSubmissionCallback.CollectingCallback;
+import org.zalando.nakadi_mock.EventSubmissionCallback.DataChangeEvent;
 import org.zalando.nakadi_mock.NakadiMock;
 import org.zalando.nakadiproducer.tests.Application.Data;
-import org.zalando.nakadiproducer.transmission.impl.EventTransmitter;
-
 import java.io.File;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
-        // This line looks like that by intention: We want to test that the MockNakadiPublishingClient will be picked up
-        // by our starter *even if* it has been defined *after* the application itself. This has been a problem until
-        // this commit.
-        classes = { MockNakadiServerConfig.class, Application.class },
+        classes = { Application.class },
+        properties = { "nakadi-producer.transmission-polling-delay=30"},
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
-@ContextConfiguration(initializers=MockNakadiServerConfig.MockPropertyInitializer.class)
-public class ApplicationWithMockNakadiIT {
+@ContextConfiguration(initializers=NakadiServerMockInitializer.class)
+public class ApplicationWithMockServerIT {
+
     @LocalManagementPort
     private int localManagementPort;
 
@@ -45,14 +44,11 @@ public class ApplicationWithMockNakadiIT {
     }
 
     @Autowired
-    EventTransmitter transmitter;
-
-    @Autowired
     NakadiMock nakadiMock;
 
     @Test
     public void shouldSuccessfullyStartAndSnapshotCanBeTriggered() throws InterruptedException {
-        CollectingCallback<Application.Data> collector = new CollectingCallback<Application.Data>() {};
+        CollectingCallback<DataChangeEvent<Data>> collector = new CollectingCallback<DataChangeEvent<Application.Data>>() {};
         nakadiMock.eventType("eventtype").setSubmissionCallback(collector);
 
         given().baseUri("http://localhost:" + localManagementPort)
@@ -61,13 +57,14 @@ public class ApplicationWithMockNakadiIT {
         .when().post("/actuator/snapshot-event-creation/eventtype")
         .then().statusCode(204);
 
-        Thread.sleep(500);
+        Thread.sleep(1200);
 
-        transmitter.sendEvents();
-
-        Thread.sleep(500);
-
-        List<Data> events = collector.getSubmittedEvents();
+        List<DataChangeEvent<Data>> events = collector.getSubmittedEvents();
         assertThat(events, hasSize(2));
+        assertThat(events.get(0).getDataOp(), is("S"));
+        assertThat(events.get(0).getData().id, is("1"));
+
+        assertThat(events.get(1).getDataOp(), is("S"));
+        assertThat(events.get(1).getData().id, is("2"));
     }
 }

@@ -22,11 +22,11 @@ import static org.junit.Assert.assertThat;
         // This line looks like that by intention: We want to test that the MockNakadiPublishingClient will be picked up
         // by our starter *even if* it has been defined *after* the application itself. This has been a problem until
         // this commit.
-        classes = { Application.class, MockNakadiConfig.class },
-        properties = { "nakadi-producer.transmission-polling-delay=30"},
+        classes = { Application.class, MockNakadiClientConfig.class },
+        properties = { "nakadi-producer.transmission-polling-delay=30" },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
-public class ApplicationIT {
+public class ApplicationWithMockClientIT {
     @LocalManagementPort
     private int localManagementPort;
 
@@ -54,7 +54,9 @@ public class ApplicationIT {
 
     @Test
     public void shouldSuccessfullyStartAndSnapshotCanBeTriggered() throws InterruptedException {
-        given().baseUri("http://localhost:" + localManagementPort).contentType("application/json")
+        given().baseUri("http://localhost:" + localManagementPort)
+               .contentType("application/json")
+               .body("{'filter':'Example filter'}".replace('\'', '"'))
         .when().post("/actuator/snapshot-event-creation/eventtype")
         .then().statusCode(204);
 
@@ -64,6 +66,4 @@ public class ApplicationIT {
         List<String> events = mockClient.getSentEvents("eventtype");
         assertThat(events, hasSize(2));
     }
-
-
 }

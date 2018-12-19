@@ -6,7 +6,7 @@ import org.zalando.nakadiproducer.transmission.MockNakadiPublishingClient;
 import org.zalando.nakadiproducer.transmission.NakadiPublishingClient;
 
 @Configuration
-public class MockNakadiConfig {
+public class MockNakadiClientConfig {
     @Bean
     public NakadiPublishingClient mockNakadiPublishingClient() {
         return new MockNakadiPublishingClient();

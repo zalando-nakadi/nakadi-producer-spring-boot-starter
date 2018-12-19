@@ -5,13 +5,18 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.web.server.LocalManagementPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.zalando.nakadiproducer.transmission.MockNakadiPublishingClient;
 
 import java.io.File;
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -25,6 +30,9 @@ public class ApplicationIT {
     @LocalManagementPort
     private int localManagementPort;
 
+    @Autowired
+    private MockNakadiPublishingClient mockClient;
+
     @ClassRule
     public static final EnvironmentVariables environmentVariables
             = new EnvironmentVariables();
@@ -35,10 +43,16 @@ public class ApplicationIT {
     }
 
     @Test
-    public void shouldSuccessfullyStartAndSnapshotCanBeTriggered() {
+    public void shouldSuccessfullyStartAndSnapshotCanBeTriggered() throws InterruptedException {
         given().baseUri("http://localhost:" + localManagementPort).contentType("application/json")
         .when().post("/actuator/snapshot-event-creation/eventtype")
         .then().statusCode(204);
+
+        // leave some time for the scheduler to run
+        Thread.sleep(1200);
+
+        List<String> events = mockClient.getSentEvents("eventtype");
+        assertThat(events, hasSize(2));
     }
 
 

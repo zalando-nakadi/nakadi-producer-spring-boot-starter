@@ -1,8 +1,6 @@
 package org.zalando.nakadiproducer.tests;
 
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +8,7 @@ import org.springframework.boot.actuate.autoconfigure.web.server.LocalManagement
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.zalando.nakadiproducer.transmission.MockNakadiPublishingClient;
+import org.zalando.nakadiproducer.transmission.impl.EventTransmitter;
 
 import java.io.File;
 import java.util.List;
@@ -24,14 +23,12 @@ import static org.junit.Assert.assertThat;
         // by our starter *even if* it has been defined *after* the application itself. This has been a problem until
         // this commit.
         classes = { Application.class, MockNakadiConfig.class },
+        properties = { "nakadi-producer.transmission-polling-delay=30"},
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 public class ApplicationIT {
     @LocalManagementPort
     private int localManagementPort;
-
-    @Autowired
-    private MockNakadiPublishingClient mockClient;
 
     @ClassRule
     public static final EnvironmentVariables environmentVariables
@@ -42,6 +39,19 @@ public class ApplicationIT {
         environmentVariables.set("CREDENTIALS_DIR", new File("src/main/test/tokens").getAbsolutePath());
     }
 
+    @Autowired
+    private MockNakadiPublishingClient mockClient;
+
+    @Autowired
+    private EventTransmitter eventTransmitter;
+
+    @Before
+    @After
+    public void cleanUpMock() {
+        eventTransmitter.sendEvents();
+        mockClient.clearSentEvents();
+    }
+
     @Test
     public void shouldSuccessfullyStartAndSnapshotCanBeTriggered() throws InterruptedException {
         given().baseUri("http://localhost:" + localManagementPort).contentType("application/json")
@@ -49,7 +59,7 @@ public class ApplicationIT {
         .then().statusCode(204);
 
         // leave some time for the scheduler to run
-        Thread.sleep(1200);
+        Thread.sleep(200);
 
         List<String> events = mockClient.getSentEvents("eventtype");
         assertThat(events, hasSize(2));

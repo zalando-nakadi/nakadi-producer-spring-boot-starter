@@ -3,6 +3,8 @@ package org.zalando.nakadiproducer.transmission.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.zalando.fahrschein.EventPublishingException;
+import org.zalando.fahrschein.domain.BatchItemResponse;
 import org.zalando.nakadiproducer.eventlog.impl.EventLog;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
 import org.zalando.nakadiproducer.transmission.NakadiPublishingClient;
@@ -12,10 +14,14 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.util.Collections.singletonList;
@@ -58,6 +64,58 @@ public class EventTransmissionService {
             log.error("Event {} locked by {} could not be transmitted to nakadi: {}", eventLog.getId(), eventLog.getLockedBy(), e.getMessage());
         }
 
+    }
+
+    @Transactional
+    public void sendEvents(Collection<EventLog> events) {
+        EventBatcher batcher = new EventBatcher(objectMapper, this::publishBatch);
+
+        for (EventLog event : events) {
+            if (lockNearlyExpired(event)) {
+                // to avoid that two instances process this event, we skip it
+                continue;
+            }
+
+            NakadiEvent nakadiEvent;
+
+            try {
+                nakadiEvent = mapToNakadiEvent(event);
+            } catch (Exception e) {
+                log.error("Could not serialize event {} of type {}, skipping it.", event.getId(), event.getEventType(), e);
+                continue;
+            }
+
+            batcher.pushEvent(event, nakadiEvent);
+        }
+
+        batcher.finish();
+    }
+
+    private void publishBatch(List<EventLog> eventLogs, List<NakadiEvent> nakadiEvents) {
+        try {
+            this.tryToPublishBatch(eventLogs, nakadiEvents);
+        } catch (Exception e) {
+            log.error("Could not send {} events of type {}, skipping them.", eventLogs.size(), eventLogs.get(0).getEventType(), e);
+        }
+    }
+
+    private void tryToPublishBatch(List<EventLog> rawBatch, List<NakadiEvent> mappedBatch) throws Exception {
+        Stream<EventLog> successfulEvents;
+        try {
+            nakadiPublishingClient.publish(rawBatch.get(0).getEventType(), mappedBatch);
+            successfulEvents = rawBatch.stream();
+            log.info("Sent {} events of type {}.", rawBatch.size(), rawBatch.get(0).getEventType());
+        } catch (EventPublishingException e) {
+            log.error("{} out of {} events of type {} failed to be sent.", e.getResponses().length, rawBatch.size(), rawBatch.get(0).getEventType());
+            List<String> failedEids = collectEids(e);
+            successfulEvents = rawBatch.stream().filter(rawEvent -> failedEids.contains(convertToUUID(rawEvent.getId())));
+        }
+
+        successfulEvents.forEach(eventLogRepository::delete);
+    }
+
+    private List<String> collectEids(EventPublishingException e) {
+        return Arrays.stream(e.getResponses()).map(BatchItemResponse::getEid).collect(Collectors.toList());
     }
 
     private boolean lockNearlyExpired(EventLog eventLog) {
@@ -105,6 +163,5 @@ public class EventTransmissionService {
     private String convertToUUID(final int number) {
         return new UUID(0, number).toString();
     }
-
 
 }

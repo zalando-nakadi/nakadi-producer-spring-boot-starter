@@ -8,6 +8,6 @@ public class EventTransmitter {
     }
 
     public void sendEvents() {
-        eventTransmissionService.lockSomeEvents().forEach(eventTransmissionService::sendEvent);
+        eventTransmissionService.sendEvents(eventTransmissionService.lockSomeEvents());
     }
 }

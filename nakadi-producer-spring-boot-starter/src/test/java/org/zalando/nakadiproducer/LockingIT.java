@@ -60,8 +60,8 @@ public class LockingIT extends BaseMockedExternalCommunicationIT {
         Collection<EventLog> eventLogsLockedSecond = eventTransmissionService.lockSomeEvents();
 
         // when both job instances try to send their locked events
-        eventLogsLockedFirst.forEach(eventTransmissionService::sendEvent);
-        eventLogsLockedSecond.forEach(eventTransmissionService::sendEvent);
+        eventTransmissionService.sendEvents(eventLogsLockedFirst);
+        eventTransmissionService.sendEvents(eventLogsLockedSecond);
 
         // Then the event should have been sent only once.
         List<String> value = nakadiClient.getSentEvents(MY_EVENT_TYPE);

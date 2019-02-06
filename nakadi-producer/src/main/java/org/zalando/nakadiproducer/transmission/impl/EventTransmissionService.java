@@ -73,6 +73,10 @@ public class EventTransmissionService {
         batcher.finish();
     }
 
+    /**
+     * Publishes a list of events.
+     * All of the events in this list need to be destined for the same event type.
+     */
     private void publishBatch(List<BatchItem> batch) {
         try {
             this.tryToPublishBatch(batch);
@@ -81,6 +85,10 @@ public class EventTransmissionService {
         }
     }
 
+    /**
+     * Tries to publish a set of events (all of which need to belong to the same event type).
+     * The successful ones will be deleted from the database.
+     */
     private void tryToPublishBatch(List<BatchItem> batch) throws Exception {
         Stream<EventLog> successfulEvents;
         String eventType = batch.get(0).getEventLogEntry().getEventType();

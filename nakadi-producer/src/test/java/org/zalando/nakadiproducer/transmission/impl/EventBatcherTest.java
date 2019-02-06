@@ -33,8 +33,8 @@ public class EventBatcherTest {
 
     @Test
     public void shouldPublishNonFilledBatchOnFinish() throws JsonProcessingException {
-        EventLog eventLogEntry = new EventLog(1, "type", "body", "flow", now(), now(), "me", now());
-        NakadiEvent nakadiEvent = new NakadiEvent();
+        EventLog eventLogEntry = eventLogEntry(1, "type");
+        NakadiEvent nakadiEvent = nakadiEvent("1");
 
         when(objectMapper.writeValueAsBytes(any())).thenReturn(new byte[500]);
 
@@ -47,10 +47,10 @@ public class EventBatcherTest {
 
     @Test
     public void shouldPublishNonFilledBatchOnEventTypeChange() throws JsonProcessingException {
-        EventLog eventLogEntry1 = new EventLog(1, "type1", "body", "flow", now(), now(), "me", now());
-        EventLog eventLogEntry2 = new EventLog(1, "type2", "body", "flow", now(), now(), "me", now());
-        NakadiEvent nakadiEvent1 = new NakadiEvent();
-        NakadiEvent nakadiEvent2 = new NakadiEvent();
+        EventLog eventLogEntry1 = eventLogEntry(1, "type1");
+        EventLog eventLogEntry2 = eventLogEntry(2, "type2");
+        NakadiEvent nakadiEvent1 = nakadiEvent("1");
+        NakadiEvent nakadiEvent2 = nakadiEvent("2");
 
         when(objectMapper.writeValueAsBytes(any())).thenReturn(new byte[500]);
 
@@ -61,12 +61,12 @@ public class EventBatcherTest {
 
     @Test
     public void shouldPublishFilledBatchOnSubmissionOfNewEvent() throws JsonProcessingException {
-        EventLog eventLogEntry1 = new EventLog(1, "type1", "body", "flow", now(), now(), "me", now());
-        EventLog eventLogEntry2 = new EventLog(2, "type1", "body", "flow", now(), now(), "me", now());
-        EventLog eventLogEntry3 = new EventLog(3, "type1", "body", "flow", now(), now(), "me", now());
-        NakadiEvent nakadiEvent1 = new NakadiEvent();
-        NakadiEvent nakadiEvent2 = new NakadiEvent();
-        NakadiEvent nakadiEvent3 = new NakadiEvent();
+        EventLog eventLogEntry1 = eventLogEntry(1, "type1");
+        EventLog eventLogEntry2 = eventLogEntry(2, "type1");
+        EventLog eventLogEntry3 = eventLogEntry(3, "type1");
+        NakadiEvent nakadiEvent1 = nakadiEvent("1");
+        NakadiEvent nakadiEvent2 = nakadiEvent("2");
+        NakadiEvent nakadiEvent3 = nakadiEvent("3");
 
         when(objectMapper.writeValueAsBytes(any())).thenReturn(new byte[15000000]);
 
@@ -86,10 +86,10 @@ public class EventBatcherTest {
 
     @Test
     public void shouldTryPublishEventsIndividuallyWhenTheyExceedBatchThresholdThe() throws JsonProcessingException {
-        EventLog eventLogEntry1 = new EventLog(1, "type1", "body", "flow", now(), now(), "me", now());
-        EventLog eventLogEntry2 = new EventLog(2, "type1", "body", "flow", now(), now(), "me", now());
-        NakadiEvent nakadiEvent1 = new NakadiEvent();
-        NakadiEvent nakadiEvent2 = new NakadiEvent();
+        EventLog eventLogEntry1 = eventLogEntry(1, "type1");
+        EventLog eventLogEntry2 = eventLogEntry(2, "type1");
+        NakadiEvent nakadiEvent1 = nakadiEvent("1");
+        NakadiEvent nakadiEvent2 = nakadiEvent("2");
 
         when(objectMapper.writeValueAsBytes(any()))
                 .thenReturn(new byte[45000000])
@@ -105,10 +105,10 @@ public class EventBatcherTest {
 
     @Test
     public void willGracefullySkipNonSerializableEvents() throws JsonProcessingException {
-        EventLog eventLogEntry1 = new EventLog(1, "type1", "body", "flow", now(), now(), "me", now());
-        EventLog eventLogEntry2 = new EventLog(2, "type1", "body", "flow", now(), now(), "me", now());
-        NakadiEvent nakadiEvent1 = new NakadiEvent();
-        NakadiEvent nakadiEvent2 = new NakadiEvent();
+        EventLog eventLogEntry1 = eventLogEntry(1, "type1");
+        EventLog eventLogEntry2 = eventLogEntry(2, "type1");
+        NakadiEvent nakadiEvent1 = nakadiEvent("1");
+        NakadiEvent nakadiEvent2 = nakadiEvent("2");
 
         when(objectMapper.writeValueAsBytes(any()))
                 .thenThrow(new IllegalStateException())
@@ -122,5 +122,17 @@ public class EventBatcherTest {
         eventBatcher.finish();
 
         verify(publisher).accept(eq(singletonList(new BatchItem(eventLogEntry2, nakadiEvent2))));
+    }
+
+    private EventLog eventLogEntry(int id, String type) {
+        return new EventLog(id, type, "body", "flow", now(), now(), "me", now());
+    }
+
+    private NakadiEvent nakadiEvent(String eid) {
+        NakadiMetadata metadata = new NakadiMetadata();
+        metadata.setEid(eid);
+        NakadiEvent nakadiEvent = new NakadiEvent();
+        nakadiEvent.setMetadata(metadata);
+        return nakadiEvent;
     }
 }

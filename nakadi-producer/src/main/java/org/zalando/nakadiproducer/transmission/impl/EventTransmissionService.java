@@ -8,15 +8,15 @@ import org.zalando.fahrschein.domain.BatchItemResponse;
 import org.zalando.nakadiproducer.eventlog.impl.EventLog;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
 import org.zalando.nakadiproducer.transmission.NakadiPublishingClient;
+import org.zalando.nakadiproducer.transmission.impl.EventBatcher.BatchItem;
 
 import javax.transaction.Transactional;
+
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
-import static java.util.Collections.singletonList;
 
 @Slf4j
 public class EventTransmissionService {
@@ -74,24 +73,33 @@ public class EventTransmissionService {
         batcher.finish();
     }
 
-    private void publishBatch(List<EventLog> eventLogs, List<NakadiEvent> nakadiEvents) {
+    private void publishBatch(List<BatchItem> batch) {
         try {
-            this.tryToPublishBatch(eventLogs, nakadiEvents);
+            this.tryToPublishBatch(batch);
         } catch (Exception e) {
-            log.error("Could not send {} events of type {}, skipping them.", eventLogs.size(), eventLogs.get(0).getEventType(), e);
+            log.error("Could not send {} events of type {}, skipping them.", batch.size(), batch.get(0).getEventLogEntry().getEventType(), e);
         }
     }
 
-    private void tryToPublishBatch(List<EventLog> rawBatch, List<NakadiEvent> mappedBatch) throws Exception {
+    private void tryToPublishBatch(List<BatchItem> batch) throws Exception {
         Stream<EventLog> successfulEvents;
+        String eventType = batch.get(0).getEventLogEntry().getEventType();
         try {
-            nakadiPublishingClient.publish(rawBatch.get(0).getEventType(), mappedBatch);
-            successfulEvents = rawBatch.stream();
-            log.info("Sent {} events of type {}.", rawBatch.size(), rawBatch.get(0).getEventType());
+            nakadiPublishingClient.publish(
+                    eventType,
+                    batch.stream()
+                            .map(BatchItem::getNakadiEvent)
+                            .collect(Collectors.toList())
+            );
+            successfulEvents = batch.stream().map(BatchItem::getEventLogEntry);
+            log.info("Sent {} events of type {}.", batch.size(), eventType);
         } catch (EventPublishingException e) {
-            log.error("{} out of {} events of type {} failed to be sent.", e.getResponses().length, rawBatch.size(), rawBatch.get(0).getEventType());
+            log.error("{} out of {} events of type {} failed to be sent.", e.getResponses().length, batch.size(), eventType);
             List<String> failedEids = collectEids(e);
-            successfulEvents = rawBatch.stream().filter(rawEvent -> !failedEids.contains(convertToUUID(rawEvent.getId())));
+            successfulEvents =
+                    batch.stream()
+                            .map(BatchItem::getEventLogEntry)
+                            .filter(rawEvent -> !failedEids.contains(convertToUUID(rawEvent.getId())));
         }
 
         successfulEvents.forEach(eventLogRepository::delete);

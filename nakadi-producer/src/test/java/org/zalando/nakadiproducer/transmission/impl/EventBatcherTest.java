@@ -4,9 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.zalando.nakadiproducer.eventlog.impl.EventLog;
+import org.zalando.nakadiproducer.transmission.impl.EventBatcher.BatchItem;
 
 import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static java.time.Instant.now;
 import static java.util.Arrays.asList;
@@ -20,14 +21,14 @@ import static org.mockito.Mockito.when;
 
 public class EventBatcherTest {
     private final ObjectMapper objectMapper = mock(ObjectMapper.class);
-    private final BiConsumer<List<EventLog>, List<NakadiEvent>> publisher = mock(BiConsumer.class);
+    private final Consumer<List<BatchItem>> publisher = mock(Consumer.class);
     private EventBatcher eventBatcher = new EventBatcher(objectMapper, publisher);
 
     @Test
     public void shouldNotPublishEmptyBatches() {
         eventBatcher.finish();
 
-        verify(publisher, never()).accept(any(), any());
+        verify(publisher, never()).accept(any());
     }
 
     @Test
@@ -38,10 +39,10 @@ public class EventBatcherTest {
         when(objectMapper.writeValueAsBytes(any())).thenReturn(new byte[500]);
 
         eventBatcher.pushEvent(eventLogEntry, nakadiEvent);
-        verify(publisher, never()).accept(any(), any());
+        verify(publisher, never()).accept(any());
 
         eventBatcher.finish();
-        verify(publisher).accept(eq(singletonList(eventLogEntry)), eq(singletonList(nakadiEvent)));
+        verify(publisher).accept(eq(singletonList(new BatchItem(eventLogEntry, nakadiEvent))));
     }
 
     @Test
@@ -55,7 +56,7 @@ public class EventBatcherTest {
 
         eventBatcher.pushEvent(eventLogEntry1, nakadiEvent1);
         eventBatcher.pushEvent(eventLogEntry2, nakadiEvent2);
-        verify(publisher).accept(eq(singletonList(eventLogEntry1)), eq(singletonList(nakadiEvent1)));
+        verify(publisher).accept(eq(singletonList(new BatchItem(eventLogEntry1, nakadiEvent1))));
     }
 
     @Test
@@ -76,7 +77,11 @@ public class EventBatcherTest {
         // would be 45MB batch size, wich is more than 80% of 50MB,therefore triggers sumission of the previous two
         eventBatcher.pushEvent(eventLogEntry3, nakadiEvent3);
 
-        verify(publisher).accept(eq(asList(eventLogEntry1, eventLogEntry2)), eq(asList(nakadiEvent1, nakadiEvent2)));
+        verify(publisher)
+                .accept(eq(asList(
+                    new BatchItem(eventLogEntry1, nakadiEvent1),
+                    new BatchItem(eventLogEntry2, nakadiEvent2)
+                )));
     }
 
     @Test
@@ -95,7 +100,7 @@ public class EventBatcherTest {
         // ... and be sumitted with the next event added
         eventBatcher.pushEvent(eventLogEntry2, nakadiEvent2);
 
-        verify(publisher).accept(eq(singletonList(eventLogEntry1)), eq(singletonList(nakadiEvent1)));
+        verify(publisher).accept(eq(singletonList(new BatchItem(eventLogEntry1, nakadiEvent1))));
     }
 
     @Test
@@ -116,6 +121,6 @@ public class EventBatcherTest {
         // and flush it
         eventBatcher.finish();
 
-        verify(publisher).accept(eq(singletonList(eventLogEntry2)), eq(singletonList(nakadiEvent2)));
+        verify(publisher).accept(eq(singletonList(new BatchItem(eventLogEntry2, nakadiEvent2))));
     }
 }

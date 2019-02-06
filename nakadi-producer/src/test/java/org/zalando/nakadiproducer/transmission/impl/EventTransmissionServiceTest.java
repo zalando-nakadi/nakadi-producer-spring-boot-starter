@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.zalando.fahrschein.EventPublishingException;
 import org.zalando.fahrschein.domain.BatchItemResponse;
@@ -15,6 +14,7 @@ import org.zalando.nakadiproducer.transmission.MockNakadiPublishingClient;
 import org.zalando.nakadiproducer.util.Fixture;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -59,8 +59,8 @@ public class EventTransmissionServiceTest {
     @Test
     public void testWithFlowId() throws JsonProcessingException {
         String flowId = "XYZ";
-        String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
-        EventLog ev = new EventLog(27, "type", payloadString, flowId, now(), now(), null, now().plus(5, MINUTES));
+        EventLog ev = eventLogEntry(27, "type", now().plus(5, MINUTES));
+        ev.setFlowId(flowId);
 
         service.sendEvents(singletonList(ev));
 
@@ -71,8 +71,7 @@ public class EventTransmissionServiceTest {
 
     @Test
     public void testWithoutFlowId() throws JsonProcessingException {
-        String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
-        EventLog ev = new EventLog(27, "type", payloadString, null, now(), now(), null, now().plus(5, MINUTES));
+        EventLog ev = eventLogEntry(27, "type", now().plus(5, MINUTES));
 
         service.sendEvents(singletonList(ev));
 
@@ -84,9 +83,9 @@ public class EventTransmissionServiceTest {
     @Test
     public void testErrorInPayloadDeserializationIsHandledGracefully() throws IOException {
         String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
-        EventLog ev1 = new EventLog(1, "type1", payloadString, null, now(), now(), null, now().plus(5, MINUTES));
-        EventLog ev2 = new EventLog(2, "type1", payloadString, null, now(), now(), null, now().plus(5, MINUTES));
-        EventLog ev3 = new EventLog(3, "type2", payloadString, null, now(), now(), null, now().plus(5, MINUTES));
+        EventLog ev1 = eventLogEntry(1, "type1", now().plus(5, MINUTES));
+        EventLog ev2 = eventLogEntry(2, "type1", now().plus(5, MINUTES));
+        EventLog ev3 = eventLogEntry(3, "type2", now().plus(5, MINUTES));
 
         Mockito.clearInvocations(mapper);
 
@@ -117,10 +116,9 @@ public class EventTransmissionServiceTest {
 
     @Test
     public void testUnknownErrorInTransmissionIsHandledGracefully() throws Exception {
-        String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
-        EventLog ev1 = new EventLog(1, "type1", payloadString, null, now(), now(), null, now().plus(5, MINUTES));
-        EventLog ev2 = new EventLog(2, "type1", payloadString, null, now(), now(), null, now().plus(5, MINUTES));
-        EventLog ev3 = new EventLog(3, "type2", payloadString, null, now(), now(), null, now().plus(5, MINUTES));
+        EventLog ev1 = eventLogEntry(1, "type1", now().plus(5, MINUTES));
+        EventLog ev2 = eventLogEntry(2, "type1", now().plus(5, MINUTES));
+        EventLog ev3 = eventLogEntry(3, "type2", now().plus(5, MINUTES));
 
         doThrow(new IllegalStateException("failed"))
                 .when(publishingClient).publish(eq("type1"), any());
@@ -146,13 +144,13 @@ public class EventTransmissionServiceTest {
 
     @Test
     public void testEventPublishingExceptionIsHandledGracefully() throws Exception {
-        String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
-        EventLog ev1 = new EventLog(1, "type1", payloadString, null, now(), now(), null, now().plus(5, MINUTES));
-        EventLog ev2 = new EventLog(2, "type1", payloadString, null, now(), now(), null, now().plus(5, MINUTES));
-        EventLog ev3 = new EventLog(3, "type2", payloadString, null, now(), now(), null, now().plus(5, MINUTES));
+        EventLog ev1 = eventLogEntry(1, "type1", now().plus(5, MINUTES));
+        EventLog ev2 = eventLogEntry(2, "type1", now().plus(5, MINUTES));
+        EventLog ev3 = eventLogEntry(3, "type2", now().plus(5, MINUTES));
 
         doThrow(new EventPublishingException(new BatchItemResponse[]{
-                new BatchItemResponse("00000000-0000-0000-0000-000000000002", BatchItemResponse.PublishingStatus.ABORTED, BatchItemResponse.Step.ENRICHING, "Something went wrong")
+                new BatchItemResponse("00000000-0000-0000-0000-000000000002",
+                        BatchItemResponse.PublishingStatus.ABORTED, BatchItemResponse.Step.ENRICHING, "Something went wrong")
         }))
                 .when(publishingClient).publish(eq("type1"), any());
 
@@ -178,10 +176,9 @@ public class EventTransmissionServiceTest {
 
     @Test
     public void testWithMultipleEvents() throws JsonProcessingException {
-        String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
-        EventLog ev1 = new EventLog(1, "type1", payloadString, null, now(), now(), null, now().plus(5, MINUTES));
-        EventLog ev2 = new EventLog(2, "type1", payloadString, null, now(), now(), null, now().plus(5, MINUTES));
-        EventLog ev3 = new EventLog(3, "type2", payloadString, null, now(), now(), null, now().plus(5, MINUTES));
+        EventLog ev1 = eventLogEntry(1, "type1", now().plus(5, MINUTES));
+        EventLog ev2 = eventLogEntry(2, "type1", now().plus(5, MINUTES));
+        EventLog ev3 = eventLogEntry(3, "type2", now().plus(5, MINUTES));
 
         service.sendEvents(Arrays.asList(ev1, ev2, ev3));
 
@@ -198,9 +195,8 @@ public class EventTransmissionServiceTest {
     @Test
     public void shouldNotSendEventsCloseToLockExpiry() throws JsonProcessingException {
         // given an event...
-        String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
         // ... whose lock expires in the next minute
-        EventLog ev = new EventLog(27, "type", payloadString, null, now(), now(), null, now().plus(30, SECONDS));
+        EventLog ev = eventLogEntry(27, "type", now().plus(30, SECONDS));
 
         // when the service is asked to send the event
         service.sendEvents(singletonList(ev));
@@ -216,9 +212,8 @@ public class EventTransmissionServiceTest {
     @Test
     public void shouldNotSendEventsWithExpiredLock() throws JsonProcessingException {
         // given an event...
-        String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
         // ... whose lock expires already expired
-        EventLog ev = new EventLog(27, "type", payloadString, null, now(), now(), null, now().minus(1, SECONDS));
+        EventLog ev = eventLogEntry(27, "type", now().minus(1, SECONDS));
 
         // when the service is asked to send the event
         service.sendEvents(singletonList(ev));
@@ -230,6 +225,12 @@ public class EventTransmissionServiceTest {
         // ... and not been deleted
         verifyNoMoreInteractions(repo);
     }
+
+    private EventLog eventLogEntry(int id, String type, Instant lockedUntil) throws JsonProcessingException {
+        String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
+        return new EventLog(id, type, payloadString, null, now(), now(), null, lockedUntil, "{}");
+    }
+
 
     private TypeReference<LinkedHashMap<String, Object>> anyLinkedHashmapTypeReference() {
         return any();

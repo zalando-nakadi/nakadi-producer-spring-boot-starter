@@ -13,7 +13,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.flyway.FlywayProperties;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -30,6 +29,9 @@ import org.zalando.nakadiproducer.eventlog.impl.EventLogWriterImpl;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.flowid.NoopFlowIdComponent;
 import org.zalando.nakadiproducer.flowid.TracerFlowIdComponent;
+import org.zalando.nakadiproducer.opentracing.NoopOpenTracingComponent;
+import org.zalando.nakadiproducer.opentracing.OpenTracingComponent;
+import org.zalando.nakadiproducer.opentracing.TracerOpenTracingComponent;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotEventCreationEndpoint;
@@ -109,6 +111,31 @@ public class NakadiProducerAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(OpenTracingComponent.class)
+    @ConditionalOnMissingClass("io.opentracing.Tracer")
+    public OpenTracingComponent openTracingComponent() {
+        return new NoopOpenTracingComponent();
+    }
+
+    @ConditionalOnClass(name="io.opentracing.Tracer")
+    @Configuration
+    static class OpenTracingConfiguration {
+        @Autowired(required = false)
+        private io.opentracing.Tracer tracer;
+
+        @SuppressWarnings("SpringJavaAutowiringInspection")
+        @ConditionalOnMissingBean(OpenTracingComponent.class)
+        @Bean
+        public OpenTracingComponent openTracingComponent() {
+            if (tracer == null) {
+                return new NoopOpenTracingComponent();
+            } else {
+                return new TracerOpenTracingComponent(tracer);
+            }
+        }
+    }
+
+    @Bean
     @ConditionalOnMissingBean
     public SnapshotEventCreationEndpoint snapshotEventCreationEndpoint(
             SnapshotCreationService snapshotCreationService) {
@@ -127,8 +154,8 @@ public class NakadiProducerAutoConfiguration {
 
     @Bean
     public EventLogWriter eventLogWriter(EventLogRepository eventLogRepository, ObjectMapper objectMapper,
-            FlowIdComponent flowIdComponent) {
-        return new EventLogWriterImpl(eventLogRepository, objectMapper, flowIdComponent);
+            FlowIdComponent flowIdComponent, OpenTracingComponent openTracingComponent) {
+        return new EventLogWriterImpl(eventLogRepository, objectMapper, flowIdComponent, openTracingComponent);
     }
 
     @Bean

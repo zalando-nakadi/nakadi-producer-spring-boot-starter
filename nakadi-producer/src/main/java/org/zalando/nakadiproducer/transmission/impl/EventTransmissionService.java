@@ -15,11 +15,7 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -131,6 +127,12 @@ public class EventTransmissionService {
         metadata.setEid(convertToUUID(event.getId()));
         metadata.setOccuredAt(event.getCreated());
         metadata.setFlowId(event.getFlowId());
+        if (event.getSpanContext() != null) {
+            Map<String, String> spanContext = objectMapper.readValue(event.getSpanContext(),
+                    new TypeReference<LinkedHashMap<String, String>>() {});
+            metadata.setSpanContext(spanContext);
+        }
+
         nakadiEvent.setMetadata(metadata);
 
         LinkedHashMap<String, Object> payloadDTO = objectMapper.readValue(event.getEventBodyData(), new TypeReference<LinkedHashMap<String, Object>>() { });

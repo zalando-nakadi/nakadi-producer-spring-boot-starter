@@ -125,7 +125,7 @@ public class EventBatcherTest {
     }
 
     private EventLog eventLogEntry(int id, String type) {
-        return new EventLog(id, type, "body", "flow", now(), now(), "me", now());
+        return new EventLog(id, type, "body", "flow", now(), now(), "me", now(), "{}");
     }
 
     private NakadiEvent nakadiEvent(String eid) {

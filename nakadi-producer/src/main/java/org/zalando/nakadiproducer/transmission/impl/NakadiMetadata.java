@@ -3,6 +3,7 @@ package org.zalando.nakadiproducer.transmission.impl;
 import lombok.Data;
 
 import java.time.Instant;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,5 +20,8 @@ public class NakadiMetadata {
 
     @JsonProperty("flow_id")
     private String flowId;
+
+    @JsonProperty("span_ctx")
+    private Map<String, String> spanContext;
 
 }

@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
 
 import org.junit.Before;
@@ -15,6 +16,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
+import org.zalando.nakadiproducer.opentracing.OpenTracingComponent;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 
@@ -28,6 +30,11 @@ public class EventLogWriterTest {
 
     @Mock
     private FlowIdComponent flowIdComponent;
+
+    @Mock
+    private OpenTracingComponent openTracingComponent;
+    @Mock
+    private OpenTracingComponent.SpanAndScope spanAndScope;
 
     @Captor
     private ArgumentCaptor<EventLog> eventLogCapture;
@@ -55,8 +62,9 @@ public class EventLogWriterTest {
                 Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
 
         when(flowIdComponent.getXFlowIdValue()).thenReturn(TRACE_ID);
+        when(openTracingComponent.startActiveSpan(anyString())).thenReturn(spanAndScope);
 
-        eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(), flowIdComponent);
+        eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(), flowIdComponent, openTracingComponent);
     }
 
     @Test

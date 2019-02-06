@@ -30,6 +30,12 @@ public class EventBatcher {
         this.aggregatedBatchSize = 0;
     }
 
+    /**
+     * Pushes one event to be published. It will be either published right now, or with some other events,
+     * latest when calling {@link #finish()}.
+     * @param eventLogEntry The event log entry for this event.
+     * @param nakadiEvent The Nakadi form of the event.
+     */
     public void pushEvent(EventLog eventLogEntry, NakadiEvent nakadiEvent) {
         long eventSize;
 
@@ -53,6 +59,9 @@ public class EventBatcher {
         aggregatedBatchSize += eventSize;
     }
 
+    /**
+     * Publishes all events which were pushed and not yet published.
+     */
     public void finish() {
         if (!batch.isEmpty()) {
             this.publisher.accept(batch);

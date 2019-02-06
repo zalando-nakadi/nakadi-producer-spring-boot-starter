@@ -1,0 +1,121 @@
+package org.zalando.nakadiproducer.transmission.impl;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Test;
+import org.zalando.nakadiproducer.eventlog.impl.EventLog;
+
+import java.util.List;
+import java.util.function.BiConsumer;
+
+import static java.time.Instant.now;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+public class EventBatcherTest {
+    private final ObjectMapper objectMapper = mock(ObjectMapper.class);
+    private final BiConsumer<List<EventLog>, List<NakadiEvent>> publisher = mock(BiConsumer.class);
+    private EventBatcher eventBatcher = new EventBatcher(objectMapper, publisher);
+
+    @Test
+    public void shouldNotPublishEmptyBatches() {
+        eventBatcher.finish();
+
+        verify(publisher, never()).accept(any(), any());
+    }
+
+    @Test
+    public void shouldPublishNonFilledBatchOnFinish() throws JsonProcessingException {
+        EventLog eventLogEntry = new EventLog(1, "type", "body", "flow", now(), now(), "me", now());
+        NakadiEvent nakadiEvent = new NakadiEvent();
+
+        when(objectMapper.writeValueAsBytes(any())).thenReturn(new byte[500]);
+
+        eventBatcher.pushEvent(eventLogEntry, nakadiEvent);
+        verify(publisher, never()).accept(any(), any());
+
+        eventBatcher.finish();
+        verify(publisher).accept(eq(singletonList(eventLogEntry)), eq(singletonList(nakadiEvent)));
+    }
+
+    @Test
+    public void shouldPublishNonFilledBatchOnEventTypeChange() throws JsonProcessingException {
+        EventLog eventLogEntry1 = new EventLog(1, "type1", "body", "flow", now(), now(), "me", now());
+        EventLog eventLogEntry2 = new EventLog(1, "type2", "body", "flow", now(), now(), "me", now());
+        NakadiEvent nakadiEvent1 = new NakadiEvent();
+        NakadiEvent nakadiEvent2 = new NakadiEvent();
+
+        when(objectMapper.writeValueAsBytes(any())).thenReturn(new byte[500]);
+
+        eventBatcher.pushEvent(eventLogEntry1, nakadiEvent1);
+        eventBatcher.pushEvent(eventLogEntry2, nakadiEvent2);
+        verify(publisher).accept(eq(singletonList(eventLogEntry1)), eq(singletonList(nakadiEvent1)));
+    }
+
+    @Test
+    public void shouldPublishFilledBatchOnSubmissionOfNewEvent() throws JsonProcessingException {
+        EventLog eventLogEntry1 = new EventLog(1, "type1", "body", "flow", now(), now(), "me", now());
+        EventLog eventLogEntry2 = new EventLog(2, "type1", "body", "flow", now(), now(), "me", now());
+        EventLog eventLogEntry3 = new EventLog(3, "type1", "body", "flow", now(), now(), "me", now());
+        NakadiEvent nakadiEvent1 = new NakadiEvent();
+        NakadiEvent nakadiEvent2 = new NakadiEvent();
+        NakadiEvent nakadiEvent3 = new NakadiEvent();
+
+        when(objectMapper.writeValueAsBytes(any())).thenReturn(new byte[15000000]);
+
+        // 15 MB batch size
+        eventBatcher.pushEvent(eventLogEntry1, nakadiEvent1);
+        // 30 MB batch size
+        eventBatcher.pushEvent(eventLogEntry2, nakadiEvent2);
+        // would be 45MB batch size, wich is more than 80% of 50MB,therefore triggers sumission of the previous two
+        eventBatcher.pushEvent(eventLogEntry3, nakadiEvent3);
+
+        verify(publisher).accept(eq(asList(eventLogEntry1, eventLogEntry2)), eq(asList(nakadiEvent1, nakadiEvent2)));
+    }
+
+    @Test
+    public void shouldTryPublishEventsIndividuallyWhenTheyExceedBatchThresholdThe() throws JsonProcessingException {
+        EventLog eventLogEntry1 = new EventLog(1, "type1", "body", "flow", now(), now(), "me", now());
+        EventLog eventLogEntry2 = new EventLog(2, "type1", "body", "flow", now(), now(), "me", now());
+        NakadiEvent nakadiEvent1 = new NakadiEvent();
+        NakadiEvent nakadiEvent2 = new NakadiEvent();
+
+        when(objectMapper.writeValueAsBytes(any()))
+                .thenReturn(new byte[45000000])
+                .thenReturn(new byte[450]);
+
+        // 45 MB batch size => will form a batch of it's own
+        eventBatcher.pushEvent(eventLogEntry1, nakadiEvent1);
+        // ... and be sumitted with the next event added
+        eventBatcher.pushEvent(eventLogEntry2, nakadiEvent2);
+
+        verify(publisher).accept(eq(singletonList(eventLogEntry1)), eq(singletonList(nakadiEvent1)));
+    }
+
+    @Test
+    public void willGracefullySkipNonSerializableEvents() throws JsonProcessingException {
+        EventLog eventLogEntry1 = new EventLog(1, "type1", "body", "flow", now(), now(), "me", now());
+        EventLog eventLogEntry2 = new EventLog(2, "type1", "body", "flow", now(), now(), "me", now());
+        NakadiEvent nakadiEvent1 = new NakadiEvent();
+        NakadiEvent nakadiEvent2 = new NakadiEvent();
+
+        when(objectMapper.writeValueAsBytes(any()))
+                .thenThrow(new IllegalStateException())
+                .thenReturn(new byte[450]);
+
+        // non serializable
+        eventBatcher.pushEvent(eventLogEntry1, nakadiEvent1);
+        // serializable
+        eventBatcher.pushEvent(eventLogEntry2, nakadiEvent2);
+        // and flush it
+        eventBatcher.finish();
+
+        verify(publisher).accept(eq(singletonList(eventLogEntry2)), eq(singletonList(nakadiEvent2)));
+    }
+}

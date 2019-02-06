@@ -29,28 +29,28 @@ public class EventBatcher {
     }
 
     public void pushEvent(EventLog event, NakadiEvent nakadiEvent) {
-            long eventSize;
+        long eventSize;
 
-            try {
-                eventSize = objectMapper.writeValueAsBytes(nakadiEvent).length;
-            } catch (Exception e) {
-                log.error("Could not serialize event {} of type {}, skipping it.", event.getId(), event.getEventType(), e);
-                return;
-            }
+        try {
+            eventSize = objectMapper.writeValueAsBytes(nakadiEvent).length;
+        } catch (Exception e) {
+            log.error("Could not serialize event {} of type {}, skipping it.", event.getId(), event.getEventType(), e);
+            return;
+        }
 
 
-            if (rawBatch.size() > 0 &&
-                    (hasAnotherEventType(rawBatch, event) || batchWouldBecomeTooBig(aggregatedBatchSize, eventSize))) {
-                this.publisher.accept(rawBatch, mappedBatch);
+        if (rawBatch.size() > 0 &&
+                (hasAnotherEventType(rawBatch, event) || batchWouldBecomeTooBig(aggregatedBatchSize, eventSize))) {
+            this.publisher.accept(rawBatch, mappedBatch);
 
-                rawBatch.clear();
-                mappedBatch.clear();
-                aggregatedBatchSize = 0;
-            }
+            rawBatch = new ArrayList<>();
+            mappedBatch = new ArrayList<>();
+            aggregatedBatchSize = 0;
+        }
 
-            rawBatch.add(event);
-            mappedBatch.add(nakadiEvent);
-            aggregatedBatchSize += eventSize;
+        rawBatch.add(event);
+        mappedBatch.add(nakadiEvent);
+        aggregatedBatchSize += eventSize;
     }
 
     public void finish() {

@@ -50,23 +50,6 @@ public class EventTransmissionService {
     }
 
     @Transactional
-    public void sendEvent(EventLog eventLog) {
-        if (lockNearlyExpired(eventLog)) {
-            // to avoid that two instances process this event, we skip it
-            return;
-        }
-
-        try {
-            nakadiPublishingClient.publish(eventLog.getEventType(), singletonList(mapToNakadiEvent(eventLog)));
-            log.info("Event {} locked by {} was successfully transmitted to nakadi", eventLog.getId(), eventLog.getLockedBy());
-            eventLogRepository.delete(eventLog);
-        } catch (Exception e) {
-            log.error("Event {} locked by {} could not be transmitted to nakadi: {}", eventLog.getId(), eventLog.getLockedBy(), e.getMessage());
-        }
-
-    }
-
-    @Transactional
     public void sendEvents(Collection<EventLog> events) {
         EventBatcher batcher = new EventBatcher(objectMapper, this::publishBatch);
 
@@ -108,7 +91,7 @@ public class EventTransmissionService {
         } catch (EventPublishingException e) {
             log.error("{} out of {} events of type {} failed to be sent.", e.getResponses().length, rawBatch.size(), rawBatch.get(0).getEventType());
             List<String> failedEids = collectEids(e);
-            successfulEvents = rawBatch.stream().filter(rawEvent -> failedEids.contains(convertToUUID(rawEvent.getId())));
+            successfulEvents = rawBatch.stream().filter(rawEvent -> !failedEids.contains(convertToUUID(rawEvent.getId())));
         }
 
         successfulEvents.forEach(eventLogRepository::delete);
@@ -125,7 +108,7 @@ public class EventTransmissionService {
         return now().isAfter(eventLog.getLockedUntil().minus(1, MINUTES));
     }
 
-    public NakadiEvent mapToNakadiEvent(final EventLog event) {
+    private NakadiEvent mapToNakadiEvent(final EventLog event) throws IOException {
         final NakadiEvent nakadiEvent = new NakadiEvent();
 
         final NakadiMetadata metadata = new NakadiMetadata();
@@ -134,13 +117,7 @@ public class EventTransmissionService {
         metadata.setFlowId(event.getFlowId());
         nakadiEvent.setMetadata(metadata);
 
-        HashMap<String, Object> payloadDTO;
-        try {
-            payloadDTO = objectMapper.readValue(event.getEventBodyData(), new TypeReference<LinkedHashMap<String, Object>>() { });
-        } catch (IOException e) {
-            log.error("An error occurred at JSON deserialization", e);
-            throw new UncheckedIOException(e);
-        }
+        LinkedHashMap<String, Object> payloadDTO = objectMapper.readValue(event.getEventBodyData(), new TypeReference<LinkedHashMap<String, Object>>() { });
 
         nakadiEvent.setData(payloadDTO);
 

@@ -28,7 +28,7 @@ public class MockNakadiPublishingClient implements NakadiPublishingClient {
     }
 
     @Override
-    public synchronized void publish(String eventType, List<?> nakadiEvents) {
+    public synchronized void publish(String eventType, List<?> nakadiEvents) throws Exception {
         nakadiEvents.stream().map(this::transformToJson).forEach(e -> sentEvents.add(eventType, e));
     }
 

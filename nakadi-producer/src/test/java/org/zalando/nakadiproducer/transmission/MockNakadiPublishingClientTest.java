@@ -27,7 +27,7 @@ public class MockNakadiPublishingClientTest {
     }
 
     @Test
-    public void returnsOnlyThoseEventsOfTheGivenType() {
+    public void returnsOnlyThoseEventsOfTheGivenType() throws Exception {
         mockNakadiPublishingClient.publish(MY_EVENT_TYPE, singletonList(new Event("anEvent")));
         mockNakadiPublishingClient.publish(OTHER_EVENT_TYPE, singletonList(new Event("anotherEvent")));
 
@@ -35,7 +35,7 @@ public class MockNakadiPublishingClientTest {
     }
 
     @Test
-    public void concatenatesSubsequentlyPublishedEventLists() {
+    public void concatenatesSubsequentlyPublishedEventLists() throws Exception {
         mockNakadiPublishingClient.publish(MY_EVENT_TYPE,
             asList(new Event("event1"), new Event("event2"))
         );
@@ -55,7 +55,7 @@ public class MockNakadiPublishingClientTest {
     }
 
     @Test
-    public void deletesAllEventsOnClear() {
+    public void deletesAllEventsOnClear() throws Exception {
         mockNakadiPublishingClient.publish(MY_EVENT_TYPE, singletonList(new Event("event1")));
         mockNakadiPublishingClient.clearSentEvents();
 

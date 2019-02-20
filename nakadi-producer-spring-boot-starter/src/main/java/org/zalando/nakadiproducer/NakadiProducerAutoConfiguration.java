@@ -116,8 +116,8 @@ public class NakadiProducerAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean
         public SnapshotEventCreationEndpoint snapshotEventCreationEndpoint(
-                SnapshotCreationService snapshotCreationService) {
-            return new SnapshotEventCreationEndpoint(snapshotCreationService);
+                SnapshotCreationService snapshotCreationService, FlowIdComponent flowIdComponent) {
+            return new SnapshotEventCreationEndpoint(snapshotCreationService, flowIdComponent);
         }
 
         @Bean

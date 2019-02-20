@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -13,7 +14,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.flyway.FlywayProperties;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -45,6 +45,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @AutoConfigureAfter(name="org.zalando.tracer.spring.TracerAutoConfiguration")
 @EnableScheduling
 @EnableConfigurationProperties({ DataSourceProperties.class, FlywayProperties.class })
+@Slf4j
 public class NakadiProducerAutoConfiguration {
 
     @ConditionalOnMissingBean({NakadiPublishingClient.class, NakadiClient.class})
@@ -111,8 +112,8 @@ public class NakadiProducerAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public SnapshotEventCreationEndpoint snapshotEventCreationEndpoint(
-            SnapshotCreationService snapshotCreationService) {
-        return new SnapshotEventCreationEndpoint(snapshotCreationService);
+            SnapshotCreationService snapshotCreationService, FlowIdComponent flowIdComponent) {
+        return new SnapshotEventCreationEndpoint(snapshotCreationService, flowIdComponent);
     }
 
     @Bean

@@ -50,7 +50,7 @@ public class TracerFlowIdComponent implements FlowIdComponent {
                         "Please check your tracer configuration: {}", X_FLOW_ID, e.getMessage());
             }
         } else {
-            log.warn("No bean of class Tracer was found. Returning null.");
+            log.warn("No bean of class Tracer was found.");
         }
     }
 }

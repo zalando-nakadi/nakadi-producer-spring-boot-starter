@@ -43,11 +43,8 @@ public class TracerFlowIdComponent implements FlowIdComponent {
         if (tracer != null) {
             try {
                 tracer.get(X_FLOW_ID).getValue();
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException|IllegalStateException e) {
                 tracer.start();
-            } catch (IllegalStateException e) {
-                log.warn("Unexpected Error while checking for an existing Trace Id {}. " +
-                        "Please check your tracer configuration: {}", X_FLOW_ID, e.getMessage());
             }
         } else {
             log.warn("No bean of class Tracer was found.");

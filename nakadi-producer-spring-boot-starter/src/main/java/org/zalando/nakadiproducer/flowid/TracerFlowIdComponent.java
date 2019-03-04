@@ -43,7 +43,11 @@ public class TracerFlowIdComponent implements FlowIdComponent {
         if (tracer != null) {
             try {
                 tracer.get(X_FLOW_ID).getValue();
-            } catch (IllegalArgumentException|IllegalStateException e) {
+            } catch (IllegalArgumentException e) {
+                log.warn("No trace was configured for the name {}. Returning null. " +
+                        "To configure Tracer provide an application property: " +
+                        "tracer.traces.X-Flow-ID=flow-id", X_FLOW_ID);
+            } catch (IllegalStateException e) {
                 tracer.start();
             }
         } else {

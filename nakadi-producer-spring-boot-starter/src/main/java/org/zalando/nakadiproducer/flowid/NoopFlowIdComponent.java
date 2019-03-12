@@ -7,7 +7,10 @@ public class NoopFlowIdComponent implements FlowIdComponent {
 
     @Override
     public String getXFlowIdValue() {
-        log.debug("No bean of class FlowIdComponent was found. Returning null.");
         return null;
+    }
+
+    @Override
+    public void startTraceIfNoneExists() {
     }
 }

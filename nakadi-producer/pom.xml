@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.zalando</groupId>
         <artifactId>nakadi-producer-reactor</artifactId>
-        <version>20.1.0</version>
+        <version>20.2.0</version>
     </parent>
 
     <artifactId>nakadi-producer</artifactId>

@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.zalando.tracer.Tracer;
 
@@ -30,13 +29,23 @@ public class TracerFlowIdComponentTest {
     }
 
     @Test
-    public void makeSureTraceWillBeStartedIfNoneExists() {
+    public void makeSureTraceWillBeStartedIfNoneHasBeenStartedBefore() {
+        TracerFlowIdComponent flowIdComponent = new TracerFlowIdComponent(tracer);
+        when(tracer.get("X-Flow-ID").getValue()).thenThrow(new IllegalStateException());
+
+        flowIdComponent.startTraceIfNoneExists();
+
+        verify(tracer).start();
+    }
+
+    @Test
+    public void wontFailIfTraceHasNotBeenConfiguredInStartTrace() {
         TracerFlowIdComponent flowIdComponent = new TracerFlowIdComponent(tracer);
         when(tracer.get("X-Flow-ID")).thenThrow(new IllegalArgumentException());
 
         flowIdComponent.startTraceIfNoneExists();
 
-        verify(tracer).start();
+        // then no exception is thrown
     }
 
     @Test

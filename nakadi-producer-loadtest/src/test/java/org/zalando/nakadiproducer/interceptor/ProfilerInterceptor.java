@@ -19,10 +19,6 @@ public class ProfilerInterceptor {
     private void sendEventOperation() {
     }
 
-    @Pointcut("execution(* org.zalando.nakadiproducer.eventlog.EventLogWriter.*(..))")
-    private void eventLogWriterOperation() {
-    }
-
     @Around("lockSomeEventsOperation() || sendEventOperation()")
     public Object profile(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         StopWatch clock = new StopWatch("Profiling for " + proceedingJoinPoint.toShortString());

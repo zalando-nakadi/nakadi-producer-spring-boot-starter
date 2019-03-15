@@ -1,0 +1,21 @@
+flyway:
+  schemas: local_nakadi_db
+  locations: classpath:/db/migration
+  url: jdbc:postgresql://localhost:5432/local_nakadi_db
+  username: nakadi
+  password: nakadi
+  enabled: true
+
+logging:
+  level:
+    org.zalando.nakadiproducer: INFO
+
+nakadi-producer:
+  nakadi-base-uri: http://localhost:8080
+
+spring:
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/local_nakadi_db
+    username: nakadi
+    password: nakadi

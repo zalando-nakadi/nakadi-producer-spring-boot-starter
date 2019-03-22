@@ -110,7 +110,7 @@ public class LoadTestIT {
     }
 
     private void fireBusinessEvents(int amount) {
-      log.info("=== Starting to fire " + amount + " events ============================================================");
+        log.info("=== Starting to fire " + amount + " events ============================================================");
         IntStream.rangeClosed(1, amount).forEach(
                 i -> {
                     ExampleBusinessEvent event = new ExampleBusinessEvent("example-business-event " + i + " of " + amount);

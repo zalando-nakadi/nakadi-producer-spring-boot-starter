@@ -39,7 +39,7 @@ public class LoadTestIT {
     public static DockerComposeContainer compose =
             new DockerComposeContainer(new File("src/test/resources/docker-compose.yaml"))
                     .withExposedService("nakadi", 8080,
-                            Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(120)));
+                            Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(240)));
 
     @Autowired
     private EventLogWriter eventLogWriter;
@@ -110,6 +110,7 @@ public class LoadTestIT {
     }
 
     private void fireBusinessEvents(int amount) {
+      log.info("=== Starting to fire " + amount + " events ============================================================");
         IntStream.rangeClosed(1, amount).forEach(
                 i -> {
                     ExampleBusinessEvent event = new ExampleBusinessEvent("example-business-event " + i + " of " + amount);

@@ -9,7 +9,7 @@ usage:
 mvn test -Dtest=LoadTestIT -Dgpg.skip=true
 ```
 
-The time-tracking functionality can be configured by changing pointcuts in `ProfileInterceptor.java`.
+The time-tracking functionality can be configured by changing pointcuts in `ProfilerInterceptor.java`.
 ```
 @Around("execution(* org.zalando.nakadiproducer.transmission.impl.EventTransmissionService.lockSomeEvents(..)) || " +
         "execution(* org.zalando.nakadiproducer.transmission.impl.EventTransmissionService.sendEvents(..))")

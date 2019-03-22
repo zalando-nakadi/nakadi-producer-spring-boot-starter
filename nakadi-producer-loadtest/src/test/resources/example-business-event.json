@@ -1,0 +1,16 @@
+{
+  "name": "example.business.event",
+  "owning_application": "nakadi-producer-loadtest",
+  "category": "undefined",
+  "partition_strategy": "random",
+  "schema": {
+    "type": "json_schema",
+    "schema": {
+      "properties": {
+        "content": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

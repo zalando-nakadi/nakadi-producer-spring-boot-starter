@@ -23,7 +23,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.time.temporal.ChronoUnit.MINUTES;
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 @Slf4j
 public class EventTransmissionService {
@@ -31,20 +31,29 @@ public class EventTransmissionService {
     private final EventLogRepository eventLogRepository;
     private final NakadiPublishingClient nakadiPublishingClient;
     private final ObjectMapper objectMapper;
+    private final int lockDuration;
+    private final int lockDurationBuffer;
 
     private Clock clock = Clock.systemDefaultZone();
 
     public EventTransmissionService(EventLogRepository eventLogRepository, NakadiPublishingClient nakadiPublishingClient, ObjectMapper objectMapper) {
+        this(eventLogRepository, nakadiPublishingClient, objectMapper, 600, 60);
+    }
+
+    public EventTransmissionService(EventLogRepository eventLogRepository, NakadiPublishingClient nakadiPublishingClient, ObjectMapper objectMapper,
+    int lockDuration, int lockDurationBuffer) {
         this.eventLogRepository = eventLogRepository;
         this.nakadiPublishingClient = nakadiPublishingClient;
         this.objectMapper = objectMapper;
+        this.lockDuration = lockDuration;
+        this.lockDurationBuffer = lockDurationBuffer;
     }
 
     @Transactional
     public Collection<EventLog> lockSomeEvents() {
         String lockId = UUID.randomUUID().toString();
-        log.debug("Locking events for replication with lockId {}", lockId);
-        eventLogRepository.lockSomeMessages(lockId, now(), now().plus(10, MINUTES));
+        log.debug("Locking events for replication with lockId {} for {} seconds", lockId, lockDuration);
+        eventLogRepository.lockSomeMessages(lockId, now(), now().plus(lockDuration, SECONDS));
         return eventLogRepository.findByLockedByAndLockedUntilGreaterThan(lockId, now());
     }
 
@@ -118,10 +127,10 @@ public class EventTransmissionService {
     }
 
     private boolean lockNearlyExpired(EventLog eventLog) {
-        // since clocks never work exactly synchronous and sending the event also takes some time, we include a minute
-        // of safety buffer here. This is still not 100% precise, but since we require events to be consumed idempotent,
-        // sending one event twice wont hurt much.
-        return now().isAfter(eventLog.getLockedUntil().minus(1, MINUTES));
+        // since clocks never work exactly synchronous and sending the event also takes some time, we include a safety
+        // buffer here. This is still not 100% precise, but since we require events to be consumed idempotent, sending
+        // one event twice wont hurt much.
+        return now().isAfter(eventLog.getLockedUntil().minus(lockDurationBuffer, SECONDS));
     }
 
     private NakadiEvent mapToNakadiEvent(final EventLog event) throws IOException {

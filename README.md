@@ -284,6 +284,21 @@ You may also define a spring bean of type `NakadiProducerFlywayCallback`. The in
 schema management lifecycle that may, for example, be used to `SET ROLE migrator` before and `RESET ROLE` after each
 migration. 
 
+### Customizing event locks 
+
+* **lock-duration**: The selected events are locked before transmission. If the transmission fails the events stay locked
+until the lock expires (default: 600 seconds).  
+
+* **lock-duration-buffer**: Since clocks never work exactly synchronous and sending events also takes some time, a safety
+buffer is included. During the last x seconds before the expiration of the lock the events are not considered for 
+transmission (default: 60 seconds).
+
+```yaml
+nakadi-producer:
+  lock-duration: 600 
+  lock-duration-buffer: 60
+``` 
+
 ### Test support
 
 This library provides a mock implementation of its Nakadi client that can be used in integration testing:

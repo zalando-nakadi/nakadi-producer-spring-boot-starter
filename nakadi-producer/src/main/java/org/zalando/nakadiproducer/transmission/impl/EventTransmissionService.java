@@ -36,10 +36,6 @@ public class EventTransmissionService {
 
     private Clock clock = Clock.systemDefaultZone();
 
-    public EventTransmissionService(EventLogRepository eventLogRepository, NakadiPublishingClient nakadiPublishingClient, ObjectMapper objectMapper) {
-        this(eventLogRepository, nakadiPublishingClient, objectMapper, 600, 60);
-    }
-
     public EventTransmissionService(EventLogRepository eventLogRepository, NakadiPublishingClient nakadiPublishingClient, ObjectMapper objectMapper,
     int lockDuration, int lockDurationBuffer) {
         this.eventLogRepository = eventLogRepository;

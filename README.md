@@ -324,6 +324,21 @@ The example above uses `com.jayway.jsonpath:json-path:jar:2.2.0` to parse and te
 
 Note that you should disable the scheduled event transmission for the test (e.g. by setting `nakadi-producer.scheduled-transmission-enabled:false`), as that might interfere with the manual transmission and the clearing in the test setup, leading to events from one test showing up in the next test, depending on timing issues.
 
+### Customizing event locks
+
+* **lock-duration**: The selected events are locked before transmission. If the transmission fails the events stay locked
+until the lock expires. The default is currently 600 seconds but might change in future releases.  
+
+* **lock-duration-buffer**: Since clocks never work exactly synchronous and sending events also takes some time, a safety
+buffer is included. During the last x seconds before the expiration of the lock the events are not considered for 
+transmission. The default is currently 60 seconds but might change in future releases.
+
+```yaml
+nakadi-producer:
+  lock-duration: 600 
+  lock-duration-buffer: 60
+``` 
+
 ## Contributing
 
 We welcome contributions. Please have a look at our [contribution guidelines](CONTRIBUTING.md).

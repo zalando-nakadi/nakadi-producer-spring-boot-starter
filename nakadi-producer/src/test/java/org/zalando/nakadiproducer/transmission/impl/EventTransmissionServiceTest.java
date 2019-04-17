@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.zalando.fahrschein.EventPublishingException;
 import org.zalando.fahrschein.domain.BatchItemResponse;
@@ -53,7 +52,7 @@ public class EventTransmissionServiceTest {
         repo = mock(EventLogRepository.class);
         publishingClient = spy(new MockNakadiPublishingClient());
         mapper = spy(new ObjectMapper());
-        service = new EventTransmissionService(repo, publishingClient, mapper);
+        service = new EventTransmissionService(repo, publishingClient, mapper, 600, 60);
     }
 
     @Test

@@ -163,7 +163,7 @@ Example of using `fireCreateEvent`:
 @Service
 public class SomeYourService {
 
-    @Autowire
+    @Autowired
     private EventLogWriter eventLogWriter;
 
     @Autowired

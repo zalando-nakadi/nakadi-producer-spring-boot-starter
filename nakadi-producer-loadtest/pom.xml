@@ -6,12 +6,12 @@
 
     <groupId>org.zalando</groupId>
     <artifactId>nakadi-producer-loadtest</artifactId>
-    <version>20.2.0</version>
+    <version>${project.parent.version}</version>
 
     <parent>
         <groupId>org.zalando</groupId>
         <artifactId>nakadi-producer-reactor</artifactId>
-        <version>20.2.0</version>
+        <version>20.3.0</version>
     </parent>
 
     <dependencies>

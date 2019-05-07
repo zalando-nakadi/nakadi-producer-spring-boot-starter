@@ -7,14 +7,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 
 @ConfigurationProperties("endpoints.snapshot-event-creation")
 public class SnapshotEventCreationEndpoint extends AbstractEndpoint<SnapshotEventCreationEndpoint.SnapshotReport> {
     private final SnapshotCreationService snapshotCreationService;
+    private final FlowIdComponent flowIdComponent;
 
-    public SnapshotEventCreationEndpoint(SnapshotCreationService snapshotCreationService) {
+    public SnapshotEventCreationEndpoint(SnapshotCreationService snapshotCreationService, FlowIdComponent flowIdComponent) {
         super("snapshot_event_creation", true, true);
         this.snapshotCreationService = snapshotCreationService;
+        this.flowIdComponent = flowIdComponent;
     }
 
     @Override
@@ -23,6 +26,7 @@ public class SnapshotEventCreationEndpoint extends AbstractEndpoint<SnapshotEven
     }
 
     public void invoke(String eventType, String filter) {
+        flowIdComponent.startTraceIfNoneExists();
         snapshotCreationService.createSnapshotEvents(eventType, filter);
     }
 

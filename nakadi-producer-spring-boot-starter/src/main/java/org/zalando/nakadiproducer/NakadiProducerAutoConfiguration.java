@@ -116,8 +116,8 @@ public class NakadiProducerAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean
         public SnapshotEventCreationEndpoint snapshotEventCreationEndpoint(
-                SnapshotCreationService snapshotCreationService) {
-            return new SnapshotEventCreationEndpoint(snapshotCreationService);
+                SnapshotCreationService snapshotCreationService, FlowIdComponent flowIdComponent) {
+            return new SnapshotEventCreationEndpoint(snapshotCreationService, flowIdComponent);
         }
 
         @Bean
@@ -197,11 +197,16 @@ public class NakadiProducerAutoConfiguration {
         return new EventTransmissionScheduler(eventTransmitter, scheduledTransmissionEnabled);
     }
 
-    @Bean
-    public EventTransmissionService eventTransmissionService(EventLogRepository eventLogRepository,
-            NakadiPublishingClient nakadiPublishingClient, ObjectMapper objectMapper) {
-        return new EventTransmissionService(eventLogRepository, nakadiPublishingClient, objectMapper);
-    }
+  @Bean
+  public EventTransmissionService eventTransmissionService(
+      EventLogRepository eventLogRepository,
+      NakadiPublishingClient nakadiPublishingClient,
+      ObjectMapper objectMapper,
+      @Value("${nakadi-producer.lock-duration:600}") int lockDuration,
+      @Value("${nakadi-producer.lock-duration-buffer:60}") int lockDurationBuffer) {
+    return new EventTransmissionService(
+        eventLogRepository, nakadiPublishingClient, objectMapper, lockDuration, lockDurationBuffer);
+  }
 
     @Bean
     public FlywayMigrator flywayMigrator() {

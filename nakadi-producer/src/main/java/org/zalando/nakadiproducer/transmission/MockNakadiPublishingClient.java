@@ -1,10 +1,8 @@
 package org.zalando.nakadiproducer.transmission;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,10 +12,12 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 
 public class MockNakadiPublishingClient implements NakadiPublishingClient {
     private final ObjectMapper objectMapper;
-    private final MultiValueMap<String, String> sentEvents = new LinkedMultiValueMap<>();
+    private final Multimap<String, String> sentEvents = ArrayListMultimap.create();
 
     public MockNakadiPublishingClient() {
         this(createDefaultObjectMapper());
@@ -29,12 +29,12 @@ public class MockNakadiPublishingClient implements NakadiPublishingClient {
 
     @Override
     public synchronized void publish(String eventType, List<?> nakadiEvents) throws Exception {
-        nakadiEvents.stream().map(this::transformToJson).forEach(e -> sentEvents.add(eventType, e));
+        nakadiEvents.stream().map(this::transformToJson).forEach(e -> sentEvents.put(eventType, e));
     }
 
     public synchronized List<String> getSentEvents(String eventType) {
         ArrayList<String> events = new ArrayList<>();
-        List<String> sentEvents = this.sentEvents.get(eventType);
+        Collection<String> sentEvents = this.sentEvents.get(eventType);
         if (sentEvents != null) {
             events.addAll(sentEvents);
         }

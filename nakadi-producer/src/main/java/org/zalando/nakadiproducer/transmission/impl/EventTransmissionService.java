@@ -107,6 +107,7 @@ public class EventTransmissionService {
             successfulEvents = batch.stream().map(BatchItem::getEventLogEntry);
             log.info("Sent {} events of type {}.", batch.size(), eventType);
         } catch (EventPublishingException e) {
+            log.error("Exception ", e);
             log.error("{} out of {} events of type {} failed to be sent.", e.getResponses().length, batch.size(), eventType);
             List<String> failedEids = collectEids(e);
             successfulEvents =

@@ -22,7 +22,9 @@ The Transmitter generates a strictly monotonically increasing event id that can 
 
 This project is mature, used in production in some services at Zalando, and in active development.
 
-Be aware that this library **does neither guarantee that events are sent exactly once, nor that they are sent in the order they have been persisted**. This is not a bug but a design decision that allows us to skip and retry sending events later in case of temporary failures. So make sure that your events are designed to be processed out of order.  To help you in this matter, the library generates a *strictly monotonically increasing event id* (field `metadata/eid` in Nakadi's event object) that can be used to reconstruct the message order.
+Be aware that this library **does neither guarantee that events are sent exactly once, nor that they are sent in the order they have been persisted**. This is not a bug but a design decision that allows us to skip and retry sending events later in case of temporary failures. So make sure that your events are designed to be processed out of order (See [Rule 203 in Zalando's API guidelines](https://opensource.zalando.com/restful-api-guidelines/#203)).  To help you in this matter, the library generates a *strictly monotonically increasing event id* (field `metadata/eid` in Nakadi's event object) that can be used to reconstruct the message order.
+
+Unfortunately this approach is not compatible with Nakadi's compacted event types – it can happen that the last event submitted (and thus the one which will stay after compaction) is not the last event which was actually been fired. For this reason, the library currently also doesn't provide any access to Nakadi's [`partition_compaction_key`](https://nakadi.io/manual.html#definition_EventMetadata*partition_compaction_key) feature.
 
 ## Versioning
 

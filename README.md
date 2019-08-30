@@ -374,12 +374,13 @@ We (the [maintainers](MAINTAINERS)) want to thank our main contributors:
 * Alexander Libin (@qlibin), who created a similar predecessor library (tarbela-producer-spring-boot-starter,
   now not public anymore), from which this one was forked.
 * Lucas Medeiros de Azevedo (@wormangel), who added support for business events.
+* Benjamin Gehrels (@BGehrels), who co-maintained this project from its inception in 2017 until 2019, contributing many features and ideas.
 
 ### Contact
 
 For all questions, bug reports, proposals, etc., please
 [create an issue](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/issues/new).
-We try to react to new issues latest at the next working day.
+We try to react to new issues usually by the next working day.
 
 If you need to contact the maintainers confidentially, please use the email addresses
 in the [MAINTAINERS](MAINTAINERS) file. In case of a security issue, please also send

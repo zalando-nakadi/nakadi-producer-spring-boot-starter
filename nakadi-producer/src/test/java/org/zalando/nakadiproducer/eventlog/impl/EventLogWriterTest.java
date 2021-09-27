@@ -7,6 +7,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +36,9 @@ public class EventLogWriterTest {
     @Captor
     private ArgumentCaptor<EventLog> eventLogCapture;
 
+    @Captor
+    private ArgumentCaptor<Collection<EventLog>> eventLogCaptures;
+
     private EventLogWriterImpl eventLogWriter;
 
     private MockPayload eventPayload;
@@ -48,6 +55,7 @@ public class EventLogWriterTest {
 
     private static final String DATA_CHANGE_BODY_DATA = ("{'data_op':'{DATA_OP}','data_type':'nakadi:some-publisher','data':" + EVENT_BODY_DATA + "}").replace('\'', '"');
     private static final String PUBLISHER_DATA_TYPE = "nakadi:some-publisher";
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Before
     public void setUp() throws Exception {
@@ -129,6 +137,34 @@ public class EventLogWriterTest {
         assertThat(eventLogCapture.getValue().getFlowId(), is(TRACE_ID));
         assertThat(eventLogCapture.getValue().getLockedBy(), is(nullValue()));
         assertThat(eventLogCapture.getValue().getLockedUntil(), is(nullValue()));
+    }
+
+    @Test
+    public void testFireBusinessEvents() throws Exception {
+      MockPayload mockPayload1 = Fixture.mockPayload(1, "mockedcode1", true,
+          Fixture.mockSubClass("some info 1_0"), Fixture.mockSubList(2, "some detail 1_2"));
+      MockPayload mockPayload2 = Fixture.mockPayload(2, "mockedcode2", true,
+          Fixture.mockSubClass("some info 2_0"), Fixture.mockSubList(2, "some detail 2_1"));
+
+      eventLogWriter.fireBusinessEvents(PUBLISHER_EVENT_TYPE,
+          Stream.of(mockPayload1, mockPayload2).collect(Collectors.toList()));
+
+      verify(eventLogRepository).persist(eventLogCaptures.capture());
+
+      Iterator<EventLog> eventLogIterator = eventLogCaptures.getValue().iterator();
+      EventLog eventLog1 = eventLogIterator.next();
+      assertThat(eventLog1.getEventBodyData(), is(OBJECT_MAPPER.writeValueAsString(mockPayload1)));
+      assertThat(eventLog1.getEventType(), is(PUBLISHER_EVENT_TYPE));
+      assertThat(eventLog1.getFlowId(), is(TRACE_ID));
+      assertThat(eventLog1.getLockedBy(), is(nullValue()));
+      assertThat(eventLog1.getLockedUntil(), is(nullValue()));
+
+      EventLog eventLog2 = eventLogIterator.next();
+      assertThat(eventLog2.getEventBodyData(), is(OBJECT_MAPPER.writeValueAsString(mockPayload2)));
+      assertThat(eventLog2.getEventType(), is(PUBLISHER_EVENT_TYPE));
+      assertThat(eventLog2.getFlowId(), is(TRACE_ID));
+      assertThat(eventLog2.getLockedBy(), is(nullValue()));
+      assertThat(eventLog2.getLockedUntil(), is(nullValue()));
     }
 
 }

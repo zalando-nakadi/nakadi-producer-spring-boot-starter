@@ -1,5 +1,6 @@
 package org.zalando.nakadiproducer.eventlog;
 
+import java.util.Collection;
 import javax.transaction.Transactional;
 
 import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
@@ -132,4 +133,19 @@ public interface EventLogWriter {
      */
     @Transactional
     void fireBusinessEvent(String eventType, Object payload);
+
+  /**
+   * Fires business events, see {@link #fireBusinessEvent(String, Object) fireBusinessEvent} for
+   * more details
+   *
+   * @param eventType
+   *            the Nakadi event type of the event. This is roughly equivalent
+   *            to an event channel or topic.
+   *
+   * @param payloads
+   *            some POJOs that can be serialized into JSON (required
+   *            parameter)
+   */
+    @Transactional
+    void fireBusinessEvents(String eventType, Collection<Object> payloads);
 }

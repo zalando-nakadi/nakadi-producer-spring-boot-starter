@@ -3,6 +3,7 @@ package org.zalando.nakadiproducer.eventlog.impl;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,7 +11,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 public class EventLogRepositoryImpl implements EventLogRepository {
     private NamedParameterJdbcTemplate jdbcTemplate;
@@ -55,27 +55,34 @@ public class EventLogRepositoryImpl implements EventLogRepository {
 
     @Override
     public void persist(EventLog eventLog) {
-        Timestamp now = toSqlTimestamp(Instant.now());
-        MapSqlParameterSource namedParameterMap = new MapSqlParameterSource();
-        namedParameterMap.addValue("eventType", eventLog.getEventType());
-        namedParameterMap.addValue("eventBodyData", eventLog.getEventBodyData());
-        namedParameterMap.addValue("flowId", eventLog.getFlowId());
-        namedParameterMap.addValue("created", now);
-        namedParameterMap.addValue("lastModified", now);
-        namedParameterMap.addValue("lockedBy", eventLog.getLockedBy());
-        namedParameterMap.addValue("lockedUntil", eventLog.getLockedUntil());
-        GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(
-            "INSERT INTO " +
-                "    nakadi_events.event_log " +
-                "    (event_type, event_body_data, flow_id, created, last_modified, locked_by, locked_until) " +
-                "VALUES " +
-                "    (:eventType, :eventBodyData, :flowId, :created, :lastModified, :lockedBy, :lockedUntil)",
-            namedParameterMap,
-            generatedKeyHolder
-        );
+        persist(Collections.singleton(eventLog));
+    }
 
-        eventLog.setId((Integer) generatedKeyHolder.getKeys().get("id"));
+    @Override
+    public void persist(Collection<EventLog> eventLogs) {
+        MapSqlParameterSource[] namedParameterMaps = eventLogs.stream()
+            .map(eventLog -> {
+              Timestamp now = toSqlTimestamp(Instant.now());
+              MapSqlParameterSource namedParameterMap = new MapSqlParameterSource();
+              namedParameterMap.addValue("eventType", eventLog.getEventType());
+              namedParameterMap.addValue("eventBodyData", eventLog.getEventBodyData());
+              namedParameterMap.addValue("flowId", eventLog.getFlowId());
+              namedParameterMap.addValue("created", now);
+              namedParameterMap.addValue("lastModified", now);
+              namedParameterMap.addValue("lockedBy", eventLog.getLockedBy());
+              namedParameterMap.addValue("lockedUntil", eventLog.getLockedUntil());
+              return namedParameterMap;
+            })
+            .toArray(MapSqlParameterSource[]::new);
+
+      jdbcTemplate.batchUpdate(
+          "INSERT INTO " +
+              "    nakadi_events.event_log " +
+              "    (event_type, event_body_data, flow_id, created, last_modified, locked_by, locked_until) " +
+              "VALUES " +
+              "    (:eventType, :eventBodyData, :flowId, :created, :lastModified, :lockedBy, :lockedUntil)",
+          namedParameterMaps
+      );
     }
 
     private Timestamp toSqlTimestamp(Instant now) {

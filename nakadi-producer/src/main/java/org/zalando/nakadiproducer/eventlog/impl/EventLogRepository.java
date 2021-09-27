@@ -12,6 +12,8 @@ public interface EventLogRepository {
 
     void persist(EventLog eventLog);
 
+    void persist(Collection<EventLog> eventLogs);
+
     void deleteAll();
 
     EventLog findOne(Integer id);

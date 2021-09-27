@@ -5,6 +5,9 @@ import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.DELETE
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.SNAPSHOT;
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.UPDATE;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.stream.Collectors;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 
@@ -59,6 +62,20 @@ public class EventLogWriterImpl implements EventLogWriter {
     public void fireBusinessEvent(final String eventType, Object payload) {
         final EventLog eventLog = createEventLog(eventType, payload);
         eventLogRepository.persist(eventLog);
+    }
+
+    @Override
+    @Transactional
+    public void fireBusinessEvents(final String eventType, final Collection<Object> payload) {
+        final Collection<EventLog> eventLogs = createEventLogs(eventType, payload);
+        eventLogRepository.persist(eventLogs);
+    }
+
+    private Collection<EventLog> createEventLogs(final String eventType,
+        final Collection<Object> eventPayloads) {
+      return eventPayloads.stream()
+          .map(payload -> createEventLog(eventType, payload))
+          .collect(Collectors.toList());
     }
 
     private EventLog createEventLog(final String eventType, final Object eventPayload) {

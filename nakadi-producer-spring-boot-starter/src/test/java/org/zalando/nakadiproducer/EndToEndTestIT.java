@@ -1,23 +1,23 @@
 package org.zalando.nakadiproducer;
 
-import static com.jayway.jsonpath.Criteria.where;
-import static com.jayway.jsonpath.JsonPath.read;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.is;
-
-import java.io.IOException;
-import java.util.List;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.transmission.MockNakadiPublishingClient;
 import org.zalando.nakadiproducer.transmission.impl.EventTransmitter;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
+
+import java.io.IOException;
+import java.util.List;
+
+import static com.jayway.jsonpath.Criteria.where;
+import static com.jayway.jsonpath.JsonPath.read;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
 
 public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
     private static final String MY_DATA_CHANGE_EVENT_TYPE = "myDataChangeEventType";
@@ -34,8 +34,8 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
     @Autowired
     private MockNakadiPublishingClient nakadiClient;
 
-    @Before
-    @After
+    @BeforeEach
+    @AfterEach
     public void clearNakadiEvents() {
         eventTransmitter.sendEvents();
         nakadiClient.clearSentEvents();

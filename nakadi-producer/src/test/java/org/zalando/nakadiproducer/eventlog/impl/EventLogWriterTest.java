@@ -1,5 +1,17 @@
 package org.zalando.nakadiproducer.eventlog.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.zalando.nakadiproducer.flowid.FlowIdComponent;
+import org.zalando.nakadiproducer.util.Fixture;
+import org.zalando.nakadiproducer.util.MockPayload;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -7,20 +19,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.zalando.nakadiproducer.flowid.FlowIdComponent;
-import org.zalando.nakadiproducer.util.Fixture;
-import org.zalando.nakadiproducer.util.MockPayload;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class EventLogWriterTest {
 
     @Mock
@@ -49,7 +48,7 @@ public class EventLogWriterTest {
     private static final String DATA_CHANGE_BODY_DATA = ("{'data_op':'{DATA_OP}','data_type':'nakadi:some-publisher','data':" + EVENT_BODY_DATA + "}").replace('\'', '"');
     private static final String PUBLISHER_DATA_TYPE = "nakadi:some-publisher";
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         eventPayload = Fixture.mockPayload(1, "mockedcode", true,
                 Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));

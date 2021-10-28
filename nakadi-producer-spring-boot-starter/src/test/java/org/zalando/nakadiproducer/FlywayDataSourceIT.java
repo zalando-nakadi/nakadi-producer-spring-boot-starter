@@ -1,20 +1,18 @@
 package org.zalando.nakadiproducer;
 
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
-
-import java.sql.SQLException;
-
-import javax.sql.DataSource;
-
-import org.junit.Test;
+import com.opentable.db.postgres.embedded.EmbeddedPostgres;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres;
+import javax.sql.DataSource;
+import java.sql.SQLException;
+
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
 
 @ContextConfiguration(classes=FlywayDataSourceIT.Config.class)
 public class FlywayDataSourceIT extends BaseMockedExternalCommunicationIT {

@@ -53,13 +53,13 @@
         <dependency>
             <groupId>org.zalando</groupId>
             <artifactId>tracer-core</artifactId>
-            <version>0.11.2</version>
+            <version>0.17.2</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.zalando.stups</groupId>
             <artifactId>tokens</artifactId>
-            <version>0.10.0</version>
+            <version>0.14.0</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -109,6 +109,15 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-actuator-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>5.3.12</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
     </dependencies>
 

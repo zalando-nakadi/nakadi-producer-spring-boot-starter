@@ -1,19 +1,17 @@
 package org.zalando.nakadiproducer.flowid;
 
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.zalando.tracer.Tracer;
 
-@RunWith(MockitoJUnitRunner.class)
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
 public class TracerFlowIdComponentTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)

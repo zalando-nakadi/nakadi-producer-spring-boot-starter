@@ -1,18 +1,16 @@
 package org.zalando.nakadiproducer.transmission;
 
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.is;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 public class MockNakadiPublishingClientTest {
 

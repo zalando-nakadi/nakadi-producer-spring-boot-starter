@@ -1,8 +1,8 @@
 package org.zalando.nakadiproducer;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,8 +43,8 @@ public class LockTimeoutIT extends BaseMockedExternalCommunicationIT {
     @Autowired
     private MockNakadiPublishingClient nakadiClient;
 
-    @Before
-    @After
+    @BeforeEach
+    @AfterEach
     public void clearNakadiEvents() {
         mockServiceClock(Instant.now());
         eventTransmitter.sendEvents();

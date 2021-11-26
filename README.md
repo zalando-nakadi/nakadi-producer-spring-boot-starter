@@ -148,7 +148,10 @@ If you do not use the STUPS Tokens library, you can implement token retrieval yo
 
 The typical use case for this library is to publish events like creating or updating of some objects.
 
-In order to store events you can autowire the [`EventLogWriter`](src/main/java/org/zalando/nakadiproducer/eventlog/EventLogWriter.java) service and use its methods: `fireCreateEvent`, `fireUpdateEvent`, `fireDeleteEvent`, `fireSnapshotEvent` or `fireBusinessEvent`.
+In order to store events you can autowire the [`EventLogWriter`](src/main/java/org/zalando/nakadiproducer/eventlog/EventLogWriter.java) 
+service and use its methods: `fireCreateEvent`, `fireUpdateEvent`, `fireDeleteEvent`, `fireSnapshotEvent` or `fireBusinessEvent`. 
+
+To store events in bulk the methods `fireCreateEvents`, `fireUpdateEvents`, `fireDeleteEvents`, `fireSnapshotEvents` or `fireBusinessEvents` can be used.
 
 You normally don't need to call `fireSnapshotEvent` directly, see below for [snapshot creation](#event-snapshots-optional).
 
@@ -202,6 +205,34 @@ It makes sense to use these methods in one transaction with corresponding object
 For business events, you have just two parameters, the **eventType** and the event **payload** object.
 You usually should fire those also in the same transaction as you are storing the results of the
 process step the event is reporting.
+
+Example of using `fireCreateEvents`:
+
+```java
+@Service
+public class SomeYourService {
+
+    @Autowired
+    private EventLogWriter eventLogWriter;
+
+    @Autowired
+    private WarehouseRepository repository;
+    
+    @Transactional
+    public void createObjects(Collections<Warehouse> data) {
+        
+        // here we store an object in a database table
+        repository.saveAll(data);
+
+        // then we group the data by dataType
+        Map<String, Collection<Object>> groupedData = Map.of("wholesale:warehouse", data);
+       
+        // and then in the same transaction we save the events about the object creation
+        eventLogWriter.fireCreateEvents("wholesale.warehouse-change-event", groupedData);
+    }
+}
+```
+
 
 
 ### Event snapshots (optional)

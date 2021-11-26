@@ -8,6 +8,7 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.zalando.nakadiproducer.BaseMockedExternalCommunicationIT;
 
 @Transactional
@@ -16,11 +17,16 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
     @Autowired
     private EventLogRepository eventLogRepository;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     private static final String WAREHOUSE_EVENT_BODY_DATA = (
-            "{'self':'http://WAREHOUSE_DOMAIN',"
+            "{"
+          + " 'self':'http://WAREHOUSE_DOMAIN',"
           + " 'code':'WH-DE-EF',"
           + " 'name':'Erfurt',"
-          + " 'address':{'name':'Zalando Logistics SE & Co.KG',"
+          + " 'address':{"
+          + "   'name':'Zalando Logistics SE & Co.KG',"
           + "   'street':'In der Hochstedter Ecke 1',"
           + "   'city':'Erfurt',"
           + "   'zip':'99098',"
@@ -44,11 +50,13 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
                 .eventType(WAREHOUSE_EVENT_TYPE)
                 .flowId("FLOW_ID").build();
         eventLogRepository.persist(eventLog);
-        id = eventLog.getId();
     }
 
     @Test
     public void findEventRepositoryId() {
+        Integer id = jdbcTemplate.queryForObject(
+            "SELECT id FROM nakadi_events.event_log WHERE flow_id = 'FLOW_ID'",
+            Integer.class);
         final EventLog eventLog = eventLogRepository.findOne(id);
         compareWithPersistedEvent(eventLog);
     }

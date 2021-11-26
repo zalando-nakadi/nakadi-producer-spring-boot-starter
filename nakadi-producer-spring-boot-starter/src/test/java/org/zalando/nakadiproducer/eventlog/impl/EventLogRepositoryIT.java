@@ -1,14 +1,14 @@
 package org.zalando.nakadiproducer.eventlog.impl;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+
+import javax.transaction.Transactional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zalando.nakadiproducer.BaseMockedExternalCommunicationIT;
-
-import javax.transaction.Transactional;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 
 @Transactional
 public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {

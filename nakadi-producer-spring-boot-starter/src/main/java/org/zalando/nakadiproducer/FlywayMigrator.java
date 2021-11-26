@@ -1,5 +1,8 @@
 package org.zalando.nakadiproducer;
 
+import javax.annotation.PostConstruct;
+import javax.sql.DataSource;
+
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.callback.BaseCallback;
 import org.flywaydb.core.api.callback.Context;
@@ -9,16 +12,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
 import org.springframework.boot.autoconfigure.flyway.FlywayProperties;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
-
-import javax.annotation.PostConstruct;
-import javax.sql.DataSource;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.flywaydb.core.api.callback.Event.*;
+import static org.flywaydb.core.api.callback.Event.AFTER_BASELINE;
+import static org.flywaydb.core.api.callback.Event.AFTER_CLEAN;
+import static org.flywaydb.core.api.callback.Event.AFTER_EACH_MIGRATE;
+import static org.flywaydb.core.api.callback.Event.AFTER_EACH_UNDO;
+import static org.flywaydb.core.api.callback.Event.AFTER_INFO;
+import static org.flywaydb.core.api.callback.Event.AFTER_MIGRATE;
+import static org.flywaydb.core.api.callback.Event.AFTER_REPAIR;
+import static org.flywaydb.core.api.callback.Event.AFTER_UNDO;
+import static org.flywaydb.core.api.callback.Event.AFTER_VALIDATE;
+import static org.flywaydb.core.api.callback.Event.BEFORE_BASELINE;
+import static org.flywaydb.core.api.callback.Event.BEFORE_CLEAN;
+import static org.flywaydb.core.api.callback.Event.BEFORE_EACH_MIGRATE;
+import static org.flywaydb.core.api.callback.Event.BEFORE_EACH_UNDO;
+import static org.flywaydb.core.api.callback.Event.BEFORE_INFO;
+import static org.flywaydb.core.api.callback.Event.BEFORE_MIGRATE;
+import static org.flywaydb.core.api.callback.Event.BEFORE_REPAIR;
+import static org.flywaydb.core.api.callback.Event.BEFORE_UNDO;
+import static org.flywaydb.core.api.callback.Event.BEFORE_VALIDATE;
 
 public class FlywayMigrator {
     @Autowired(required = false)

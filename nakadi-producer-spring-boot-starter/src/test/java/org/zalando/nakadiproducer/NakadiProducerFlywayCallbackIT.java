@@ -1,14 +1,16 @@
 package org.zalando.nakadiproducer;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.sql.Connection;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
-
-import java.sql.Connection;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
 
 public class NakadiProducerFlywayCallbackIT extends BaseMockedExternalCommunicationIT {
 

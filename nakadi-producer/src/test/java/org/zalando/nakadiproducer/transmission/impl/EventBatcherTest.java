@@ -14,12 +14,15 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class EventBatcherTest {
     private final ObjectMapper objectMapper = mock(ObjectMapper.class);
     private final Consumer<List<BatchItem>> publisher = mock(Consumer.class);
-    private EventBatcher eventBatcher = new EventBatcher(objectMapper, publisher);
+    private final EventBatcher eventBatcher = new EventBatcher(objectMapper, publisher);
 
     @Test
     public void shouldNotPublishEmptyBatches() {

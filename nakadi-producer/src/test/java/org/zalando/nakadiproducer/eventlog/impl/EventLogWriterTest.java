@@ -1,6 +1,12 @@
 package org.zalando.nakadiproducer.eventlog.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,12 +18,7 @@ import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ExtendWith(MockitoExtension.class)
 public class EventLogWriterTest {

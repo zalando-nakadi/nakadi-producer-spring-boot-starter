@@ -1,5 +1,20 @@
 package org.zalando.nakadiproducer.snapshots.impl;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_DATA_TYPE;
+import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
+
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,19 +27,6 @@ import org.zalando.nakadiproducer.snapshots.Snapshot;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
-
-import java.util.List;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.*;
-import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_DATA_TYPE;
-import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
 
 @ExtendWith(MockitoExtension.class)
 public class SnapshotCreationServiceTest {

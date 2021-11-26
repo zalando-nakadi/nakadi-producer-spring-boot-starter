@@ -1,5 +1,11 @@
 package org.zalando.nakadiproducer.snapshots;
 
+import static com.jayway.restassured.RestAssured.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +16,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ActiveProfiles;
 import org.zalando.nakadiproducer.TestApplication;
 import org.zalando.nakadiproducer.config.EmbeddedDataSourceConfig;
-
-import static com.jayway.restassured.RestAssured.given;
-import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @SpringBootTest(

@@ -1,16 +1,16 @@
 package org.zalando.nakadiproducer;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
+import java.sql.Connection;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.zalando.nakadiproducer.config.EmbeddedDataSourceConfig;
-
-import java.sql.Connection;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 
 @ActiveProfiles("test")
 @SpringBootTest(

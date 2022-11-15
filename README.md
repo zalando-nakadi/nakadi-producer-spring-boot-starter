@@ -335,8 +335,8 @@ until the lock expires. The default is currently 600 seconds but might change in
 buffer is included. During the last x seconds before the expiration of the lock the events are not considered for 
 transmission. The default is currently 60 seconds but might change in future releases.
 
-* **lock-size**: Defines the amount of events which are loaded into memory and published in one run.
-  By default, all events are loaded into memory.
+* **lock-size**: Defines the maximum amount of events which are loaded into memory and published in one run
+  (in one submission per event type). By default, all events are loaded into memory.
 
 ```yaml
 nakadi-producer:

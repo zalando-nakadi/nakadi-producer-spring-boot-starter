@@ -52,7 +52,7 @@ public class EventTransmissionServiceTest {
         repo = mock(EventLogRepository.class);
         publishingClient = spy(new MockNakadiPublishingClient());
         mapper = spy(new ObjectMapper());
-        service = new EventTransmissionService(repo, publishingClient, mapper, 0, 600, 60);
+        service = new EventTransmissionService(repo, publishingClient, mapper, 600, 60);
     }
 
     @Test

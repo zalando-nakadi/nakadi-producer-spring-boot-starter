@@ -13,10 +13,13 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 public class EventLogRepositoryImpl implements EventLogRepository {
-    private NamedParameterJdbcTemplate jdbcTemplate;
 
-    public EventLogRepositoryImpl(NamedParameterJdbcTemplate jdbcTemplate) {
+    private NamedParameterJdbcTemplate jdbcTemplate;
+    private int lockSize;
+
+    public EventLogRepositoryImpl(NamedParameterJdbcTemplate jdbcTemplate, int lockSize) {
         this.jdbcTemplate = jdbcTemplate;
+        this.lockSize = lockSize;
     }
 
     @Override
@@ -32,7 +35,7 @@ public class EventLogRepositoryImpl implements EventLogRepository {
     }
 
     @Override
-    public void lockSomeMessages(String lockId, int lockSize, Instant now, Instant lockExpires) {
+    public void lockSomeMessages(String lockId, Instant now, Instant lockExpires) {
         Map<String, Object> namedParameterMap = new HashMap<>();
         namedParameterMap.put("lockId", lockId);
         namedParameterMap.put("now", toSqlTimestamp(now));

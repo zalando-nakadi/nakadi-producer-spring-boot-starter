@@ -133,8 +133,9 @@ public class NakadiProducerAutoConfiguration {
     }
 
     @Bean
-    public EventLogRepository eventLogRepository(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        return new EventLogRepositoryImpl(namedParameterJdbcTemplate);
+    public EventLogRepository eventLogRepository(NamedParameterJdbcTemplate namedParameterJdbcTemplate,
+        @Value("${nakadi-producer.lock-size:0}") int lockSize) {
+        return new EventLogRepositoryImpl(namedParameterJdbcTemplate, lockSize);
     }
 
     @Bean
@@ -153,11 +154,10 @@ public class NakadiProducerAutoConfiguration {
       EventLogRepository eventLogRepository,
       NakadiPublishingClient nakadiPublishingClient,
       ObjectMapper objectMapper,
-      @Value("${nakadi-producer.lock-size:0}") int lockSize,
       @Value("${nakadi-producer.lock-duration:600}") int lockDuration,
       @Value("${nakadi-producer.lock-duration-buffer:60}") int lockDurationBuffer) {
     return new EventTransmissionService(
-        eventLogRepository, nakadiPublishingClient, objectMapper, lockSize, lockDuration, lockDurationBuffer);
+        eventLogRepository, nakadiPublishingClient, objectMapper, lockDuration, lockDurationBuffer);
   }
 
     @Bean

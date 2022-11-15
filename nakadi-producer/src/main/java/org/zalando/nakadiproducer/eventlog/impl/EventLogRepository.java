@@ -6,7 +6,7 @@ import java.util.Collection;
 public interface EventLogRepository {
     Collection<EventLog> findByLockedByAndLockedUntilGreaterThan(String lockedBy, Instant lockedUntil);
 
-    void lockSomeMessages(String lockId, int lockSize, Instant now, Instant lockExpires);
+    void lockSomeMessages(String lockId, Instant now, Instant lockExpires);
 
     void delete(EventLog eventLog);
 

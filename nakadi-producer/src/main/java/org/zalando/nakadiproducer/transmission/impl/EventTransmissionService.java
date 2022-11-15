@@ -31,19 +31,16 @@ public class EventTransmissionService {
     private final EventLogRepository eventLogRepository;
     private final NakadiPublishingClient nakadiPublishingClient;
     private final ObjectMapper objectMapper;
-    private final int lockSize;
     private final int lockDuration;
     private final int lockDurationBuffer;
 
     private Clock clock = Clock.systemDefaultZone();
 
-    public EventTransmissionService(EventLogRepository eventLogRepository,
-        NakadiPublishingClient nakadiPublishingClient, ObjectMapper objectMapper, int lockSize,
-        int lockDuration, int lockDurationBuffer) {
+    public EventTransmissionService(EventLogRepository eventLogRepository, NakadiPublishingClient nakadiPublishingClient, ObjectMapper objectMapper,
+    int lockDuration, int lockDurationBuffer) {
         this.eventLogRepository = eventLogRepository;
         this.nakadiPublishingClient = nakadiPublishingClient;
         this.objectMapper = objectMapper;
-        this.lockSize = lockSize;
         this.lockDuration = lockDuration;
         this.lockDurationBuffer = lockDurationBuffer;
     }
@@ -51,9 +48,8 @@ public class EventTransmissionService {
     @Transactional
     public Collection<EventLog> lockSomeEvents() {
         String lockId = UUID.randomUUID().toString();
-        log.debug("Locking {} events for replication with lockId {} for {} seconds", lockSize,
-            lockId, lockDuration);
-        eventLogRepository.lockSomeMessages(lockId, lockSize, now(), now().plus(lockDuration, SECONDS));
+        log.debug("Locking events for replication with lockId {} for {} seconds", lockId, lockDuration);
+        eventLogRepository.lockSomeMessages(lockId, now(), now().plus(lockDuration, SECONDS));
         return eventLogRepository.findByLockedByAndLockedUntilGreaterThan(lockId, now());
     }
 

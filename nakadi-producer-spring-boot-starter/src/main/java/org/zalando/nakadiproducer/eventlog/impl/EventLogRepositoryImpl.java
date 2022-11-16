@@ -13,10 +13,13 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 public class EventLogRepositoryImpl implements EventLogRepository {
-    private NamedParameterJdbcTemplate jdbcTemplate;
 
-    public EventLogRepositoryImpl(NamedParameterJdbcTemplate jdbcTemplate) {
+    private NamedParameterJdbcTemplate jdbcTemplate;
+    private int lockSize;
+
+    public EventLogRepositoryImpl(NamedParameterJdbcTemplate jdbcTemplate, int lockSize) {
         this.jdbcTemplate = jdbcTemplate;
+        this.lockSize = lockSize;
     }
 
     @Override
@@ -37,8 +40,21 @@ public class EventLogRepositoryImpl implements EventLogRepository {
         namedParameterMap.put("lockId", lockId);
         namedParameterMap.put("now", toSqlTimestamp(now));
         namedParameterMap.put("lockExpires", toSqlTimestamp(lockExpires));
+
+        StringBuilder optionalLockSizeClause = new StringBuilder();
+        if (lockSize > 0) {
+          optionalLockSizeClause.append("LIMIT :lockSize");
+          namedParameterMap.put("lockSize", lockSize);
+        }
+
         jdbcTemplate.update(
-            "UPDATE nakadi_events.event_log SET locked_by = :lockId, locked_until = :lockExpires where locked_until is null or locked_until < :now",
+            "UPDATE nakadi_events.event_log "
+                + "SET locked_by = :lockId, locked_until = :lockExpires "
+                + "WHERE id IN (SELECT id "
+                + "             FROM nakadi_events.event_log "
+                + "             WHERE locked_until IS null OR locked_until < :now "
+                + optionalLockSizeClause
+                + "             FOR UPDATE SKIP LOCKED) ",
             namedParameterMap
         );
     }

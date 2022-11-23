@@ -1,5 +1,6 @@
 package org.zalando.nakadiproducer.eventlog;
 
+import java.util.Collection;
 import javax.transaction.Transactional;
 
 import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
@@ -42,6 +43,27 @@ public interface EventLogWriter {
     @Transactional
     void fireCreateEvent(String eventType, String dataType, Object data);
 
+  /**
+   * Fires data change events about the creation of some resources (objects), see
+   * {@link #fireCreateEvent(String, String, Object) fireCreateEvent} for more details.
+   *
+   * @param eventType
+   *            the Nakadi event type of the event. This is roughly equivalent
+   *            to an event channel or topic.
+   *
+   * @param dataType
+   *            the content of the {@code data_type} field of the Nakadi
+   *            event
+   *
+   * @param data
+   *            some POJOs that can be serialized into JSON (required
+   *            parameter). This is meant to be a representation of the
+   *            current state of the resource. It will be used as content of
+   *            the {@code data} field of the Nakadi event.
+   */
+    @Transactional
+    void fireCreateEvents(String eventType, String dataType, Collection<Object> data);
+
     /**
      * Fires a data change event about an update of some resource (object).
      *
@@ -61,6 +83,27 @@ public interface EventLogWriter {
      */
     @Transactional
     void fireUpdateEvent(String eventType, String dataType, Object data);
+
+  /**
+   * Fires data change events about the update of some resources (objects), see
+   * {@link #fireUpdateEvent(String, String, Object) fireUpdateEvent} for more details.
+   *
+   * @param eventType
+   *            the Nakadi event type of the event. This is roughly equivalent
+   *            to an event channel or topic.
+   *
+   * @param dataType
+   *            the content of the {@code data_type} field of the Nakadi
+   *            event
+   *
+   * @param data
+   *            some POJOs that can be serialized into JSON (required
+   *            parameter). This is meant to be a representation of the
+   *            current state of the resource. It will be used as content of
+   *            the {@code data} field of the Nakadi event.
+   */
+    @Transactional
+    void fireUpdateEvents(String eventType, String dataType, Collection<Object> data);
 
     /**
      * Fires a data change event about the deletion of some resource (object).
@@ -82,6 +125,27 @@ public interface EventLogWriter {
      */
     @Transactional
     void fireDeleteEvent(String eventType, String dataType, Object data);
+
+  /**
+   * Fires data change events about the deletion of some resources (objects), see
+   * {@link #fireDeleteEvent(String, String, Object) fireDeleteEvent} for more details.
+   *
+   * @param eventType
+   *            the Nakadi event type of the event. This is roughly equivalent
+   *            to an event channel or topic.
+   *
+   * @param dataType
+   *            the content of the {@code data_type} field of the Nakadi
+   *            event
+   *
+   * @param data
+   *            some POJOs that can be serialized into JSON (required
+   *            parameter). This is meant to be a representation of the
+   *            current state of the resource. It will be used as content of
+   *            the {@code data} field of the Nakadi event.
+   */
+    @Transactional
+    void fireDeleteEvents(String eventType, String dataType, Collection<Object> data);
 
     /**
      * Fires a data change event with a snapshot of some resource (object).
@@ -115,6 +179,27 @@ public interface EventLogWriter {
     @Transactional
     void fireSnapshotEvent(String eventType, String dataType, Object data);
 
+  /**
+   * Fires data change events, see {@link #fireSnapshotEvent(String, String, Object)
+   * fireSnapshotEvent} for more details.
+   *
+   * @param eventType
+   *            the Nakadi event type of the event. This is roughly equivalent
+   *            to an event channel or topic.
+   *
+   * @param dataType
+   *            the content of the {@code data_type} field of the Nakadi
+   *            event
+   *
+   * @param data
+   *            some POJOs that can be serialized into JSON (required
+   *            parameter). This is meant to be a representation of the
+   *            current state of the resource. It will be used as content of
+   *            the {@code data} field of the Nakadi event.
+   */
+    @Transactional
+    void fireSnapshotEvents(String eventType, String dataType, Collection<Object> data);
+
     /**
      * Fires a business event, i.e. an event communicating the fact that some
      * business process step happened. The payload object will be used as the
@@ -132,4 +217,19 @@ public interface EventLogWriter {
      */
     @Transactional
     void fireBusinessEvent(String eventType, Object payload);
+
+  /**
+   * Fires business events, see {@link #fireBusinessEvent(String, Object) fireBusinessEvent} for
+   * more details
+   *
+   * @param eventType
+   *            the Nakadi event type of the event. This is roughly equivalent
+   *            to an event channel or topic.
+   *
+   * @param payloads
+   *            some POJOs that can be serialized into JSON (required
+   *            parameter)
+   */
+    @Transactional
+    void fireBusinessEvents(String eventType, Collection<Object> payloads);
 }

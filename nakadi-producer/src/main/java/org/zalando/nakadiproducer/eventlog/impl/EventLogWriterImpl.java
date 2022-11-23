@@ -6,7 +6,6 @@ import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.SNAPSH
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.UPDATE;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
@@ -38,8 +37,8 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
-    public void fireCreateEvents(final String eventType, final Map<String, Collection<Object>> dataTypeToData) {
-      eventLogRepository.persist(createEventLogs(eventType, CREATE, dataTypeToData));
+    public void fireCreateEvents(final String eventType, final String dataType, final Collection<Object> data) {
+      eventLogRepository.persist(createEventLogs(eventType, CREATE, dataType, data));
     }
 
     @Override
@@ -51,8 +50,8 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
-    public void fireUpdateEvents(final String eventType, final Map<String, Collection<Object>> dataTypeToData) {
-      eventLogRepository.persist(createEventLogs(eventType, UPDATE, dataTypeToData));
+    public void fireUpdateEvents(final String eventType, final String dataType, final Collection<Object> data) {
+      eventLogRepository.persist(createEventLogs(eventType, UPDATE, dataType, data));
     }
 
     @Override
@@ -64,8 +63,8 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
-    public void fireDeleteEvents(final String eventType, final Map<String, Collection<Object>> dataTypeToData) {
-      eventLogRepository.persist(createEventLogs(eventType, DELETE, dataTypeToData));
+    public void fireDeleteEvents(final String eventType, final String dataType, final Collection<Object> data) {
+      eventLogRepository.persist(createEventLogs(eventType, DELETE, dataType, data));
     }
 
     @Override
@@ -77,8 +76,8 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
-    public void fireSnapshotEvents(final String eventType, final Map<String, Collection<Object>> dataTypeToData) {
-      eventLogRepository.persist(createEventLogs(eventType, SNAPSHOT, dataTypeToData));
+    public void fireSnapshotEvents(final String eventType, final String dataType, final Collection<Object> data) {
+      eventLogRepository.persist(createEventLogs(eventType, SNAPSHOT, dataType, data));
     }
 
     @Override
@@ -118,15 +117,12 @@ public class EventLogWriterImpl implements EventLogWriter {
   private Collection<EventLog> createEventLogs(
       final String eventType,
       final EventDataOperation eventDataOperation,
-      final Map<String, Collection<Object>> dataTypeToData
+      final String dataType,
+      final Collection<Object> data
   ) {
-    return dataTypeToData.entrySet().stream()
-        .flatMap(entry -> entry.getValue()
-            .stream()
-            .map(data -> createEventLog(
-                eventType,
-                new DataChangeEventEnvelope(eventDataOperation.toString(), entry.getKey(), data)
-            )))
+    return data.stream()
+        .map(payload -> createEventLog(eventType,
+            new DataChangeEventEnvelope(eventDataOperation.toString(), dataType, payload)))
         .collect(Collectors.toList());
   }
 

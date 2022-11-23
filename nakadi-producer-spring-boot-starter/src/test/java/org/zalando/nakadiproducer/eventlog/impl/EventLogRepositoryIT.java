@@ -40,10 +40,8 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
 
     private final String WAREHOUSE_EVENT_TYPE = "wholesale.warehouse-change-event";
 
-    private Integer id;
-
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         eventLogRepository.deleteAll();
 
         final EventLog eventLog = EventLog.builder().eventBodyData(WAREHOUSE_EVENT_BODY_DATA)

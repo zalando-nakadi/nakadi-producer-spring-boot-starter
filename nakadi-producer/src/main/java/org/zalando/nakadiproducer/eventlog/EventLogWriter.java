@@ -1,7 +1,6 @@
 package org.zalando.nakadiproducer.eventlog;
 
 import java.util.Collection;
-import java.util.Map;
 import javax.transaction.Transactional;
 
 import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
@@ -52,15 +51,18 @@ public interface EventLogWriter {
    *            the Nakadi event type of the event. This is roughly equivalent
    *            to an event channel or topic.
    *
-   * @param dataTypeToData
+   * @param dataType
    *            the content of the {@code data_type} field of the Nakadi
-   *            event mapped to some POJOs that can be serialized into JSON (required
+   *            event
+   *
+   * @param data
+   *            some POJOs that can be serialized into JSON (required
    *            parameter). This is meant to be a representation of the
    *            current state of the resource. It will be used as content of
    *            the {@code data} field of the Nakadi event.
    */
     @Transactional
-    void fireCreateEvents(String eventType, Map<String, Collection<Object>> dataTypeToData);
+    void fireCreateEvents(String eventType, String dataType, Collection<Object> data);
 
     /**
      * Fires a data change event about an update of some resource (object).
@@ -90,15 +92,18 @@ public interface EventLogWriter {
    *            the Nakadi event type of the event. This is roughly equivalent
    *            to an event channel or topic.
    *
-   * @param dataTypeToData
+   * @param dataType
    *            the content of the {@code data_type} field of the Nakadi
-   *            event mapped to some POJOs that can be serialized into JSON (required
+   *            event
+   *
+   * @param data
+   *            some POJOs that can be serialized into JSON (required
    *            parameter). This is meant to be a representation of the
    *            current state of the resource. It will be used as content of
    *            the {@code data} field of the Nakadi event.
    */
     @Transactional
-    void fireUpdateEvents(String eventType, Map<String, Collection<Object>> dataTypeToData);
+    void fireUpdateEvents(String eventType, String dataType, Collection<Object> data);
 
     /**
      * Fires a data change event about the deletion of some resource (object).
@@ -129,15 +134,18 @@ public interface EventLogWriter {
    *            the Nakadi event type of the event. This is roughly equivalent
    *            to an event channel or topic.
    *
-   * @param dataTypeToData
+   * @param dataType
    *            the content of the {@code data_type} field of the Nakadi
-   *            event mapped to some POJOs that can be serialized into JSON (required
+   *            event
+   *
+   * @param data
+   *            some POJOs that can be serialized into JSON (required
    *            parameter). This is meant to be a representation of the
    *            current state of the resource. It will be used as content of
    *            the {@code data} field of the Nakadi event.
    */
     @Transactional
-    void fireDeleteEvents(String eventType, Map<String, Collection<Object>> dataTypeToData);
+    void fireDeleteEvents(String eventType, String dataType, Collection<Object> data);
 
     /**
      * Fires a data change event with a snapshot of some resource (object).
@@ -179,15 +187,18 @@ public interface EventLogWriter {
    *            the Nakadi event type of the event. This is roughly equivalent
    *            to an event channel or topic.
    *
-   * @param dataTypeToData
+   * @param dataType
    *            the content of the {@code data_type} field of the Nakadi
-   *            event mapped to some POJOs that can be serialized into JSON (required
+   *            event
+   *
+   * @param data
+   *            some POJOs that can be serialized into JSON (required
    *            parameter). This is meant to be a representation of the
    *            current state of the resource. It will be used as content of
    *            the {@code data} field of the Nakadi event.
    */
     @Transactional
-    void fireSnapshotEvents(String eventType, Map<String, Collection<Object>> dataTypeToData);
+    void fireSnapshotEvents(String eventType, String dataType, Collection<Object> data);
 
     /**
      * Fires a business event, i.e. an event communicating the fact that some

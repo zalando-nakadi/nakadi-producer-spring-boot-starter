@@ -9,11 +9,8 @@ import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,6 +22,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mockito;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
@@ -79,7 +77,6 @@ public class EventLogWriterTest {
           + "}").replace('\'', '"');
 
   private static final String PUBLISHER_DATA_TYPE_1 = "nakadi:some-publisher";
-  private static final String PUBLISHER_DATA_TYPE_2 = "nakadi:some-publisher2";
 
   private static final String DATA_CHANGE_BODY_DATA_1 = ("{'data_op':'{DATA_OP}','data_type':'" +
       PUBLISHER_DATA_TYPE_1 + "','data':" + EVENT_BODY_DATA_1
@@ -90,13 +87,15 @@ public class EventLogWriterTest {
       + "}").replace('\'', '"');
 
   private static final String DATA_CHANGE_BODY_DATA_3 = ("{'data_op':'{DATA_OP}','data_type':'" +
-      PUBLISHER_DATA_TYPE_2 + "','data':" + EVENT_BODY_DATA_3
+      PUBLISHER_DATA_TYPE_1 + "','data':" + EVENT_BODY_DATA_3
       + "}").replace('\'', '"');
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @BeforeEach
   public void setUp() {
+    Mockito.reset(eventLogRepository, flowIdComponent);
+
     eventPayload1 = Fixture.mockPayload(1, "mockedcode1", true,
         Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
 
@@ -128,11 +127,11 @@ public class EventLogWriterTest {
 
   @Test
   public void testFireCreateEvents() {
-    Map<String, Collection<Object>> groupedData = new HashMap<>();
-    groupedData.put(PUBLISHER_DATA_TYPE_1, Arrays.asList(eventPayload1, eventPayload2));
-    groupedData.put(PUBLISHER_DATA_TYPE_2, Collections.singletonList(eventPayload3));
-
-    eventLogWriter.fireCreateEvents(PUBLISHER_EVENT_TYPE, groupedData);
+    eventLogWriter.fireCreateEvents(
+        PUBLISHER_EVENT_TYPE,
+        PUBLISHER_DATA_TYPE_1,
+        Arrays.asList(eventPayload1, eventPayload2, eventPayload3)
+    );
     verify(eventLogRepository).persist(eventLogsCapture.capture());
 
     verifyEventLogs("C", new HashSet<>(eventLogsCapture.getValue()));
@@ -154,11 +153,11 @@ public class EventLogWriterTest {
 
   @Test
   public void testFireUpdateEvents() {
-    Map<String, Collection<Object>> groupedData = new HashMap<>();
-    groupedData.put(PUBLISHER_DATA_TYPE_1, Arrays.asList(eventPayload1, eventPayload2));
-    groupedData.put(PUBLISHER_DATA_TYPE_2, Collections.singletonList(eventPayload3));
-
-    eventLogWriter.fireUpdateEvents(PUBLISHER_EVENT_TYPE, groupedData);
+    eventLogWriter.fireUpdateEvents(
+        PUBLISHER_EVENT_TYPE,
+        PUBLISHER_DATA_TYPE_1,
+        Arrays.asList(eventPayload1, eventPayload2, eventPayload3)
+    );
     verify(eventLogRepository).persist(eventLogsCapture.capture());
 
     verifyEventLogs("U", new HashSet<>(eventLogsCapture.getValue()));
@@ -180,11 +179,10 @@ public class EventLogWriterTest {
 
   @Test
   public void testFireDeleteEvents() {
-    Map<String, Collection<Object>> groupedData = new HashMap<>();
-    groupedData.put(PUBLISHER_DATA_TYPE_1, Arrays.asList(eventPayload1, eventPayload2));
-    groupedData.put(PUBLISHER_DATA_TYPE_2, Collections.singletonList(eventPayload3));
-
-    eventLogWriter.fireDeleteEvents(PUBLISHER_EVENT_TYPE, groupedData);
+    eventLogWriter.fireDeleteEvents(
+        PUBLISHER_EVENT_TYPE,
+        PUBLISHER_DATA_TYPE_1,
+        Arrays.asList(eventPayload1, eventPayload2, eventPayload3));
     verify(eventLogRepository).persist(eventLogsCapture.capture());
 
     verifyEventLogs("D", new HashSet<>(eventLogsCapture.getValue()));
@@ -206,11 +204,10 @@ public class EventLogWriterTest {
 
   @Test
   public void testFireSnapshotEvents() {
-    Map<String, Collection<Object>> groupedData = new HashMap<>();
-    groupedData.put(PUBLISHER_DATA_TYPE_1, Arrays.asList(eventPayload1, eventPayload2));
-    groupedData.put(PUBLISHER_DATA_TYPE_2, Collections.singletonList(eventPayload3));
-
-    eventLogWriter.fireSnapshotEvents(PUBLISHER_EVENT_TYPE, groupedData);
+    eventLogWriter.fireSnapshotEvents(
+        PUBLISHER_EVENT_TYPE,
+        PUBLISHER_DATA_TYPE_1,
+        Arrays.asList(eventPayload1, eventPayload2, eventPayload3));
     verify(eventLogRepository).persist(eventLogsCapture.capture());
 
     verifyEventLogs("S", new HashSet<>(eventLogsCapture.getValue()));

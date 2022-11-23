@@ -206,35 +206,6 @@ For business events, you have just two parameters, the **eventType** and the eve
 You usually should fire those also in the same transaction as you are storing the results of the
 process step the event is reporting.
 
-Example of using `fireCreateEvents`:
-
-```java
-@Service
-public class SomeYourService {
-
-    @Autowired
-    private EventLogWriter eventLogWriter;
-
-    @Autowired
-    private WarehouseRepository repository;
-    
-    @Transactional
-    public void createObjects(Collections<Warehouse> data) {
-        
-        // here we store an object in a database table
-        repository.saveAll(data);
-
-        // then we group the data by dataType
-        Map<String, Collection<Object>> groupedData = Map.of("wholesale:warehouse", data);
-       
-        // and then in the same transaction we save the events about the object creation
-        eventLogWriter.fireCreateEvents("wholesale.warehouse-change-event", groupedData);
-    }
-}
-```
-
-
-
 ### Event snapshots (optional)
 
 A Snapshot event is a special type of data change event (data operation) defined by Nakadi.

@@ -126,7 +126,7 @@ public class EventTransmissionService {
     private boolean lockNearlyExpired(EventLog eventLog) {
         // since clocks never work exactly synchronous and sending the event also takes some time, we include a safety
         // buffer here. This is still not 100% precise, but since we require events to be consumed idempotent, sending
-        // one event twice wont hurt much.
+        // one event twice won't hurt much.
         return now().isAfter(eventLog.getLockedUntil().minus(lockDurationBuffer, SECONDS));
     }
 
@@ -137,6 +137,7 @@ public class EventTransmissionService {
         metadata.setEid(convertToUUID(event.getId()));
         metadata.setOccuredAt(event.getCreated());
         metadata.setFlowId(event.getFlowId());
+        metadata.setPartitionCompactionKey(event.getCompactionKey());
         nakadiEvent.setMetadata(metadata);
 
         LinkedHashMap<String, Object> payloadDTO = objectMapper.readValue(event.getEventBodyData(), new TypeReference<LinkedHashMap<String, Object>>() { });

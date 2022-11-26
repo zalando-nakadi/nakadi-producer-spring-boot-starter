@@ -25,5 +25,5 @@ public class EventLog {
     private Instant lastModified;
     private String lockedBy;
     private Instant lockedUntil;
-
+    private String compactionKey;
 }

@@ -37,7 +37,7 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
-    public void fireCreateEvents(final String eventType, final String dataType, final Collection<Object> data) {
+    public void fireCreateEvents(final String eventType, final String dataType, final Collection<?> data) {
       eventLogRepository.persist(createEventLogs(eventType, CREATE, dataType, data));
     }
 
@@ -50,7 +50,7 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
-    public void fireUpdateEvents(final String eventType, final String dataType, final Collection<Object> data) {
+    public void fireUpdateEvents(final String eventType, final String dataType, final Collection<?> data) {
       eventLogRepository.persist(createEventLogs(eventType, UPDATE, dataType, data));
     }
 
@@ -63,7 +63,7 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
-    public void fireDeleteEvents(final String eventType, final String dataType, final Collection<Object> data) {
+    public void fireDeleteEvents(final String eventType, final String dataType, final Collection<?> data) {
       eventLogRepository.persist(createEventLogs(eventType, DELETE, dataType, data));
     }
 
@@ -76,7 +76,7 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
-    public void fireSnapshotEvents(final String eventType, final String dataType, final Collection<Object> data) {
+    public void fireSnapshotEvents(final String eventType, final String dataType, final Collection<?> data) {
       eventLogRepository.persist(createEventLogs(eventType, SNAPSHOT, dataType, data));
     }
 
@@ -118,7 +118,7 @@ public class EventLogWriterImpl implements EventLogWriter {
       final String eventType,
       final EventDataOperation eventDataOperation,
       final String dataType,
-      final Collection<Object> data
+      final Collection<?> data
   ) {
     return data.stream()
         .map(payload -> createEventLog(eventType,

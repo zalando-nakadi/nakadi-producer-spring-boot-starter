@@ -13,9 +13,9 @@ public interface EventLogRepository {
     void persist(EventLog eventLog);
 
     default void persist(Collection<EventLog> eventLogs) {
-      for (EventLog eventLog : eventLogs) {
-        persist(eventLog);
-      }
+        for (EventLog eventLog : eventLogs) {
+            persist(eventLog);
+        }
     }
 
     void deleteAll();

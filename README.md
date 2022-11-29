@@ -42,7 +42,8 @@ You may of course always setup a fresh system with the newest version.
 
 ## Prerequisites
 
-This library was tested with Spring Boot 2.5.6.RELEASE and Flyway 7. It relies on an existing configured PostgreSQL DataSource. 
+This library was tested with Java 11 (starting with 21.0.0), Spring Boot 2.5.6.RELEASE and Flyway 7.
+It relies on an existing configured PostgreSQL DataSource. 
 **If you are still using Spring Boot 1.x, please use versions < 20.0.0, they are still actively maintained ([Documentation](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/tree/spring-boot-1)).**
 
 This library also uses:

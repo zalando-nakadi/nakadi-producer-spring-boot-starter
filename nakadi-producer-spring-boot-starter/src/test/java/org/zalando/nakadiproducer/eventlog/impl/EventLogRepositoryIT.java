@@ -8,6 +8,7 @@ import javax.transaction.Transactional;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.zalando.nakadiproducer.BaseMockedExternalCommunicationIT;
 
 @Transactional
@@ -15,6 +16,9 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
 
     @Autowired
     private EventLogRepositoryImpl eventLogRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private static final String WAREHOUSE_EVENT_BODY_DATA =
             ("{'self':'http://WAREHOUSE_DOMAIN',"
@@ -34,21 +38,21 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
 
     private final String WAREHOUSE_EVENT_TYPE = "wholesale.warehouse-change-event";
 
-    private Integer id;
-
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         eventLogRepository.deleteAll();
 
         final EventLog eventLog = EventLog.builder().eventBodyData(WAREHOUSE_EVENT_BODY_DATA)
                                                                      .eventType(WAREHOUSE_EVENT_TYPE)
                                                                      .flowId("FLOW_ID").build();
         eventLogRepository.persist(eventLog);
-        id = eventLog.getId();
     }
 
     @Test
     public void findEventRepositoryId() {
+        Integer id = jdbcTemplate.queryForObject(
+            "SELECT id FROM nakadi_events.event_log WHERE flow_id = 'FLOW_ID'",
+            Integer.class);
         final EventLog eventLog = eventLogRepository.findOne(id);
         compareWithPersistedEvent(eventLog);
     }

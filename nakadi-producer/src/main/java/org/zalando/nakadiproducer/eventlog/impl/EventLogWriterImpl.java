@@ -1,9 +1,12 @@
 package org.zalando.nakadiproducer.eventlog.impl;
 
+import static java.util.stream.Collectors.toList;
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.CREATE;
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.DELETE;
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.SNAPSHOT;
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.UPDATE;
+
+import java.util.Collection;
 
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
@@ -35,9 +38,21 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
+    public void fireCreateEvents(final String eventType, final String dataType, final Collection<?> data) {
+        eventLogRepository.persist(createEventLogs(eventType, CREATE, dataType, data));
+    }
+
+    @Override
+    @Transactional
     public void fireUpdateEvent(final String eventType, final String dataType, final Object data) {
         final EventLog eventLog = createEventLog(eventType, new DataChangeEventEnvelope(UPDATE.toString(), dataType, data));
         eventLogRepository.persist(eventLog);
+    }
+
+    @Override
+    @Transactional
+    public void fireUpdateEvents(final String eventType, final String dataType, final Collection<?> data) {
+        eventLogRepository.persist(createEventLogs(eventType, UPDATE, dataType, data));
     }
 
     @Override
@@ -49,6 +64,12 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
+    public void fireDeleteEvents(final String eventType, final String dataType, final Collection<?> data) {
+        eventLogRepository.persist(createEventLogs(eventType, DELETE, dataType, data));
+    }
+
+    @Override
+    @Transactional
     public void fireSnapshotEvent(final String eventType, final String dataType, final Object data) {
         final EventLog eventLog = createEventLog(eventType, new DataChangeEventEnvelope(SNAPSHOT.toString(), dataType, data));
         eventLogRepository.persist(eventLog);
@@ -56,9 +77,29 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
+    public void fireSnapshotEvents(final String eventType, final String dataType, final Collection<?> data) {
+        eventLogRepository.persist(createEventLogs(eventType, SNAPSHOT, dataType, data));
+    }
+
+    @Override
+    @Transactional
     public void fireBusinessEvent(final String eventType, Object payload) {
         final EventLog eventLog = createEventLog(eventType, payload);
         eventLogRepository.persist(eventLog);
+    }
+
+    @Override
+    @Transactional
+    public void fireBusinessEvents(final String eventType, final Collection<Object> payload) {
+        final Collection<EventLog> eventLogs = createEventLogs(eventType, payload);
+        eventLogRepository.persist(eventLogs);
+    }
+
+    private Collection<EventLog> createEventLogs(final String eventType,
+                                                 final Collection<Object> eventPayloads) {
+        return eventPayloads.stream()
+                .map(payload -> createEventLog(eventType, payload))
+                .collect(toList());
     }
 
     private EventLog createEventLog(final String eventType, final Object eventPayload) {
@@ -72,6 +113,18 @@ public class EventLogWriterImpl implements EventLogWriter {
 
         eventLog.setFlowId(flowIdComponent.getXFlowIdValue());
         return eventLog;
+    }
+
+    private Collection<EventLog> createEventLogs(
+            final String eventType,
+            final EventDataOperation eventDataOperation,
+            final String dataType,
+            final Collection<?> data
+    ) {
+        return data.stream()
+                .map(payload -> createEventLog(eventType,
+                        new DataChangeEventEnvelope(eventDataOperation.toString(), dataType, payload)))
+                .collect(toList());
     }
 
 }

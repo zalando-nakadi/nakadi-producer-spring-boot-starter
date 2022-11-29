@@ -2,7 +2,7 @@ package org.zalando.nakadiproducer.snapshots.impl;
 
 import static java.util.Collections.unmodifiableSet;
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
 
 import java.util.List;
 import java.util.Map;
@@ -50,10 +50,12 @@ public class SnapshotCreationService {
                 break;
             }
 
-            for (final Snapshot snapshot : snapshots) {
-                eventLogWriter.fireSnapshotEvent(eventType, snapshot.getDataType(), snapshot.getData());
-                lastProcessedId = snapshot.getId();
-            }
+            snapshots.stream()
+                    .collect(groupingBy(Snapshot::getDataType, mapping(Snapshot::getData, toList())))
+                    .forEach((dataType, snapshotPartition) ->
+                            eventLogWriter.fireSnapshotEvents(eventType, dataType, snapshotPartition));
+
+            lastProcessedId = snapshots.get(snapshots.size()-1).getId();
         } while (true);
     }
 

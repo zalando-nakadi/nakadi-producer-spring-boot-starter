@@ -1,12 +1,13 @@
 package org.zalando.nakadiproducer.eventlog.impl;
 
+import static java.util.stream.Collectors.toList;
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.CREATE;
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.DELETE;
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.SNAPSHOT;
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.UPDATE;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
+
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 
@@ -37,8 +38,8 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
-    public void fireCreateEvents(final String eventType, final String dataType, final Collection<Object> data) {
-      eventLogRepository.persist(createEventLogs(eventType, CREATE, dataType, data));
+    public void fireCreateEvents(final String eventType, final String dataType, final Collection<?> data) {
+        eventLogRepository.persist(createEventLogs(eventType, CREATE, dataType, data));
     }
 
     @Override
@@ -50,8 +51,8 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
-    public void fireUpdateEvents(final String eventType, final String dataType, final Collection<Object> data) {
-      eventLogRepository.persist(createEventLogs(eventType, UPDATE, dataType, data));
+    public void fireUpdateEvents(final String eventType, final String dataType, final Collection<?> data) {
+        eventLogRepository.persist(createEventLogs(eventType, UPDATE, dataType, data));
     }
 
     @Override
@@ -63,8 +64,8 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
-    public void fireDeleteEvents(final String eventType, final String dataType, final Collection<Object> data) {
-      eventLogRepository.persist(createEventLogs(eventType, DELETE, dataType, data));
+    public void fireDeleteEvents(final String eventType, final String dataType, final Collection<?> data) {
+        eventLogRepository.persist(createEventLogs(eventType, DELETE, dataType, data));
     }
 
     @Override
@@ -76,8 +77,8 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
-    public void fireSnapshotEvents(final String eventType, final String dataType, final Collection<Object> data) {
-      eventLogRepository.persist(createEventLogs(eventType, SNAPSHOT, dataType, data));
+    public void fireSnapshotEvents(final String eventType, final String dataType, final Collection<?> data) {
+        eventLogRepository.persist(createEventLogs(eventType, SNAPSHOT, dataType, data));
     }
 
     @Override
@@ -95,10 +96,10 @@ public class EventLogWriterImpl implements EventLogWriter {
     }
 
     private Collection<EventLog> createEventLogs(final String eventType,
-        final Collection<Object> eventPayloads) {
-      return eventPayloads.stream()
-          .map(payload -> createEventLog(eventType, payload))
-          .collect(Collectors.toList());
+                                                 final Collection<Object> eventPayloads) {
+        return eventPayloads.stream()
+                .map(payload -> createEventLog(eventType, payload))
+                .collect(toList());
     }
 
     private EventLog createEventLog(final String eventType, final Object eventPayload) {
@@ -114,16 +115,16 @@ public class EventLogWriterImpl implements EventLogWriter {
         return eventLog;
     }
 
-  private Collection<EventLog> createEventLogs(
-      final String eventType,
-      final EventDataOperation eventDataOperation,
-      final String dataType,
-      final Collection<Object> data
-  ) {
-    return data.stream()
-        .map(payload -> createEventLog(eventType,
-            new DataChangeEventEnvelope(eventDataOperation.toString(), dataType, payload)))
-        .collect(Collectors.toList());
-  }
+    private Collection<EventLog> createEventLogs(
+            final String eventType,
+            final EventDataOperation eventDataOperation,
+            final String dataType,
+            final Collection<?> data
+    ) {
+        return data.stream()
+                .map(payload -> createEventLog(eventType,
+                        new DataChangeEventEnvelope(eventDataOperation.toString(), dataType, payload)))
+                .collect(toList());
+    }
 
 }

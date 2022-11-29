@@ -62,7 +62,7 @@ public interface EventLogWriter {
    *            the {@code data} field of the Nakadi event.
    */
     @Transactional
-    void fireCreateEvents(String eventType, String dataType, Collection<Object> data);
+    void fireCreateEvents(String eventType, String dataType, Collection<?> data);
 
     /**
      * Fires a data change event about an update of some resource (object).
@@ -103,7 +103,7 @@ public interface EventLogWriter {
    *            the {@code data} field of the Nakadi event.
    */
     @Transactional
-    void fireUpdateEvents(String eventType, String dataType, Collection<Object> data);
+    void fireUpdateEvents(String eventType, String dataType, Collection<?> data);
 
     /**
      * Fires a data change event about the deletion of some resource (object).
@@ -145,7 +145,7 @@ public interface EventLogWriter {
    *            the {@code data} field of the Nakadi event.
    */
     @Transactional
-    void fireDeleteEvents(String eventType, String dataType, Collection<Object> data);
+    void fireDeleteEvents(String eventType, String dataType, Collection<?> data);
 
     /**
      * Fires a data change event with a snapshot of some resource (object).
@@ -198,7 +198,7 @@ public interface EventLogWriter {
    *            the {@code data} field of the Nakadi event.
    */
     @Transactional
-    void fireSnapshotEvents(String eventType, String dataType, Collection<Object> data);
+    void fireSnapshotEvents(String eventType, String dataType, Collection<?> data);
 
     /**
      * Fires a business event, i.e. an event communicating the fact that some

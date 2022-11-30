@@ -291,6 +291,9 @@ your `application.properties` includes
 management.endpoints.web.exposure.include=snapshot-event-creation,your-other-endpoints,...`
 ```
 and if one or more Spring Beans implement the `org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator` interface.
+(Note that this will automatically together with the compaction key feature mentioned above,
+ if you have registered a compaction key extractor matching the type of the data objects in your snapshots.)
+
 The optional filter specifier of the trigger request will be passed as a string parameter to the
 SnapshotEventGenerator's `generateSnapshots` method and may be null, if none is given.
 

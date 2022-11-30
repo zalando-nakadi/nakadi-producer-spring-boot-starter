@@ -24,7 +24,8 @@ This project is mature, used in production in some services at Zalando, and in a
 
 Be aware that this library **does neither guarantee that events are sent exactly once, nor that they are sent in the order they have been persisted**. This is not a bug but a design decision that allows us to skip and retry sending events later in case of temporary failures. So make sure that your events are designed to be processed out of order (See [Rule 203 in Zalando's API guidelines](https://opensource.zalando.com/restful-api-guidelines/#203)).  To help you in this matter, the library generates a *strictly monotonically increasing event id* (field `metadata/eid` in Nakadi's event object) that can be used to reconstruct the message order.
 
-Unfortunately this approach is not compatible with Nakadi's compacted event types – it can happen that the last event submitted (and thus the one which will stay after compaction) is not the last event which was actually been fired. For this reason, the library currently also doesn't provide any access to Nakadi's [`partition_compaction_key`](https://nakadi.io/manual.html#definition_EventMetadata*partition_compaction_key) feature.
+Unfortunately this approach is fundamentally incompatible with Nakadi's compacted event types – it can happen that the last event submitted (and thus the one which will stay after compaction) is not the last event which was actually been fired.
+We still provide means to set the compaction key, see [compacted event types](#compacted-event-types) below.
 
 ## Versioning
 
@@ -151,7 +152,7 @@ The typical use case for this library is to publish events like creating or upda
 In order to store events you can autowire the [`EventLogWriter`](src/main/java/org/zalando/nakadiproducer/eventlog/EventLogWriter.java) 
 service and use its methods: `fireCreateEvent`, `fireUpdateEvent`, `fireDeleteEvent`, `fireSnapshotEvent` or `fireBusinessEvent`. 
 
-To store events in bulk the methods `fireCreateEvents`, `fireUpdateEvents`, `fireDeleteEvents`, `fireSnapshotEvents` or `fireBusinessEvents` can be used.
+To store several events of the same type in bulk, the methods `fireCreateEvents`, `fireUpdateEvents`, `fireDeleteEvents`, `fireSnapshotEvents` or `fireBusinessEvents` can be used.
 
 You normally don't need to call `fireSnapshotEvent` directly, see below for [snapshot creation](#event-snapshots-optional).
 
@@ -206,6 +207,52 @@ For business events, you have just two parameters, the **eventType** and the eve
 You usually should fire those also in the same transaction as you are storing the results of the
 process step the event is reporting.
 
+#### Compacted event types
+
+Nakadi offers a "log-compaction" feature, where each event (on an event type) has a
+[`partition_compaction_key`](https://nakadi.io/manual.html#definition_EventMetadata*partition_compaction_key), and
+Nakadi will (after delivering to live subscribers) clean up events, but leave the latest event for each
+compaction key available long-term.
+
+This library (by design) doesn't guarantee the submission order of events – especially when there are problems
+on Nakadi side and some events fail (and are retried later), earlier produced events (for the same entity)
+can be submitted after later events. For log-compacted event types this means that an outdated event will remain
+in the topic for future subscribers to read.
+It is therefore generally **not recommended** to use this library (or any solution which doesn't guarantee the order)
+for sending events to a compacted event type.
+
+In some cases, like when there usually are large time gaps between producing events for the same compaction key,
+the risk of getting events for the same key out-of-order is small.
+For these cases, you can register a `CompactionKeyExtractor` with the EventLogWriter, which will then compute the
+compaction key for those events as they are produced.
+
+```java
+@Service
+public class SomeYourService {
+
+    private EventLogWriter eventLogWriter;
+    private WarehouseRepository repository;
+
+    @Autowired
+    public SomeYourService(EventLogWriter writer, WarehouseRepository repository) {
+        this.eventLogWriter = writer;
+        this.repository = repository;
+        eventLogWriter.registerCompactionKeyExtractor("wholesale.warehouse-change-event",
+                Warehouse.class, Warehouse::getCode);
+    }
+    
+    @Transactional
+    public void createObject(Warehouse data) {
+
+        // here we store an object in a database table
+        repository.save(data);
+
+        // and then in the same transaction we save the event about this object creation
+        eventLogWriter.fireCreateEvent("wholesale.warehouse-change-event", "wholesale:warehouse", data);
+    }
+}
+```
+
 ### Event snapshots (optional)
 
 A Snapshot event is a special type of data change event (data operation) defined by Nakadi.
@@ -213,7 +260,7 @@ It does not represent a change of the state of a resource, but a current snapsho
 bootstrap a new consumer or to recover from inconsistencies between sender and consumer after an incident.
 
 You can create snapshot events programmatically (using EventLogWriter.fireSnapshotEvent), but usually snapshot event
-creation is a irregular, manually triggered maintenance task.
+creation is an irregular, manually triggered maintenance task.
 
 This library provides a Spring Boot Actuator endpoint named `snapshot_event_creation` that can be used to trigger a Snapshot for a given event type. Assuming your management port is set to `7979`,
 

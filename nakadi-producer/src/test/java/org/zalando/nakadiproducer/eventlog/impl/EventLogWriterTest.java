@@ -1,8 +1,7 @@
 package org.zalando.nakadiproducer.eventlog.impl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
@@ -11,24 +10,34 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import lombok.AllArgsConstructor;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(Parameterized.class)
 public class EventLogWriterTest {
+    @Rule
+    public MockitoRule rule = MockitoJUnit.rule();
 
     @Mock
     private EventLogRepository eventLogRepository;
@@ -90,6 +99,7 @@ public class EventLogWriterTest {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+
     @Before
     public void setUp() {
         Mockito.reset(eventLogRepository, flowIdComponent);
@@ -107,6 +117,7 @@ public class EventLogWriterTest {
 
         eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(),
             flowIdComponent);
+        compactionKeySettings.registerKeyExtractor(eventLogWriter);
     }
 
     @Test
@@ -235,15 +246,70 @@ public class EventLogWriterTest {
         assertDataEventLog(expectedDataOp, storedEventLog, DATA_CHANGE_BODY_DATA_1);
     }
 
-    private static void assertDataEventLog(String expectedDataOp, EventLog storedEventLog, String bodyTemplate) {
+    private void assertDataEventLog(String expectedDataOp, EventLog storedEventLog, String bodyTemplate) {
         assertEventLog(storedEventLog, bodyTemplate.replace("{DATA_OP}", expectedDataOp));
     }
 
-    private static void assertEventLog(EventLog storedEventLog, String expectedBody) {
-        assertThat(storedEventLog.getEventBodyData(), is(expectedBody));
-        assertThat(storedEventLog.getEventType(), is(PUBLISHER_EVENT_TYPE));
-        assertThat(storedEventLog.getFlowId(), is(TRACE_ID));
-        assertThat(storedEventLog.getLockedBy(), is(nullValue()));
-        assertThat(storedEventLog.getLockedUntil(), is(nullValue()));
+    private void assertEventLog(EventLog eventLog, String expectedBody) {
+        assertThat(eventLog.getEventBodyData(), is(expectedBody));
+        assertThat(eventLog.getEventType(), is(PUBLISHER_EVENT_TYPE));
+        assertThat(eventLog.getFlowId(), is(TRACE_ID));
+        assertThat(eventLog.getLockedBy(), is(nullValue()));
+        assertThat(eventLog.getLockedUntil(), is(nullValue()));
+        compactionKeySettings.assertCompactionKey(eventLog.getCompactionKey(), expectedBody);
     }
+
+    @AllArgsConstructor
+    static class CompactionKeySettings {
+        private String name;
+        private Consumer<EventLogWriter> registerFunction;
+        private BiConsumer<String, String> keyAsserter;
+        void registerKeyExtractor(EventLogWriter writer) {
+            registerFunction.accept(writer);
+        }
+        void assertCompactionKey(String key, String eventBody) {
+            keyAsserter.accept(key, eventBody);
+        }
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    public EventLogWriterTest(CompactionKeySettings compactionKeySettings) {
+        this.compactionKeySettings = compactionKeySettings;
+    }
+    private final CompactionKeySettings compactionKeySettings;
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Collection<?> data() {
+        return Arrays.asList(
+                new CompactionKeySettings("no compaction",
+                        w -> {},
+                        (key, data) -> assertThat(key, is(nullValue()))
+                ),
+                new CompactionKeySettings(
+                        "dummy key",
+                        writer -> writer.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "dummy"),
+                        (key, data) -> assertThat(key, is("dummy"))
+                ),
+                new CompactionKeySettings("code",
+                        writer -> writer.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.class,
+                                m -> m.getCode()),
+                        (key, data) -> {
+                            assertThat(key, startsWith("mockedcode"));
+                            assertThat(data, containsString("code\":\"" + key));
+                        }
+                ),
+                new CompactionKeySettings("id",
+                        writer -> writer.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.class,
+                                m -> m.getId().toString()),
+                        (key, data) -> {
+                            assertThat(key, isOneOf("1","2","3"));
+                            assertThat(data, containsString("\"id\":" + key + ","));
+                        }
+                )
+        );
+    }
+
 }

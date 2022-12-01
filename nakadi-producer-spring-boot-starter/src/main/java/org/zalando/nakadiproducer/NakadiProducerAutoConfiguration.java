@@ -23,6 +23,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.zalando.fahrschein.NakadiClient;
+import org.zalando.fahrschein.NakadiClientBuilder;
+import org.zalando.fahrschein.http.api.ContentEncoding;
+import org.zalando.fahrschein.http.api.RequestFactory;
+import org.zalando.fahrschein.http.simple.SimpleRequestFactory;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepositoryImpl;
@@ -55,8 +59,8 @@ public class NakadiProducerAutoConfiguration {
 
         @Bean
         public NakadiPublishingClient nakadiProducerPublishingClient(AccessTokenProvider accessTokenProvider,
-                @Value("${nakadi-producer.nakadi-base-uri}") URI nakadiBaseUri) {
-            return new FahrscheinNakadiPublishingClient(NakadiClient.builder(nakadiBaseUri)
+                @Value("${nakadi-producer.nakadi-base-uri}") URI nakadiBaseUri, RequestFactory requestFactory) {
+            return new FahrscheinNakadiPublishingClient(NakadiClient.builder(nakadiBaseUri, requestFactory)
                     .withAccessTokenProvider(accessTokenProvider::getAccessToken).build());
         }
 
@@ -165,4 +169,8 @@ public class NakadiProducerAutoConfiguration {
         return new FlywayMigrator();
     }
 
+    @Bean
+    RequestFactory requestFactory(){
+        return new SimpleRequestFactory(ContentEncoding.IDENTITY);
+    }
 }

@@ -130,7 +130,7 @@ nakadi-producer:
  access-token-uri: https://token.auth.example.org/oauth2/access_token
 ```
 
-By default, the initialized Fahrschein nakadi client uses the `SimpleRequestFactory` with `ContentEncoding.IDENTITY`.
+By default, the initialized Fahrschein Nakadi client uses the `SimpleRequestFactory` with `ContentEncoding.IDENTITY`.
 If you want to override this setting (e.g. to enable gzip compression), you can create an overwriting primary bean:
 ```java
 @Bean

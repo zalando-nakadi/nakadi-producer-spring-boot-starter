@@ -170,7 +170,8 @@ public class NakadiProducerAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean
     RequestFactory requestFactory(){
-        return new SimpleRequestFactory(ContentEncoding.IDENTITY);
+        return new SimpleRequestFactory(ContentEncoding.GZIP);
     }
 }

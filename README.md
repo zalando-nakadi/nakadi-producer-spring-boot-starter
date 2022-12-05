@@ -131,12 +131,11 @@ nakadi-producer:
 ```
 
 By default, the initialized Fahrschein nakadi client uses the `SimpleRequestFactory` with `ContentEncoding.IDENTITY`.
-If you want to override this setting (e.g. to enable gzip compression), you can create an overwriting primary bean:
+If you want to override this setting (e.g. to enable gzip compression), you can create an overwriting bean:
 ```java
 @Bean
-@Primary
 public RequestFactory requestFactory() {
-    return new SimpleRequestFactory(ContentEncoding.GZIP);
+    return new SimpleRequestFactory(ContentEncoding.ZSTD);
 }
 ```
 

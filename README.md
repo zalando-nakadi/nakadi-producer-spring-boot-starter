@@ -130,6 +130,21 @@ nakadi-producer:
  access-token-uri: https://token.auth.example.org/oauth2/access_token
 ```
 
+By default, the initialized Fahrschein Nakadi client uses the `SimpleRequestFactory` with `ContentEncoding.GZIP`.
+If you want to override this setting (e.g. to enable zstd compression), you can create an overwriting configuration property:
+```yaml
+nakadi-producer:
+  content-encoding: ZSTD
+```
+If you want to disable compression completely:
+```yaml
+nakadi-producer:
+  content-encoding: IDENTITY
+```
+As we gain experience, the default value might change in future versions of this library, so if you need to stay on gzip compression, use `content-encoding: GZIP`.
+
+Alternatively, you can define your own bean of type `RequestFactory`, which will then be used instead of ours.
+
 #### OAuth (scope) configuration in a non-Zalando environment
 Please consult the [manual of Zalando's tokens library](https://github.com/zalando/tokens) for more configuration options (like `CREDENTIALS_DIR` or via environment variables.
 

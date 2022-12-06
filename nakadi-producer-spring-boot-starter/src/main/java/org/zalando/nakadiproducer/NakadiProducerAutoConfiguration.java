@@ -77,6 +77,12 @@ public class NakadiProducerAutoConfiguration {
         }
     }
 
+    @Bean
+    @ConditionalOnMissingBean
+    RequestFactory requestFactory(@Value("${nakadi-producer.encoding:GZIP}") ContentEncoding encoding){
+        return new SimpleRequestFactory(encoding);
+    }
+
     @ConditionalOnMissingBean(NakadiPublishingClient.class)
     @ConditionalOnBean(NakadiClient.class)
     @Configuration
@@ -167,11 +173,5 @@ public class NakadiProducerAutoConfiguration {
     @Bean
     public FlywayMigrator flywayMigrator() {
         return new FlywayMigrator();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    RequestFactory requestFactory(){
-        return new SimpleRequestFactory(ContentEncoding.GZIP);
     }
 }

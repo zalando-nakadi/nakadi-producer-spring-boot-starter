@@ -130,7 +130,7 @@ nakadi-producer:
  access-token-uri: https://token.auth.example.org/oauth2/access_token
 ```
 
-By default, the initialized Fahrschein nakadi client uses the `SimpleRequestFactory` with `ContentEncoding.GZIP`.
+By default, the initialized Fahrschein Nakadi client uses the `SimpleRequestFactory` with `ContentEncoding.GZIP`.
 If you want to override this setting (e.g. to enable zstd compression), you can create an overwriting configuration property:
 ```yaml
 nakadi-producer:

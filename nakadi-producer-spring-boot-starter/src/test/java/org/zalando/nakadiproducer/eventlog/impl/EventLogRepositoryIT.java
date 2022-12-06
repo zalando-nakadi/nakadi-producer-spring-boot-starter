@@ -5,8 +5,8 @@ import static org.hamcrest.core.Is.is;
 
 import javax.transaction.Transactional;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.zalando.nakadiproducer.BaseMockedExternalCommunicationIT;
@@ -15,7 +15,7 @@ import org.zalando.nakadiproducer.BaseMockedExternalCommunicationIT;
 public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
 
     @Autowired
-    private EventLogRepositoryImpl eventLogRepository;
+    private EventLogRepository eventLogRepository;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -38,13 +38,13 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
 
     private final String WAREHOUSE_EVENT_TYPE = "wholesale.warehouse-change-event";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         eventLogRepository.deleteAll();
 
         final EventLog eventLog = EventLog.builder().eventBodyData(WAREHOUSE_EVENT_BODY_DATA)
-                                                                     .eventType(WAREHOUSE_EVENT_TYPE)
-                                                                     .flowId("FLOW_ID").build();
+                .eventType(WAREHOUSE_EVENT_TYPE)
+                .flowId("FLOW_ID").build();
         eventLogRepository.persist(eventLog);
     }
 

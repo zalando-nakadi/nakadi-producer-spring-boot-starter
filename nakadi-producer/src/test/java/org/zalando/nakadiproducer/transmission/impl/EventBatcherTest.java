@@ -2,7 +2,7 @@ package org.zalando.nakadiproducer.transmission.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.zalando.nakadiproducer.eventlog.impl.EventLog;
 import org.zalando.nakadiproducer.transmission.impl.EventBatcher.BatchItem;
 
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 public class EventBatcherTest {
     private final ObjectMapper objectMapper = mock(ObjectMapper.class);
     private final Consumer<List<BatchItem>> publisher = mock(Consumer.class);
-    private EventBatcher eventBatcher = new EventBatcher(objectMapper, publisher);
+    private final EventBatcher eventBatcher = new EventBatcher(objectMapper, publisher);
 
     @Test
     public void shouldNotPublishEmptyBatches() {

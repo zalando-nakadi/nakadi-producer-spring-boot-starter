@@ -9,9 +9,9 @@ import static org.hamcrest.Matchers.is;
 import java.io.IOException;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.transmission.MockNakadiPublishingClient;
@@ -34,8 +34,8 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
     @Autowired
     private MockNakadiPublishingClient nakadiClient;
 
-    @Before
-    @After
+    @BeforeEach
+    @AfterEach
     public void clearNakadiEvents() {
         eventTransmitter.sendEvents();
         nakadiClient.clearSentEvents();

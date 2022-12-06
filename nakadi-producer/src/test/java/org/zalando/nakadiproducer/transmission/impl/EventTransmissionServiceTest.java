@@ -3,8 +3,9 @@ package org.zalando.nakadiproducer.transmission.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.zalando.fahrschein.EventPublishingException;
 import org.zalando.fahrschein.domain.BatchItemResponse;
@@ -28,7 +29,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -47,11 +48,11 @@ public class EventTransmissionServiceTest {
     private ObjectMapper mapper;
     private EventLogRepository repo;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         repo = mock(EventLogRepository.class);
         publishingClient = spy(new MockNakadiPublishingClient());
-        mapper = spy(new ObjectMapper());
+        mapper = spy(new ObjectMapper().registerModules(new JavaTimeModule()));
         service = new EventTransmissionService(repo, publishingClient, mapper, 600, 60);
     }
 
@@ -91,7 +92,7 @@ public class EventTransmissionServiceTest {
 
 
         doReturn(new LinkedHashMap<>())
-                .doThrow(new IOException("Failed"))
+                .doThrow(new RuntimeException("Failed"))
                 .doReturn(new LinkedHashMap<>())
                 .when(mapper).readValue(eq(payloadString), anyLinkedHashmapTypeReference());
 

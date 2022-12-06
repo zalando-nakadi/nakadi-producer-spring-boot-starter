@@ -1,10 +1,10 @@
 package org.zalando.nakadiproducer.snapshots;
 
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Fail.fail;
 
 import java.util.Collections;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +12,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.zalando.nakadiproducer.BaseMockedExternalCommunicationIT;
 import org.zalando.nakadiproducer.snapshots.impl.SnapshotCreationService;
 
-@ContextConfiguration(classes=SnapshotEventGeneratorAutoconfigurationIT.Config.class)
+@ContextConfiguration(classes = SnapshotEventGeneratorAutoconfigurationIT.Config.class)
 public class SnapshotEventGeneratorAutoconfigurationIT extends BaseMockedExternalCommunicationIT {
 
     @Autowired

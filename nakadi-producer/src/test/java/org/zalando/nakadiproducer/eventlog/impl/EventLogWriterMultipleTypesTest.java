@@ -1,15 +1,14 @@
 package org.zalando.nakadiproducer.eventlog.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
@@ -29,9 +28,8 @@ import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
 /**
  * This tests the cases where we have multiple CompactionKeyExtractors for different types.
  */
+@ExtendWith(MockitoExtension.class)
 public class EventLogWriterMultipleTypesTest {
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
 
     @Mock
     private EventLogRepository eventLogRepository;
@@ -53,7 +51,7 @@ public class EventLogWriterMultipleTypesTest {
     private MockPayload.SubClass eventPayload2;
     private List<MockPayload.SubListItem> eventPayload3;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Mockito.reset(eventLogRepository, flowIdComponent);
 

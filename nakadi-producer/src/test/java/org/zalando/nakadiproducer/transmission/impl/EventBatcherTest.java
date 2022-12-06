@@ -2,7 +2,7 @@ package org.zalando.nakadiproducer.transmission.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.zalando.nakadiproducer.eventlog.impl.EventLog;
 import org.zalando.nakadiproducer.transmission.impl.EventBatcher.BatchItem;
 

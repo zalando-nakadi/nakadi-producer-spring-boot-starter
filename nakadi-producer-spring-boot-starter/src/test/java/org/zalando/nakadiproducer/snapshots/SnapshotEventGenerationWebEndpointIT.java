@@ -6,30 +6,27 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.web.server.LocalManagementPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.zalando.nakadiproducer.TestApplication;
 import org.zalando.nakadiproducer.config.EmbeddedDataSourceConfig;
 
 @ActiveProfiles("test")
-@RunWith(SpringRunner.class)
 @SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {
-            "management.security.enabled=false",
-            "zalando.team.id:alpha-local-testing",
-            "nakadi-producer.scheduled-transmission-enabled:false",
-            "management.endpoints.web.exposure.include:snapshot-event-creation"
-    },
-    classes = { TestApplication.class, EmbeddedDataSourceConfig.class, SnapshotEventGenerationWebEndpointIT.Config.class }
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {
+                "management.security.enabled=false",
+                "zalando.team.id:alpha-local-testing",
+                "nakadi-producer.scheduled-transmission-enabled:false",
+                "management.endpoints.web.exposure.include:snapshot-event-creation"
+        },
+        classes = {TestApplication.class, EmbeddedDataSourceConfig.class, SnapshotEventGenerationWebEndpointIT.Config.class}
 )
 public class SnapshotEventGenerationWebEndpointIT {
 
@@ -42,7 +39,7 @@ public class SnapshotEventGenerationWebEndpointIT {
     @Autowired
     private SnapshotEventGenerator snapshotEventGenerator;
 
-    @Before
+    @BeforeEach
     public void resetMocks() {
         reset(snapshotEventGenerator);
     }

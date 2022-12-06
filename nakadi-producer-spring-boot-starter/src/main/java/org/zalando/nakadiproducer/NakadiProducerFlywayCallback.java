@@ -1,17 +1,12 @@
 package org.zalando.nakadiproducer;
 
 import org.flywaydb.core.api.MigrationInfo;
-import org.flywaydb.core.api.configuration.ConfigurationAware;
 
 import java.sql.Connection;
 
 /**
  * This is the main callback interface that should be implemented to get access to flyway lifecycle notifications.
  * Simply add code to the callback method you are interested in having.
- *
- * <p>If a callback also implements the {@link ConfigurationAware} interface,
- * a {@link org.flywaydb.core.api.configuration.FlywayConfiguration} object will automatically be injected before
- * calling any methods, giving the callback access to the core flyway configuration.</p>
  *
  * <p>Each callback method will run within its own transaction.</p>
  */

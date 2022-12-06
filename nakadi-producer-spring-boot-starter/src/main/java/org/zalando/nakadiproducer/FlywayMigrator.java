@@ -4,19 +4,38 @@ import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 import org.flywaydb.core.Flyway;
-import org.flywaydb.core.api.MigrationInfo;
-import org.flywaydb.core.api.callback.BaseFlywayCallback;
-import org.flywaydb.core.api.callback.FlywayCallback;
-import org.flywaydb.core.api.configuration.ConfigurationAware;
-import org.flywaydb.core.api.configuration.FlywayConfiguration;
+import org.flywaydb.core.api.callback.BaseCallback;
+import org.flywaydb.core.api.callback.Context;
+import org.flywaydb.core.api.callback.Event;
+import org.flywaydb.core.api.configuration.FluentConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
 import org.springframework.boot.autoconfigure.flyway.FlywayProperties;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
-
-import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.flywaydb.core.api.callback.Event.AFTER_BASELINE;
+import static org.flywaydb.core.api.callback.Event.AFTER_CLEAN;
+import static org.flywaydb.core.api.callback.Event.AFTER_EACH_MIGRATE;
+import static org.flywaydb.core.api.callback.Event.AFTER_EACH_UNDO;
+import static org.flywaydb.core.api.callback.Event.AFTER_INFO;
+import static org.flywaydb.core.api.callback.Event.AFTER_MIGRATE;
+import static org.flywaydb.core.api.callback.Event.AFTER_REPAIR;
+import static org.flywaydb.core.api.callback.Event.AFTER_UNDO;
+import static org.flywaydb.core.api.callback.Event.AFTER_VALIDATE;
+import static org.flywaydb.core.api.callback.Event.BEFORE_BASELINE;
+import static org.flywaydb.core.api.callback.Event.BEFORE_CLEAN;
+import static org.flywaydb.core.api.callback.Event.BEFORE_EACH_MIGRATE;
+import static org.flywaydb.core.api.callback.Event.BEFORE_EACH_UNDO;
+import static org.flywaydb.core.api.callback.Event.BEFORE_INFO;
+import static org.flywaydb.core.api.callback.Event.BEFORE_MIGRATE;
+import static org.flywaydb.core.api.callback.Event.BEFORE_REPAIR;
+import static org.flywaydb.core.api.callback.Event.BEFORE_UNDO;
+import static org.flywaydb.core.api.callback.Event.BEFORE_VALIDATE;
 
 public class FlywayMigrator {
     @Autowired(required = false)
@@ -41,136 +60,131 @@ public class FlywayMigrator {
 
     @PostConstruct
     public void migrateFlyway() {
-        Flyway flyway = new Flyway();
+        final FluentConfiguration config = Flyway.configure();
 
         if (this.nakadiProducerFlywayDataSource != null) {
-            flyway.setDataSource(nakadiProducerFlywayDataSource);
-        } else if (this.flywayProperties != null && this.flywayProperties.isCreateDataSource()) {
-            flyway.setDataSource(
+            config.dataSource(nakadiProducerFlywayDataSource);
+        } else if (this.flywayProperties != null && flywayProperties.getUser() != null && flywayProperties.getUrl() != null) {
+            config.dataSource(
                     Optional.ofNullable(this.flywayProperties.getUrl()).orElse(dataSourceProperties.getUrl()),
                     Optional.ofNullable(this.flywayProperties.getUser()).orElse(dataSourceProperties.getUsername()),
-                    Optional.ofNullable(this.flywayProperties.getPassword()).orElse(dataSourceProperties.getPassword()),
-                    this.flywayProperties.getInitSqls().toArray(new String[0]));
+                    Optional.ofNullable(this.flywayProperties.getPassword()).orElse(dataSourceProperties.getPassword()));
+
+            config.initSql(String.join(";\n", flywayProperties.getInitSqls()));
         } else if (this.flywayDataSource != null) {
-            flyway.setDataSource(this.flywayDataSource);
+            config.dataSource(this.flywayDataSource);
         } else {
-            flyway.setDataSource(dataSource);
+            config.dataSource(dataSource);
         }
 
-        flyway.setLocations("classpath:db_nakadiproducer/migrations");
-        flyway.setSchemas("nakadi_events");
+        config.locations("classpath:db_nakadiproducer/migrations");
+        config.schemas("nakadi_events");
         if (callbacks != null) {
-            flyway.setCallbacks(callbacks.stream().map(FlywayCallbackAdapter::new).toArray(FlywayCallback[]::new));
+            config.callbacks(callbacks.stream().map(FlywayCallbackAdapter::new).toArray(FlywayCallbackAdapter[]::new));
         }
 
-        flyway.setBaselineOnMigrate(true);
-        flyway.setBaselineVersionAsString("2133546886.1.0");
+        config.baselineOnMigrate(true);
+        config.baselineVersion("2133546886.1.0");
+
+        Flyway flyway = new Flyway(config);
         flyway.migrate();
     }
 
-    private static class FlywayCallbackAdapter extends BaseFlywayCallback {
+    private static class FlywayCallbackAdapter extends BaseCallback {
 
-        private NakadiProducerFlywayCallback callback;
+        private final NakadiProducerFlywayCallback callback;
+
+        private final Set<Event> supportedCallbacks = Stream.of(
+                BEFORE_CLEAN,
+                AFTER_CLEAN,
+                BEFORE_MIGRATE,
+                BEFORE_EACH_MIGRATE,
+                AFTER_EACH_MIGRATE,
+                AFTER_MIGRATE,
+                BEFORE_UNDO,
+                BEFORE_EACH_UNDO,
+                AFTER_EACH_UNDO,
+                AFTER_UNDO,
+                BEFORE_VALIDATE,
+                AFTER_VALIDATE,
+                BEFORE_BASELINE,
+                AFTER_BASELINE,
+                BEFORE_REPAIR,
+                AFTER_REPAIR,
+                BEFORE_INFO,
+                AFTER_INFO
+
+        ).collect(Collectors.toSet());
 
         private FlywayCallbackAdapter(NakadiProducerFlywayCallback callback) {
             this.callback = callback;
         }
 
         @Override
-        public void setFlywayConfiguration(FlywayConfiguration flywayConfiguration) {
-            if (callback instanceof ConfigurationAware) {
-                ((ConfigurationAware) callback).setFlywayConfiguration(flywayConfiguration);
+        public boolean supports(Event event, Context context) {
+            return supportedCallbacks.contains(event);
+        }
+
+        @Override
+        public void handle(Event event, Context context) {
+            switch (event) {
+                case BEFORE_CLEAN:
+                    callback.beforeClean(context.getConnection());
+                    break;
+                case AFTER_CLEAN:
+                    callback.afterClean(context.getConnection());
+                    break;
+                case BEFORE_MIGRATE:
+                    callback.beforeMigrate(context.getConnection());
+                    break;
+                case BEFORE_EACH_MIGRATE:
+                    callback.beforeEachMigrate(context.getConnection(), context.getMigrationInfo());
+                    break;
+                case AFTER_EACH_MIGRATE:
+                    callback.afterEachMigrate(context.getConnection(), context.getMigrationInfo());
+                    break;
+                case AFTER_MIGRATE:
+                    callback.afterMigrate(context.getConnection());
+                    break;
+                case BEFORE_UNDO:
+                    callback.beforeUndo(context.getConnection());
+                    break;
+                case BEFORE_EACH_UNDO:
+                    callback.beforeEachUndo(context.getConnection(), context.getMigrationInfo());
+                    break;
+                case AFTER_EACH_UNDO:
+                    callback.afterEachUndo(context.getConnection(), context.getMigrationInfo());
+                    break;
+                case AFTER_UNDO:
+                    callback.afterUndo(context.getConnection());
+                    break;
+                case BEFORE_VALIDATE:
+                    callback.beforeValidate(context.getConnection());
+                    break;
+                case AFTER_VALIDATE:
+                    callback.afterValidate(context.getConnection());
+                    break;
+                case BEFORE_BASELINE:
+                    callback.beforeBaseline(context.getConnection());
+                    break;
+                case AFTER_BASELINE:
+                    callback.afterBaseline(context.getConnection());
+                    break;
+                case BEFORE_REPAIR:
+                    callback.beforeRepair(context.getConnection());
+                    break;
+                case AFTER_REPAIR:
+                    callback.afterRepair(context.getConnection());
+                    break;
+                case BEFORE_INFO:
+                    callback.beforeInfo(context.getConnection());
+                    break;
+                case AFTER_INFO:
+                    callback.afterInfo(context.getConnection());
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + event);
             }
-        }
-
-        @Override
-        public void beforeClean(Connection connection) {
-            callback.beforeClean(connection);
-        }
-
-        @Override
-        public void afterClean(Connection connection) {
-            callback.afterClean(connection);
-        }
-
-        @Override
-        public void beforeMigrate(Connection connection) {
-            callback.beforeMigrate(connection);
-        }
-
-        @Override
-        public void afterMigrate(Connection connection) {
-            callback.afterMigrate(connection);
-        }
-
-        @Override
-        public void beforeEachMigrate(Connection connection, MigrationInfo info) {
-            callback.beforeEachMigrate(connection, info);
-        }
-
-        @Override
-        public void afterEachMigrate(Connection connection, MigrationInfo info) {
-            callback.afterEachMigrate(connection, info);
-        }
-
-        @Override
-        public void beforeUndo(Connection connection) {
-            callback.beforeUndo(connection);
-        }
-
-        @Override
-        public void beforeEachUndo(Connection connection, MigrationInfo info) {
-            callback.beforeEachUndo(connection, info);
-        }
-
-        @Override
-        public void afterEachUndo(Connection connection, MigrationInfo info) {
-            callback.afterEachUndo(connection, info);
-        }
-
-        @Override
-        public void afterUndo(Connection connection) {
-            callback.afterUndo(connection);
-        }
-
-        @Override
-        public void beforeValidate(Connection connection) {
-            callback.beforeValidate(connection);
-        }
-
-        @Override
-        public void afterValidate(Connection connection) {
-            callback.afterValidate(connection);
-        }
-
-        @Override
-        public void beforeBaseline(Connection connection) {
-            callback.beforeBaseline(connection);
-        }
-
-        @Override
-        public void afterBaseline(Connection connection) {
-            callback.afterBaseline(connection);
-        }
-
-        @Override
-        public void beforeRepair(Connection connection) {
-            callback.beforeRepair(connection);
-        }
-
-        @Override
-        public void afterRepair(Connection connection) {
-            callback.afterRepair(connection);
-        }
-
-        @Override
-        public void beforeInfo(Connection connection) {
-            callback.beforeInfo(connection);
-        }
-
-        @Override
-        public void afterInfo(Connection connection) {
-            callback.afterInfo(connection);
         }
     }
 }

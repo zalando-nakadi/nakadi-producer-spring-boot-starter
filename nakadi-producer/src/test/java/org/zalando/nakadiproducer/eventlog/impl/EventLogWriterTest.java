@@ -15,18 +15,14 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import lombok.AllArgsConstructor;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.util.Fixture;
@@ -34,10 +30,54 @@ import org.zalando.nakadiproducer.util.MockPayload;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@RunWith(Parameterized.class)
-public class EventLogWriterTest {
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
+/**
+ * With JUnit4, this would have been a parameterized test.
+ * With JUnit 5, we have those on method level, but I want it for the whole class.
+ * As a workaround, we make this class abstract, with subclasses (which also are static nested classes)
+ * which have the different compaction key logic.
+ */
+@ExtendWith(MockitoExtension.class)
+public abstract class EventLogWriterTest {
+
+    public static class NoCompactionKey extends EventLogWriterTest {
+        public NoCompactionKey() {
+            super(w -> {
+                    }, (key, data) -> assertThat(key, is(nullValue()))
+            );
+        }
+    }
+
+    public static class DummyCompactionKey extends EventLogWriterTest {
+        public DummyCompactionKey() {
+            super(writer -> writer.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "dummy"),
+                    (key, data) -> assertThat(key, is("dummy"))
+            );
+        }
+    }
+
+    public static class CodeCompactionKey extends EventLogWriterTest {
+        public CodeCompactionKey() {
+            super(writer -> writer.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.class,
+                            m -> m.getCode()),
+                    (key, data) -> {
+                        assertThat(key, startsWith("mockedcode"));
+                        assertThat(data, containsString("code\":\"" + key));
+                    }
+            );
+        }
+    }
+
+    public static class IdCompactionKey extends EventLogWriterTest {
+        public IdCompactionKey() {
+            super(writer -> writer.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.class,
+                            m -> m.getId().toString()),
+                    (key, data) -> {
+                        assertThat(key, isOneOf("1", "2", "3"));
+                        assertThat(data, containsString("\"id\":" + key + ","));
+                    }
+            );
+        }
+    }
 
     @Mock
     private EventLogRepository eventLogRepository;
@@ -100,7 +140,15 @@ public class EventLogWriterTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 
-    @Before
+    private Consumer<EventLogWriter> registerFunction;
+    private BiConsumer<String, String> keyAsserter;
+
+    private EventLogWriterTest(Consumer<EventLogWriter> registerFunction, BiConsumer<String, String> keyAsserter) {
+        this.registerFunction = registerFunction;
+        this.keyAsserter = keyAsserter;
+    }
+
+    @BeforeEach
     public void setUp() {
         Mockito.reset(eventLogRepository, flowIdComponent);
 
@@ -117,7 +165,7 @@ public class EventLogWriterTest {
 
         eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(),
             flowIdComponent);
-        compactionKeySettings.registerKeyExtractor(eventLogWriter);
+        registerFunction.accept(eventLogWriter);
     }
 
     @Test
@@ -256,60 +304,7 @@ public class EventLogWriterTest {
         assertThat(eventLog.getFlowId(), is(TRACE_ID));
         assertThat(eventLog.getLockedBy(), is(nullValue()));
         assertThat(eventLog.getLockedUntil(), is(nullValue()));
-        compactionKeySettings.assertCompactionKey(eventLog.getCompactionKey(), expectedBody);
-    }
-
-    @AllArgsConstructor
-    static class CompactionKeySettings {
-        private String name;
-        private Consumer<EventLogWriter> registerFunction;
-        private BiConsumer<String, String> keyAsserter;
-        void registerKeyExtractor(EventLogWriter writer) {
-            registerFunction.accept(writer);
-        }
-        void assertCompactionKey(String key, String eventBody) {
-            keyAsserter.accept(key, eventBody);
-        }
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
-    public EventLogWriterTest(CompactionKeySettings compactionKeySettings) {
-        this.compactionKeySettings = compactionKeySettings;
-    }
-    private final CompactionKeySettings compactionKeySettings;
-
-    @Parameterized.Parameters(name = "{0}")
-    public static Collection<?> data() {
-        return Arrays.asList(
-                new CompactionKeySettings("no compaction",
-                        w -> {},
-                        (key, data) -> assertThat(key, is(nullValue()))
-                ),
-                new CompactionKeySettings(
-                        "dummy key",
-                        writer -> writer.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "dummy"),
-                        (key, data) -> assertThat(key, is("dummy"))
-                ),
-                new CompactionKeySettings("code",
-                        writer -> writer.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.class,
-                                m -> m.getCode()),
-                        (key, data) -> {
-                            assertThat(key, startsWith("mockedcode"));
-                            assertThat(data, containsString("code\":\"" + key));
-                        }
-                ),
-                new CompactionKeySettings("id",
-                        writer -> writer.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.class,
-                                m -> m.getId().toString()),
-                        (key, data) -> {
-                            assertThat(key, isOneOf("1","2","3"));
-                            assertThat(data, containsString("\"id\":" + key + ","));
-                        }
-                )
-        );
+        keyAsserter.accept(eventLog.getCompactionKey(), expectedBody);
     }
 
 }

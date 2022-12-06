@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,25 +17,21 @@ import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.snapshots.Snapshot;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SnapshotCreationServiceTest {
 
     @Mock
@@ -47,13 +42,10 @@ public class SnapshotCreationServiceTest {
 
     private SnapshotCreationService snapshotCreationService;
 
-    @Rule
-    public final ExpectedException expectedException = ExpectedException.none();
-
     @Captor
     private ArgumentCaptor<Collection<?>> eventLogDataCaptor;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         when(snapshotEventGenerator.getSupportedEventType()).thenReturn(PUBLISHER_EVENT_TYPE);
         snapshotCreationService = new SnapshotCreationService(asList(snapshotEventGenerator), eventLogWriter);
@@ -73,7 +65,7 @@ public class SnapshotCreationServiceTest {
 
         verify(eventLogWriter).fireSnapshotEvents(eq(PUBLISHER_EVENT_TYPE), eq(PUBLISHER_DATA_TYPE),
                 eventLogDataCaptor.capture());
-        assertThat(eventLogDataCaptor.getValue(), Matchers.contains(eventPayload));
+        assertThat(eventLogDataCaptor.getValue(), contains(eventPayload));
     }
 
     @Test

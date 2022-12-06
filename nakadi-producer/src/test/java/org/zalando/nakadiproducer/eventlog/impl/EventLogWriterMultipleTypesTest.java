@@ -9,6 +9,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.zalando.nakadiproducer.eventlog.CompactionKeyExtractor;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
@@ -38,9 +39,6 @@ public class EventLogWriterMultipleTypesTest {
     private FlowIdComponent flowIdComponent;
 
     @Captor
-    private ArgumentCaptor<EventLog> eventLogCapture;
-
-    @Captor
     private ArgumentCaptor<Collection<EventLog>> eventLogsCapture;
 
     private EventLogWriterImpl eventLogWriter;
@@ -63,13 +61,13 @@ public class EventLogWriterMultipleTypesTest {
         eventPayload3 = Fixture.mockSubList(2, "some detail");
 
         when(flowIdComponent.getXFlowIdValue()).thenReturn(TRACE_ID);
-
-        eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(),
-                flowIdComponent);
     }
 
     @Test
     public void noCompactionExtractors() {
+        eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(),
+                flowIdComponent, List.of());
+
         eventLogWriter.fireCreateEvents(PUBLISHER_EVENT_TYPE, "",
                 asList(eventPayload1, eventPayload2, eventPayload3));
         List<String> compactionKeys = getPersistedCompactionKeys();
@@ -78,7 +76,8 @@ public class EventLogWriterMultipleTypesTest {
 
     @Test
     public void oneCompactionExtractor() {
-        eventLogWriter.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "Hello");
+        eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(),
+                flowIdComponent, List.of(CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "Hello")));
         eventLogWriter.fireCreateEvents(PUBLISHER_EVENT_TYPE, "",
                 asList(eventPayload1, eventPayload2, eventPayload3));
         List<String> compactionKeys = getPersistedCompactionKeys();
@@ -87,8 +86,10 @@ public class EventLogWriterMultipleTypesTest {
 
     @Test
     public void twoCompactionExtractors() {
-        eventLogWriter.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "Hello");
-        eventLogWriter.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.SubClass.class, m -> "World");
+        eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(),
+                flowIdComponent,
+                List.of(CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "Hello"),
+                        CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.SubClass.class, m -> "World")));
         eventLogWriter.fireCreateEvents(PUBLISHER_EVENT_TYPE, "",
                 asList(eventPayload1, eventPayload2, eventPayload3));
         List<String> compactionKeys = getPersistedCompactionKeys();
@@ -97,9 +98,11 @@ public class EventLogWriterMultipleTypesTest {
 
     @Test
     public void threeCompactionExtractors() {
-        eventLogWriter.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "Hello");
-        eventLogWriter.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.SubClass.class, m -> "World");
-        eventLogWriter.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, List.class, m -> "List?");
+        eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(),
+                flowIdComponent,
+                List.of(CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "Hello"),
+                        CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.SubClass.class, m -> "World"),
+                        CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, List.class, m -> "List?")));
 
         eventLogWriter.fireCreateEvents(PUBLISHER_EVENT_TYPE, "",
                 asList(eventPayload1, eventPayload2, eventPayload3));

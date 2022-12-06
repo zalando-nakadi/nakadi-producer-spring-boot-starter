@@ -6,12 +6,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,7 +19,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mockito;
-import org.zalando.nakadiproducer.eventlog.EventLogWriter;
+import org.zalando.nakadiproducer.eventlog.CompactionKeyExtractor;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
@@ -41,40 +37,37 @@ public abstract class EventLogWriterTest {
 
     public static class NoCompactionKey extends EventLogWriterTest {
         public NoCompactionKey() {
-            super(w -> {
-                    }, (key, data) -> assertThat(key, is(nullValue()))
-            );
+            super((key, data) -> assertThat(key, is(nullValue())));
         }
     }
 
     public static class DummyCompactionKey extends EventLogWriterTest {
         public DummyCompactionKey() {
-            super(writer -> writer.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "dummy"),
-                    (key, data) -> assertThat(key, is("dummy"))
+            super((key, data) -> assertThat(key, is("dummy")),
+                    CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "dummy")
             );
         }
     }
 
     public static class CodeCompactionKey extends EventLogWriterTest {
         public CodeCompactionKey() {
-            super(writer -> writer.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.class,
-                            m -> m.getCode()),
-                    (key, data) -> {
-                        assertThat(key, startsWith("mockedcode"));
-                        assertThat(data, containsString("code\":\"" + key));
-                    }
+            super((key, data) -> {
+                assertThat(key, startsWith("mockedcode"));
+                assertThat(data, containsString("code\":\"" + key));
+            }, CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.class,
+                            m -> m.getCode())
             );
         }
     }
 
     public static class IdCompactionKey extends EventLogWriterTest {
         public IdCompactionKey() {
-            super(writer -> writer.registerCompactionKeyExtractor(PUBLISHER_EVENT_TYPE, MockPayload.class,
-                            m -> m.getId().toString()),
-                    (key, data) -> {
-                        assertThat(key, isOneOf("1", "2", "3"));
-                        assertThat(data, containsString("\"id\":" + key + ","));
-                    }
+            super((key, data) -> {
+                assertThat(key, isOneOf("1", "2", "3"));
+                assertThat(data, containsString("\"id\":" + key + ","));
+            },
+                    CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.class,
+                            m -> m.getId().toString())
             );
         }
     }
@@ -140,12 +133,12 @@ public abstract class EventLogWriterTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 
-    private Consumer<EventLogWriter> registerFunction;
+    private List<CompactionKeyExtractor<?>> extractorList;
     private BiConsumer<String, String> keyAsserter;
 
-    private EventLogWriterTest(Consumer<EventLogWriter> registerFunction, BiConsumer<String, String> keyAsserter) {
-        this.registerFunction = registerFunction;
+    private EventLogWriterTest(BiConsumer<String, String> keyAsserter, CompactionKeyExtractor<?>... extractors) {
         this.keyAsserter = keyAsserter;
+        this.extractorList = List.copyOf(Arrays.asList(extractors));
     }
 
     @BeforeEach
@@ -164,8 +157,7 @@ public abstract class EventLogWriterTest {
         when(flowIdComponent.getXFlowIdValue()).thenReturn(TRACE_ID);
 
         eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(),
-            flowIdComponent);
-        registerFunction.accept(eventLogWriter);
+            flowIdComponent, extractorList);
     }
 
     @Test

@@ -1,16 +1,15 @@
 package org.zalando.nakadiproducer.eventlog.impl;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.CREATE;
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.DELETE;
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.SNAPSHOT;
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.UPDATE;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import lombok.AllArgsConstructor;
 import org.zalando.nakadiproducer.eventlog.CompactionKeyExtractor;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
@@ -27,13 +26,16 @@ public class EventLogWriterImpl implements EventLogWriter {
     private final ObjectMapper objectMapper;
     private final FlowIdComponent flowIdComponent;
 
-    private final Map<String, CompactionKeyExtractor<Object>> extractors;
+    private final Map<String, List<CompactionKeyExtractor<?>>> extractors;
 
-    public EventLogWriterImpl(EventLogRepository eventLogRepository, ObjectMapper objectMapper, FlowIdComponent flowIdComponent) {
+    public EventLogWriterImpl(EventLogRepository eventLogRepository,
+                              ObjectMapper objectMapper,
+                              FlowIdComponent flowIdComponent,
+                              List<CompactionKeyExtractor<?>> keyExtractors) {
         this.eventLogRepository = eventLogRepository;
         this.objectMapper = objectMapper;
         this.flowIdComponent = flowIdComponent;
-        this.extractors = new HashMap<>();
+        this.extractors = keyExtractors.stream().collect(groupingBy(CompactionKeyExtractor::getEventType));
     }
 
     @Override
@@ -104,9 +106,9 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     private Collection<EventLog> createBusinessEventLogs(final String eventType,
                                                      final Collection<Object> eventPayloads) {
-        CompactionKeyExtractor<Object> extractor = getExtractorFor(eventType);
+        List<CompactionKeyExtractor<?>> extractorList = getKeyExtractorsFor(eventType);
         return eventPayloads.stream()
-                .map(payload -> createEventLog(eventType, payload, extractor.getCompactionKeyFor(payload)))
+                .map(payload -> createEventLog(eventType, payload, getKeyFrom(extractorList, payload)))
                 .collect(toList());
     }
 
@@ -116,12 +118,12 @@ public class EventLogWriterImpl implements EventLogWriter {
             final String dataType,
             final Collection<?> data
     ) {
-        CompactionKeyExtractor<Object> extractor = getExtractorFor(eventType);
+        List<CompactionKeyExtractor<?>> extractorList = getKeyExtractorsFor(eventType);
         return data.stream()
                 .map(payload -> createEventLog(
                                     eventType,
                                     new DataChangeEventEnvelope(eventDataOperation.toString(), dataType, payload),
-                                    extractor.getCompactionKeyFor(payload)))
+                                    getKeyFrom(extractorList, payload)))
                 .collect(toList());
     }
 
@@ -145,42 +147,17 @@ public class EventLogWriterImpl implements EventLogWriter {
     }
 
     private String getCompactionKeyFor(String eventType, Object payload) {
-        return getExtractorFor(eventType).getCompactionKeyFor(payload);
+        return getKeyFrom(getKeyExtractorsFor(eventType), payload);
     }
 
-    private CompactionKeyExtractor<Object> getExtractorFor(String eventType) {
-        return extractors.getOrDefault(eventType, NOOP_EXTRACTOR);
+    private static String getKeyFrom(List<CompactionKeyExtractor<?>> list, Object payload) {
+        return list.stream()
+                   .flatMap(ex -> ex.tryGetKeyFor(payload).stream())
+                   .findAny()
+                   .orElse(null);
     }
 
-    /**
-     * A key extractor which always returns null. (This is used as the terminator in a list,
-     * and the default value when there is no extractor.)
-     */
-    private static final CompactionKeyExtractor<Object> NOOP_EXTRACTOR = (o -> null);
-    /**
-     * This is a linked list of extractors (with type information), all for the same event type
-     * (but possibly different Java types).
-     *
-     * @param <X> the type of objects for which the head of the list can identify the compaction key.
-     */
-    @AllArgsConstructor
-    private static class TypedCompactionExtractorWrapper<X> implements CompactionKeyExtractor<Object> {
-        final CompactionKeyExtractor<X> extractor;
-        final Class<X> type;
-        final CompactionKeyExtractor<Object> next;
-
-        @Override
-        public String getCompactionKeyFor(Object o) {
-            if (type.isInstance(o)) {
-                return extractor.getCompactionKeyFor(type.cast(o));
-            } else {
-                return next.getCompactionKeyFor(o);
-            }
-        }
-    }
-
-    @Override
-    public <X> void registerCompactionKeyExtractor(String eventType, Class<X> dataType, CompactionKeyExtractor<X> extractor) {
-        extractors.put(eventType, new TypedCompactionExtractorWrapper<X>(extractor, dataType, getExtractorFor(eventType)));
+    private List<CompactionKeyExtractor<?>> getKeyExtractorsFor(String eventType) {
+        return extractors.getOrDefault(eventType, List.of());
     }
 }

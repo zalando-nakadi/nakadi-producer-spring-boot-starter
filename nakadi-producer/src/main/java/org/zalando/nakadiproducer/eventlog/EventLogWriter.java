@@ -3,7 +3,6 @@ package org.zalando.nakadiproducer.eventlog;
 import java.util.Collection;
 import javax.transaction.Transactional;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
 
 /**
@@ -53,7 +52,7 @@ public interface EventLogWriter {
      * @param dataType the Java type of the objects for which the extractor is used.
      * @param extractor a function which will extract the compaction key from an object.
      */
-    <X> void registerCompactionKeyExtractor(String eventType, Class<X> dataType, CompactionKeyExtractor<X> extractor);
+//    <X> void registerCompactionKeyExtractor(String eventType, Class<X> dataType, CompactionKeyExtractorFunction<X> extractor);
 
     /**
      * Fires a data change event about a <b>creation</b> of some resource

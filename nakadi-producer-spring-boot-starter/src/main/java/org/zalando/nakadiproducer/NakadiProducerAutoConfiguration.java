@@ -74,13 +74,14 @@ public class NakadiProducerAutoConfiguration {
                     @Value("${nakadi-producer.access-token-scopes:uid}") String[] accessTokenScopes) {
                 return new StupsTokenComponent(accessTokenUri, Arrays.asList(accessTokenScopes));
             }
-        }
-    }
 
-    @Bean
-    @ConditionalOnMissingBean
-    RequestFactory requestFactory(@Value("${nakadi-producer.encoding:GZIP}") ContentEncoding encoding){
-        return new SimpleRequestFactory(encoding);
+        }
+        @Bean
+        @ConditionalOnMissingBean
+        RequestFactory requestFactory(@Value("${nakadi-producer.encoding:GZIP}") ContentEncoding encoding){
+            return new SimpleRequestFactory(encoding);
+        }
+
     }
 
     @ConditionalOnMissingBean(NakadiPublishingClient.class)

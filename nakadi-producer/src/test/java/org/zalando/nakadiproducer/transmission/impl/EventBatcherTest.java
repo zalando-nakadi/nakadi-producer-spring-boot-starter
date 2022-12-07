@@ -74,7 +74,7 @@ public class EventBatcherTest {
         eventBatcher.pushEvent(eventLogEntry1, nakadiEvent1);
         // 30 MB batch size
         eventBatcher.pushEvent(eventLogEntry2, nakadiEvent2);
-        // would be 45MB batch size, wich is more than 80% of 50MB,therefore triggers sumission of the previous two
+        // would be 45MB batch size, which is more than 80% of 50MB, therefore triggers submission of the previous two
         eventBatcher.pushEvent(eventLogEntry3, nakadiEvent3);
 
         verify(publisher)
@@ -95,9 +95,9 @@ public class EventBatcherTest {
                 .thenReturn(new byte[45000000])
                 .thenReturn(new byte[450]);
 
-        // 45 MB batch size => will form a batch of it's own
+        // 45 MB batch size => will form a batch of its own
         eventBatcher.pushEvent(eventLogEntry1, nakadiEvent1);
-        // ... and be sumitted with the next event added
+        // ... and be submitted with the next event added
         eventBatcher.pushEvent(eventLogEntry2, nakadiEvent2);
 
         verify(publisher).accept(eq(singletonList(new BatchItem(eventLogEntry1, nakadiEvent1))));
@@ -125,7 +125,7 @@ public class EventBatcherTest {
     }
 
     private EventLog eventLogEntry(int id, String type) {
-        return new EventLog(id, type, "body", "flow", now(), now(), "me", now());
+        return new EventLog(id, type, "body", "flow", now(), now(), "me", now(), null);
     }
 
     private NakadiEvent nakadiEvent(String eid) {

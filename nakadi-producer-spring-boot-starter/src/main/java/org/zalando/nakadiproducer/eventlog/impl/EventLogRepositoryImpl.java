@@ -87,6 +87,7 @@ public class EventLogRepositoryImpl implements EventLogRepository {
               namedParameterMap.addValue("lastModified", now);
               namedParameterMap.addValue("lockedBy", eventLog.getLockedBy());
               namedParameterMap.addValue("lockedUntil", eventLog.getLockedUntil());
+              namedParameterMap.addValue("compactionKey", eventLog.getCompactionKey());
               return namedParameterMap;
             })
             .toArray(MapSqlParameterSource[]::new);
@@ -94,9 +95,9 @@ public class EventLogRepositoryImpl implements EventLogRepository {
       jdbcTemplate.batchUpdate(
           "INSERT INTO " +
               "    nakadi_events.event_log " +
-              "    (event_type, event_body_data, flow_id, created, last_modified, locked_by, locked_until) " +
+              "    (event_type, event_body_data, flow_id, created, last_modified, locked_by, locked_until, compaction_key)" +
               "VALUES " +
-              "    (:eventType, :eventBodyData, :flowId, :created, :lastModified, :lockedBy, :lockedUntil)",
+              "    (:eventType, :eventBodyData, :flowId, :created, :lastModified, :lockedBy, :lockedUntil, :compactionKey)",
           namedParameterMaps
       );
     }

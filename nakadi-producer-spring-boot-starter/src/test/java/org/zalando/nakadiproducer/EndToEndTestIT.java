@@ -21,9 +21,11 @@ import org.zalando.nakadiproducer.util.MockPayload;
 
 public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
     private static final String MY_DATA_CHANGE_EVENT_TYPE = "myDataChangeEventType";
+    private static final String SECOND_DATA_CHANGE_EVENT_TYPE = "secondDataChangeEventType";
     private static final String MY_BUSINESS_EVENT_TYPE = "myBusinessEventType";
     public static final String PUBLISHER_DATA_TYPE = "nakadi:some-publisher";
     private static final String CODE = "code123";
+    public static final String COMPACTION_KEY = "Hello World";
 
     @Autowired
     private EventLogWriter eventLogWriter;
@@ -54,6 +56,23 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
         assertThat(read(value.get(0), "$.data_type"), is(PUBLISHER_DATA_TYPE));
         assertThat(read(value.get(0), "$.data.code"), is(CODE));
     }
+
+    @Test
+    public void compactionKeyIsPreserved() throws IOException {
+        MockPayload payload = Fixture.mockPayload(1, CODE);
+        eventLogWriter.registerCompactionKeyExtractor(SECOND_DATA_CHANGE_EVENT_TYPE, MockPayload.class, p -> COMPACTION_KEY);
+        eventLogWriter.fireDeleteEvent(SECOND_DATA_CHANGE_EVENT_TYPE, PUBLISHER_DATA_TYPE, payload);
+
+        eventTransmitter.sendEvents();
+        List<String> value = nakadiClient.getSentEvents(SECOND_DATA_CHANGE_EVENT_TYPE);
+
+        assertThat(value.size(), is(1));
+        assertThat(read(value.get(0), "$.data_op"), is("D"));
+        assertThat(read(value.get(0), "$.data_type"), is(PUBLISHER_DATA_TYPE));
+        assertThat(read(value.get(0), "$.data.code"), is(CODE));
+        assertThat(read(value.get(0), "$.metadata.partition_compaction_key"), is(COMPACTION_KEY));
+    }
+
 
     @Test
     public void businessEventsShouldBeSubmittedToNakadi() throws IOException {

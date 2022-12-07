@@ -20,4 +20,7 @@ public class NakadiMetadata {
     @JsonProperty("flow_id")
     private String flowId;
 
+    @JsonProperty("partition_compaction_key")
+    private String partitionCompactionKey;
+
 }

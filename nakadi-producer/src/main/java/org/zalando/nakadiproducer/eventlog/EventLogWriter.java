@@ -3,6 +3,7 @@ package org.zalando.nakadiproducer.eventlog;
 import java.util.Collection;
 import javax.transaction.Transactional;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
 
 /**
@@ -21,6 +22,38 @@ import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
  * </p>
  */
 public interface EventLogWriter {
+
+    /**
+     * Registers a function for extracting compaction keys for events sent in the future.
+     * <p>
+     * When an event for this event type is sent out, and its `data` (or `payload`) object matches the type,
+     * the extractor is used to set the {@code partition_compaction_key} in the event to be sent out.
+     * For all other objects (or if the extractor returns null), no compaction key is set.
+     * </p>
+     *<p>
+     * (If multiple extractors are registered for the same event type, their data
+     *  type is checked in reverse order of registering, until a fitting one is found.
+     *  The first with matching dataType is used.)
+     * </p>
+     * <dl><dt>Note</dt>
+     * <dd>
+     *     Nakadi-Producer does <b>not</b> guarantee event ordering,
+     *     which is fundamentally incompatible with Nakadi's log-compaction mechanism,
+     *     as Nakadi will always keep just the last submitted event for the same compaction key,
+     *     which might not be the last produced one.
+     *     Still, in some special cases (e.g. when there is normally a long time between production
+     *     of events with the same compaction key, so all events will be sent out before the next group)
+     *     it is possible without problems (and these are also cases where the compaction is most useful).
+     *     <b>This feature is meant just for these special cases.</b>
+     *     </dd></dl>
+     * </p>
+     *
+     *
+     * @param eventType the event type for which this is used.
+     * @param dataType the Java type of the objects for which the extractor is used.
+     * @param extractor a function which will extract the compaction key from an object.
+     */
+    <X> void registerCompactionKeyExtractor(String eventType, Class<X> dataType, CompactionKeyExtractor<X> extractor);
 
     /**
      * Fires a data change event about a <b>creation</b> of some resource

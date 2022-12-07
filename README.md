@@ -7,7 +7,7 @@
 
 [Nakadi](https://github.com/zalando/nakadi) is a distributed event bus that implements a RESTful API abstraction instead of Kafka-like queues.
 
-The goal of this Spring Boot starter is to simplify the reliable integration between event producer and Nakadi. When we send events from a transactional application, a few recurring challenges appear:
+The goal of **this** Spring Boot starter is to simplify the reliable integration between event producer and Nakadi. When we send events from a transactional application, a few recurring challenges appear:
 - we have to make sure that events from a transaction get sent, when the transaction has been committed,
 - we have to make sure that events from a transaction do not get sent, when the transaction has been rolled back,
 - we have to make sure that events get sent, even if an error occurred while sending the event,
@@ -108,7 +108,7 @@ token. The easiest way to do so is to include the [Zalando Tokens library](https
 </dependency>
 ```
 
-This starter will detect and auto configure it.
+This starter will detect and autoconfigure it.
 
 If your application is running in Zalando's Kubernetes environment, you have to configure the credential rotation:
 ```yaml
@@ -159,13 +159,15 @@ nakadi-producer:
 ``` 
 
 #### Implement Nakadi authentication yourself
-If you do not use the STUPS Tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The starter will detect it and call it once for each request to retrieve the token.
+If you do not use the STUPS Tokens library, you can implement token retrieval yourself by defining a Spring bean of
+type [`AccessTokenProvider`](nakadi-producer-spring-boot-starter/src/main/java/org/zalando/nakadiproducer/AccessTokenProvider.java).
+The starter will detect it and call it once for each request to retrieve the token.
 
 ### Creating events
 
 The typical use case for this library is to publish events like creating or updating of some objects.
 
-In order to store events you can autowire the [`EventLogWriter`](src/main/java/org/zalando/nakadiproducer/eventlog/EventLogWriter.java) 
+In order to store events you can autowire the [`EventLogWriter`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/eventlog/EventLogWriter.java) 
 service and use its methods: `fireCreateEvent`, `fireUpdateEvent`, `fireDeleteEvent`, `fireSnapshotEvent` or `fireBusinessEvent`. 
 
 To store several events of the same type in bulk, the methods `fireCreateEvents`, `fireUpdateEvents`, `fireDeleteEvents`, `fireSnapshotEvents` or `fireBusinessEvents` can be used.
@@ -239,35 +241,26 @@ for sending events to a compacted event type.
 
 In some cases, like when there usually are large time gaps between producing events for the same compaction key,
 the risk of getting events for the same key out-of-order is small.
-For these cases, you can register a `CompactionKeyExtractor` with the EventLogWriter, which will then compute the
-compaction key for those events as they are produced.
+For these cases, you just can define a bean of type [`CompactionKeyExtractor`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/eventlog/CompactionKeyExtractor.java) , and then all events of that event
+type will get sent with a compaction key.
 
 ```java
-@Service
-public class SomeYourService {
-
-    private EventLogWriter eventLogWriter;
-    private WarehouseRepository repository;
-
-    @Autowired
-    public SomeYourService(EventLogWriter writer, WarehouseRepository repository) {
-        this.eventLogWriter = writer;
-        this.repository = repository;
-        eventLogWriter.registerCompactionKeyExtractor("wholesale.warehouse-change-event",
+@Configuration
+public class NakadiProducerConfiguration {
+    @Bean
+    public CompactionKeyExtractor extractorForWarehouseEvents() {
+        return CompactionKeyExtractor.of("wholesale.warehouse-change-event",
                 Warehouse.class, Warehouse::getCode);
-    }
-    
-    @Transactional
-    public void createObject(Warehouse data) {
-
-        // here we store an object in a database table
-        repository.save(data);
-
-        // and then in the same transaction we save the event about this object creation
-        eventLogWriter.fireCreateEvent("wholesale.warehouse-change-event", "wholesale:warehouse", data);
     }
 }
 ```
+The service class sending the event looks exactly the same as above.
+
+For corner cases: You can have multiple such extractors for the same event type, any one where the class object
+matches the payload object (in undefined order) will be used.
+There are also some more factory methods with different signatures for more special cases, and you can also write
+your own implementation (but for the usual cases, the one shown here should be enough).
+
 
 ### Event snapshots (optional)
 

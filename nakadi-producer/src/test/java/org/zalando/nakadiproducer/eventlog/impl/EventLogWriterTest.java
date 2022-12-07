@@ -133,10 +133,10 @@ public abstract class EventLogWriterTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 
-    private List<CompactionKeyExtractor<?>> extractorList;
+    private List<CompactionKeyExtractor> extractorList;
     private BiConsumer<String, String> keyAsserter;
 
-    private EventLogWriterTest(BiConsumer<String, String> keyAsserter, CompactionKeyExtractor<?>... extractors) {
+    private EventLogWriterTest(BiConsumer<String, String> keyAsserter, CompactionKeyExtractor... extractors) {
         this.keyAsserter = keyAsserter;
         this.extractorList = List.copyOf(Arrays.asList(extractors));
     }

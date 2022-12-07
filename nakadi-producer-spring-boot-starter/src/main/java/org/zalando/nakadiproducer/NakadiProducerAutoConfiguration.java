@@ -23,10 +23,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.zalando.fahrschein.NakadiClient;
-import org.zalando.fahrschein.NakadiClientBuilder;
 import org.zalando.fahrschein.http.api.ContentEncoding;
 import org.zalando.fahrschein.http.api.RequestFactory;
 import org.zalando.fahrschein.http.simple.SimpleRequestFactory;
+import org.zalando.nakadiproducer.eventlog.CompactionKeyExtractor;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepositoryImpl;
@@ -139,8 +139,8 @@ public class NakadiProducerAutoConfiguration {
 
     @Bean
     public EventLogWriter eventLogWriter(EventLogRepository eventLogRepository, ObjectMapper objectMapper,
-            FlowIdComponent flowIdComponent) {
-        return new EventLogWriterImpl(eventLogRepository, objectMapper, flowIdComponent);
+                                         FlowIdComponent flowIdComponent, List<CompactionKeyExtractor> extractorList) {
+        return new EventLogWriterImpl(eventLogRepository, objectMapper, flowIdComponent, extractorList);
     }
 
     @Bean

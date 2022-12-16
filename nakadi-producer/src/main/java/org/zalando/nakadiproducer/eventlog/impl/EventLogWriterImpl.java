@@ -30,7 +30,7 @@ public class EventLogWriterImpl implements EventLogWriter {
     private final ObjectMapper objectMapper;
     private final FlowIdComponent flowIdComponent;
 
-    private final Map<String, CompactionKeyExtractor> extractors;
+    private final Map<String, CompactionKeyExtractor> extractorsByEventType;
 
     public EventLogWriterImpl(EventLogRepository eventLogRepository,
                               ObjectMapper objectMapper,
@@ -39,12 +39,21 @@ public class EventLogWriterImpl implements EventLogWriter {
         this.eventLogRepository = eventLogRepository;
         this.objectMapper = objectMapper;
         this.flowIdComponent = flowIdComponent;
-        this.extractors = keyExtractors.stream()
+        this.extractorsByEventType = keyExtractors.stream()
                 .collect(groupingBy(
                         CompactionKeyExtractor::getEventType,
                         collectingAndThen(toList(), EventLogWriterImpl::joinCompactors)));
     }
 
+    /**
+     * Helper function (used in the constructor) to join a (non-empty) list of compaction key extractors
+     * (for the same event type) into a single one. If that list has just one element, it is returned.
+     * Otherwise, a new extractor is created whose retrieval method will just iterate through all the
+     * extractors, ask them for the key and returns any that is non-empty.
+     *
+     * @param list a list of extractors, non-empty.
+     * @return a single extractor based on the list which will return a key when any of the extractors returns one.
+     */
     private static CompactionKeyExtractor joinCompactors(List<CompactionKeyExtractor> list) {
         Preconditions.checkArgument(!list.isEmpty());
         if(list.size() == 1) {
@@ -58,7 +67,6 @@ public class EventLogWriterImpl implements EventLogWriter {
             );
         }
     }
-
 
     @Override
     @Transactional
@@ -121,13 +129,13 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     @Override
     @Transactional
-    public void fireBusinessEvents(final String eventType, final Collection<Object> payload) {
+    public void fireBusinessEvents(final String eventType, final Collection<?> payload) {
         final Collection<EventLog> eventLogs = createBusinessEventLogs(eventType, payload);
         eventLogRepository.persist(eventLogs);
     }
 
     private Collection<EventLog> createBusinessEventLogs(final String eventType,
-                                                     final Collection<Object> eventPayloads) {
+                                                     final Collection<?> eventPayloads) {
         CompactionKeyExtractor extractor = getKeyExtractorFor(eventType);
         return eventPayloads.stream()
                 .map(payload -> createEventLog(eventType, payload,
@@ -142,10 +150,11 @@ public class EventLogWriterImpl implements EventLogWriter {
             final Collection<?> data
     ) {
         CompactionKeyExtractor extractor = getKeyExtractorFor(eventType);
+        String dataOp = eventDataOperation.toString();
         return data.stream()
                 .map(payload -> createEventLog(
                         eventType,
-                        new DataChangeEventEnvelope(eventDataOperation.toString(), dataType, payload),
+                        new DataChangeEventEnvelope(dataOp, dataType, payload),
                         extractor.getKeyOrNull(payload)))
                 .collect(toList());
     }
@@ -161,7 +170,7 @@ public class EventLogWriterImpl implements EventLogWriter {
     }
 
     private CompactionKeyExtractor getKeyExtractorFor(String eventType) {
-        return extractors.getOrDefault(eventType, NOOP_EXTRACTOR);
+        return extractorsByEventType.getOrDefault(eventType, NOOP_EXTRACTOR);
     }
 
     private EventLog createEventLog(final String eventType, final Object eventPayload, String compactionKey) {

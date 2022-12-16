@@ -241,8 +241,8 @@ for sending events to a compacted event type.
 
 In some cases, like when there usually are large time gaps between producing events for the same compaction key,
 the risk of getting events for the same key out-of-order is small.
-For these cases, you just can define a bean of type [`CompactionKeyExtractor`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/eventlog/CompactionKeyExtractor.java) , and then all events of that event
-type will get sent with a compaction key.
+For these cases, you just can define a bean of type [`CompactionKeyExtractor`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/eventlog/CompactionKeyExtractor.java),
+and then all events of that event type will be sent with a compaction key.
 
 ```java
 @Configuration
@@ -260,7 +260,6 @@ For corner cases: You can have multiple such extractors for the same event type,
 matches the payload object (in undefined order) will be used.
 There are also some more factory methods with different signatures for more special cases, and you can also write
 your own implementation (but for the usual cases, the one shown here should be enough).
-
 
 ### Event snapshots (optional)
 
@@ -300,7 +299,7 @@ your `application.properties` includes
 management.endpoints.web.exposure.include=snapshot-event-creation,your-other-endpoints,...`
 ```
 and if one or more Spring Beans implement the `org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator` interface.
-(Note that this will automatically together with the compaction key feature mentioned above,
+(Note that this will automatically work together with the compaction key feature mentioned above,
  if you have registered a compaction key extractor matching the type of the data objects in your snapshots.)
 
 The optional filter specifier of the trigger request will be passed as a string parameter to the

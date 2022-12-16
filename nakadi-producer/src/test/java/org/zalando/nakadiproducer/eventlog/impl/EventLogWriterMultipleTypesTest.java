@@ -110,7 +110,6 @@ public class EventLogWriterMultipleTypesTest {
         assertThat(compactionKeys, contains(equalTo("Hello"), equalTo("World"), equalTo("List?")));
     }
 
-
     private List<String> getPersistedCompactionKeys() {
         verify(eventLogRepository).persist(eventLogsCapture.capture());
         Collection<EventLog> eventLogs = eventLogsCapture.getValue();

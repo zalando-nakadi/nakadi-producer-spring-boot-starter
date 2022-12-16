@@ -39,8 +39,6 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
     @Autowired
     private MockNakadiPublishingClient nakadiClient;
 
-
-
     @BeforeEach
     @AfterEach
     public void clearNakadiEvents() {
@@ -91,7 +89,6 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
         assertThat(read(value.get(0), "$.metadata[?]", where("partition_compaction_key").exists(true)),
                 is(empty()));
     }
-
 
     @Test
     public void businessEventsShouldBeSubmittedToNakadi() throws IOException {

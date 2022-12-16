@@ -82,6 +82,31 @@ public class EventTransmissionServiceTest {
     }
 
     @Test
+    public void testWithCompactionKey() throws JsonProcessingException {
+        String compactionKey = "XYZ";
+        String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
+        EventLog ev = new EventLog(27, "type", payloadString, null, now(), now(), null, now().plus(5, MINUTES), compactionKey);
+
+        service.sendEvents(singletonList(ev));
+
+        List<String> events = publishingClient.getSentEvents("type");
+        assertThat(events, hasSize(1));
+        assertThat(read(events.get(0), "$.metadata.partition_compaction_key"), is(compactionKey));
+    }
+
+    @Test
+    public void testWithoutCompactionKey() throws JsonProcessingException {
+        String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
+        EventLog ev = new EventLog(27, "type", payloadString, null, now(), now(), null, now().plus(5, MINUTES), null);
+
+        service.sendEvents(singletonList(ev));
+
+        List<String> events = publishingClient.getSentEvents("type");
+        assertThat(events, hasSize(1));
+        assertThat(read(events.get(0), "$.metadata"), not(hasKey("partition_compaction_key")));
+    }
+
+    @Test
     public void testErrorInPayloadDeserializationIsHandledGracefully() throws IOException {
         String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
         EventLog ev1 = new EventLog(1, "type1", payloadString, null, now(), now(), null, now().plus(5, MINUTES), null);

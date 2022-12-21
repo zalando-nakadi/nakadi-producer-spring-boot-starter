@@ -64,7 +64,7 @@ public class FlywayMigrator {
 
         if (this.nakadiProducerFlywayDataSource != null) {
             config.dataSource(nakadiProducerFlywayDataSource);
-        } else if (this.flywayProperties != null && flywayProperties.getUser() != null && flywayProperties.getUrl() != null) {
+        } else if (this.flywayProperties != null && (flywayProperties.getUser() != null || flywayProperties.getUrl() != null)) {
             config.dataSource(
                     Optional.ofNullable(this.flywayProperties.getUrl()).orElse(dataSourceProperties.getUrl()),
                     Optional.ofNullable(this.flywayProperties.getUser()).orElse(dataSourceProperties.getUsername()),

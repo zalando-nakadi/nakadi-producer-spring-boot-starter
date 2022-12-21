@@ -231,5 +231,5 @@ public interface EventLogWriter {
    *            parameter)
    */
     @Transactional
-    void fireBusinessEvents(String eventType, Collection<Object> payloads);
+    void fireBusinessEvents(String eventType, Collection<?> payloads);
 }

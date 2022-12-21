@@ -7,7 +7,7 @@
 
 [Nakadi](https://github.com/zalando/nakadi) is a distributed event bus that implements a RESTful API abstraction instead of Kafka-like queues.
 
-The goal of this Spring Boot starter is to simplify the reliable integration between event producer and Nakadi. When we send events from a transactional application, a few recurring challenges appear:
+The goal of **this** Spring Boot starter is to simplify the reliable integration between event producer and Nakadi. When we send events from a transactional application, a few recurring challenges appear:
 - we have to make sure that events from a transaction get sent, when the transaction has been committed,
 - we have to make sure that events from a transaction do not get sent, when the transaction has been rolled back,
 - we have to make sure that events get sent, even if an error occurred while sending the event,
@@ -24,7 +24,8 @@ This project is mature, used in production in some services at Zalando, and in a
 
 Be aware that this library **does neither guarantee that events are sent exactly once, nor that they are sent in the order they have been persisted**. This is not a bug but a design decision that allows us to skip and retry sending events later in case of temporary failures. So make sure that your events are designed to be processed out of order (See [Rule 203 in Zalando's API guidelines](https://opensource.zalando.com/restful-api-guidelines/#203)).  To help you in this matter, the library generates a *strictly monotonically increasing event id* (field `metadata/eid` in Nakadi's event object) that can be used to reconstruct the message order.
 
-Unfortunately this approach is not compatible with Nakadi's compacted event types – it can happen that the last event submitted (and thus the one which will stay after compaction) is not the last event which was actually been fired. For this reason, the library currently also doesn't provide any access to Nakadi's [`partition_compaction_key`](https://nakadi.io/manual.html#definition_EventMetadata*partition_compaction_key) feature.
+Unfortunately this approach is fundamentally incompatible with Nakadi's compacted event types – it can happen that the last event submitted (and thus the one which will stay after compaction) is not the last event which was actually been fired.
+We still provide means to set the compaction key, see [compacted event types](#compacted-event-types) below.
 
 ## Versioning
 
@@ -107,7 +108,7 @@ token. The easiest way to do so is to include the [Zalando Tokens library](https
 </dependency>
 ```
 
-This starter will detect and auto configure it.
+This starter will detect and autoconfigure it.
 
 If your application is running in Zalando's Kubernetes environment, you have to configure the credential rotation:
 ```yaml
@@ -158,16 +159,18 @@ nakadi-producer:
 ``` 
 
 #### Implement Nakadi authentication yourself
-If you do not use the STUPS Tokens library, you can implement token retrieval yourself by defining a Spring bean of type `org.zalando.nakadiproducer.AccessTokenProvider`. The starter will detect it and call it once for each request to retrieve the token.
+If you do not use the STUPS Tokens library, you can implement token retrieval yourself by defining a Spring bean of
+type [`AccessTokenProvider`](nakadi-producer-spring-boot-starter/src/main/java/org/zalando/nakadiproducer/AccessTokenProvider.java).
+The starter will detect it and call it once for each request to retrieve the token.
 
 ### Creating events
 
 The typical use case for this library is to publish events like creating or updating of some objects.
 
-In order to store events you can autowire the [`EventLogWriter`](src/main/java/org/zalando/nakadiproducer/eventlog/EventLogWriter.java) 
+In order to store events you can autowire the [`EventLogWriter`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/eventlog/EventLogWriter.java) 
 service and use its methods: `fireCreateEvent`, `fireUpdateEvent`, `fireDeleteEvent`, `fireSnapshotEvent` or `fireBusinessEvent`. 
 
-To store events in bulk the methods `fireCreateEvents`, `fireUpdateEvents`, `fireDeleteEvents`, `fireSnapshotEvents` or `fireBusinessEvents` can be used.
+To store several events of the same type in bulk, the methods `fireCreateEvents`, `fireUpdateEvents`, `fireDeleteEvents`, `fireSnapshotEvents` or `fireBusinessEvents` can be used.
 
 You normally don't need to call `fireSnapshotEvent` directly, see below for [snapshot creation](#event-snapshots-optional).
 
@@ -222,6 +225,42 @@ For business events, you have just two parameters, the **eventType** and the eve
 You usually should fire those also in the same transaction as you are storing the results of the
 process step the event is reporting.
 
+#### Compacted event types
+
+Nakadi offers a "log-compaction" feature, where each event (on an event type) has a
+[`partition_compaction_key`](https://nakadi.io/manual.html#definition_EventMetadata*partition_compaction_key), and
+Nakadi will (after delivering to live subscribers) clean up events, but leave the latest event for each
+compaction key available long-term.
+
+This library (by design) doesn't guarantee the submission order of events – especially when there are problems
+on Nakadi side and some events fail (and are retried later), earlier produced events (for the same entity)
+can be submitted after later events. For log-compacted event types this means that an outdated event will remain
+in the topic for future subscribers to read.
+It is therefore generally **not recommended** to use this library (or any solution which doesn't guarantee the order)
+for sending events to a compacted event type.
+
+In some cases, like when there usually are large time gaps between producing events for the same compaction key,
+the risk of getting events for the same key out-of-order is small.
+For these cases, you just can define a bean of type [`CompactionKeyExtractor`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/eventlog/CompactionKeyExtractor.java),
+and then all events of that event type will be sent with a compaction key.
+
+```java
+@Configuration
+public class NakadiProducerConfiguration {
+    @Bean
+    public CompactionKeyExtractor extractorForWarehouseEvents() {
+        return CompactionKeyExtractor.of("wholesale.warehouse-change-event",
+                Warehouse.class, Warehouse::getCode);
+    }
+}
+```
+The service class sending the event looks exactly the same as above.
+
+For corner cases: You can have multiple such extractors for the same event type, any one where the class object
+matches the payload object (in undefined order) will be used.
+There are also some more factory methods with different signatures for more special cases, and you can also write
+your own implementation (but for the usual cases, the one shown here should be enough).
+
 ### Event snapshots (optional)
 
 A Snapshot event is a special type of data change event (data operation) defined by Nakadi.
@@ -229,7 +268,7 @@ It does not represent a change of the state of a resource, but a current snapsho
 bootstrap a new consumer or to recover from inconsistencies between sender and consumer after an incident.
 
 You can create snapshot events programmatically (using EventLogWriter.fireSnapshotEvent), but usually snapshot event
-creation is a irregular, manually triggered maintenance task.
+creation is an irregular, manually triggered maintenance task.
 
 This library provides a Spring Boot Actuator endpoint named `snapshot_event_creation` that can be used to trigger a Snapshot for a given event type. Assuming your management port is set to `7979`,
 
@@ -260,6 +299,9 @@ your `application.properties` includes
 management.endpoints.web.exposure.include=snapshot-event-creation,your-other-endpoints,...`
 ```
 and if one or more Spring Beans implement the `org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator` interface.
+(Note that this will automatically work together with the compaction key feature mentioned above,
+ if you have registered a compaction key extractor matching the type of the data objects in your snapshots.)
+
 The optional filter specifier of the trigger request will be passed as a string parameter to the
 SnapshotEventGenerator's `generateSnapshots` method and may be null, if none is given.
 

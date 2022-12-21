@@ -38,18 +38,22 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
 
     private final String WAREHOUSE_EVENT_TYPE = "wholesale.warehouse-change-event";
 
+    public static final String COMPACTION_KEY = "COMPACTED";
+
     @BeforeEach
     public void setUp() {
         eventLogRepository.deleteAll();
 
-        final EventLog eventLog = EventLog.builder().eventBodyData(WAREHOUSE_EVENT_BODY_DATA)
+        final EventLog eventLog = EventLog.builder()
+                .eventBodyData(WAREHOUSE_EVENT_BODY_DATA)
                 .eventType(WAREHOUSE_EVENT_TYPE)
+                .compactionKey(COMPACTION_KEY)
                 .flowId("FLOW_ID").build();
         eventLogRepository.persist(eventLog);
     }
 
     @Test
-    public void findEventRepositoryId() {
+    public void testFindEventInRepositoryById() {
         Integer id = jdbcTemplate.queryForObject(
             "SELECT id FROM nakadi_events.event_log WHERE flow_id = 'FLOW_ID'",
             Integer.class);
@@ -60,6 +64,7 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
     private void compareWithPersistedEvent(final EventLog eventLog) {
         assertThat(eventLog.getEventBodyData(), is(WAREHOUSE_EVENT_BODY_DATA));
         assertThat(eventLog.getEventType(), is(WAREHOUSE_EVENT_TYPE));
+        assertThat(eventLog.getCompactionKey(), is(COMPACTION_KEY));
     }
 
 }

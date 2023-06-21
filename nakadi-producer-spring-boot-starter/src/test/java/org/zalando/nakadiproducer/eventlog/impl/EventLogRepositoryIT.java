@@ -101,5 +101,4 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
         assertThat(eventLog.getEventType(), is(WAREHOUSE_EVENT_TYPE));
         assertThat(eventLog.getCompactionKey(), is(COMPACTION_KEY));
     }
-
 }

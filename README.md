@@ -333,6 +333,9 @@ tracer:
     X-Flow-ID: flow-id
 ```
 
+Then the current flow-ID of the fireXXX-calls will be added to the created events, and thus can be
+used by the event consumers.
+
 ### Customizing Database Setup (optional)
 
 By default, the library will pick up your flyway data source (or the primary data source if no flyway data source is
@@ -386,25 +389,50 @@ The example above uses `com.jayway.jsonpath:json-path:jar:2.2.0` to parse and te
 
 Note that you should disable the scheduled event transmission for the test (e.g. by setting `nakadi-producer.scheduled-transmission-enabled:false`), as that might interfere with the manual transmission and the clearing in the test setup, leading to events from one test showing up in the next test, depending on timing issues.
 
+This property can of course also be used in production, if you need to disable sending out events for some reason.
+
 ### Customizing event locks
 
-* **lock-duration**: The selected events are locked before transmission. If the transmission fails the events stay locked
-until the lock expires. The default is currently 600 seconds but might change in future releases.  
+When transmitting events, a scheduled transmitter locks a bunch of events (so other instances of the app are not
+trying to send out the same events), then sends them out to Nakadi (in one batch per event-type).
+There are three properties for customizing this event locking on transmission:
 
-* **lock-duration-buffer**: Since clocks never work exactly synchronous and sending events also takes some time, a safety
-buffer is included. During the last x seconds before the expiration of the lock the events are not considered for 
-transmission. The default is currently 60 seconds but might change in future releases.
+* **lock-duration** (seconds): The time the selected events are locked before transmission. If the transmission fails,
+  the events stay locked until the lock expires. The default is currently 600 seconds but might change in future releases.
 
-* **lock-size**: Defines the maximum amount of events which are loaded into memory and published in one run 
-(in one submission per event type). By default, all events are loaded into memory. In future releases, this
-property will become mandatory.
+* **lock-duration-buffer** (seconds): Since clocks never work exactly synchronous and sending events also takes some
+  time, a safety buffer is included. During the last x seconds before the expiration of the lock, the events are not
+  considered for transmission. The default is currently 60 seconds but might change in future releases.
 
+* **lock-size** (events): Defines the maximum amount of events which are loaded into memory and published in one run
+  (in one submission per event type). By default, *all* events are loaded into memory. In some future release, this
+  property will become mandatory. This should be set to a value which is not too high so out-of-memory situations
+  are avoided.
+
+Example:
 ```yaml
 nakadi-producer:
   lock-duration: 600 
   lock-duration-buffer: 60
   lock-size: 5000
 ``` 
+
+## All Configuration properties
+
+This is a list of all the documented spring properties (in alphabetical order), with the link to the corresponding section.
+
+| Property                                                         | Summary         |
+|------------------------------------------------------------------|----------------|
+| [`management.endpoints.web.exposure.include: snapshot-event-creation`](#event-snapshots-optional) | Enable snapshot event production endpoint. |
+| [`nakadi-producer.access-token-uri`](#letting-this-library-set-things-up) | The URI of an OAuth2 server where an access token can be acquired. (Only for the legacy STUPS environment.) |
+| [`nakadi-producer.access-token-scopes`](#oauth-scope-configuration-in-a-non-zalando-environment) | The Scopes needed on a token.  (Not needed for Zalando's Nakadi setup.)  |
+| [`nakadi-producer.content-encoding`](#letting-this-library-set-things-up) | Compression setting for Nakadi submission, one of `GZIP`, `ZSTD` or `IDENTITY`.  |
+| [`nakadi-producer.lock-duration`](#customizing-event-locks)      | The number of seconds events are locked before transmission.  |
+| [`nakadi-producer.lock-duration-buffer`](#customizing-event-locks) | Number of seconds before the expiry of a lock an event is not used. |
+| [`nakadi-producer.lock-size`](#customizing-event-locks)          | Number of events to lock (and then load into memory) at once.  |
+| [`nakadi-producer.nakadi-base-uri`](#letting-this-library-set-things-up) | The Nakadi base URI used for submitting events.  |
+| [`nakadi-producer.scheduled-transmission-enabled: false`](#test-support) | Disable event transmission scheduler.  |
+| [`tracer.traces.X-Flow-ID: flow-id`](#x-flow-id-optional)        | Enable flow-ID support |
 
 ## Contributing
 

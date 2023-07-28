@@ -144,8 +144,9 @@ public class NakadiProducerAutoConfiguration {
 
     @Bean
     public EventLogWriter eventLogWriter(EventLogRepository eventLogRepository, ObjectMapper objectMapper,
-                                         FlowIdComponent flowIdComponent, List<CompactionKeyExtractor> extractorList) {
-        return new EventLogWriterImpl(eventLogRepository, objectMapper, flowIdComponent, extractorList, false);
+                                         FlowIdComponent flowIdComponent, List<CompactionKeyExtractor> extractorList,
+                                         @Value("${nakadi-producer.delete-after-write:false}") boolean deleteAfterWrite) {
+        return new EventLogWriterImpl(eventLogRepository, objectMapper, flowIdComponent, extractorList, deleteAfterWrite);
     }
 
     @Bean

@@ -96,6 +96,22 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
         compareWithPersistedEvent(eventLog);
     }
 
+    @Test
+    public void testPersistAndDelete() {
+        int oldCount = getEventLogCount();
+        EventLog secondEventLog = EventLog.builder().eventType("example")
+                .eventBodyData(WAREHOUSE_EVENT_BODY_DATA)
+                .flowId("example")
+                .build();
+        eventLogRepository.persistAndDelete(List.of(secondEventLog));
+        int newCount = getEventLogCount();
+        assertThat(newCount, is(oldCount));
+    }
+
+    private Integer getEventLogCount() {
+        return jdbcTemplate.queryForObject("SELECT count(*) FROM nakadi_events.event_log", Integer.class);
+    }
+
     private void compareWithPersistedEvent(final EventLog eventLog) {
         assertThat(eventLog.getEventBodyData(), is(WAREHOUSE_EVENT_BODY_DATA));
         assertThat(eventLog.getEventType(), is(WAREHOUSE_EVENT_TYPE));

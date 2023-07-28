@@ -99,7 +99,7 @@ public class EventLogRepositoryImpl implements EventLogRepository {
     }
 
     @Override
-    public void persist(Collection<EventLog> eventLogs {
+    public void persist(Collection<EventLog> eventLogs) {
         MapSqlParameterSource[] namedParameterMaps = mapToParameterSourceStream(eventLogs)
                 .toArray(MapSqlParameterSource[]::new);
 
@@ -128,6 +128,12 @@ public class EventLogRepositoryImpl implements EventLogRepository {
         for(int i = 0; i < createdIds.size(); i++) {
             orderedLogs.get(i).setId(createdIds.get(i));
         }
+    }
+
+    @Override
+    public void persistAndDelete(Collection<EventLog> eventLogs) {
+        this.persistWithIds(eventLogs);
+        this.delete(eventLogs);
     }
 
     private Stream<MapSqlParameterSource> mapToParameterSourceStream(Collection<EventLog> eventLogs) {

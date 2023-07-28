@@ -116,7 +116,7 @@ public class EventTransmissionService {
                             .filter(rawEvent -> !failedEids.contains(convertToUUID(rawEvent.getId())));
         }
 
-        successfulEvents.forEach(eventLogRepository::delete);
+        eventLogRepository.delete(successfulEvents.collect(Collectors.toList()));
     }
 
     private List<String> collectEids(EventPublishingException e) {

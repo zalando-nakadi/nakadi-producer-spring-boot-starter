@@ -10,33 +10,37 @@ public class QueryStatementBatcherTest
 {
     @Test
     public void testComposeTemplateInsert() {
-        QueryStatementBatcher<Integer> batcher = new QueryStatementBatcher<>(
-                "INSERT INTO x (a, b) VALUES ",
-                "(:a#, :b#)",
-                ", ",
-                " RETURNING id",
-                (row, n) -> row.getInt("id")
-        );
 
-        assertThat(batcher.composeTemplate(1), is("INSERT INTO x (a, b) VALUES (:a0, :b0) RETURNING id"));
-        assertThat(batcher.composeTemplate(2), is("INSERT INTO x (a, b) VALUES (:a0, :b0), (:a1, :b1) RETURNING id"));
+        String prefix = "INSERT INTO x (a, b) VALUES ";
+        String repeated = "(:a#, :b#)";
+        String placeholder = "#";
+        String separator = ", ";
+        String suffix = " RETURNING id";
+
+        assertThat(QueryStatementBatcher.composeTemplate(1, prefix, repeated, placeholder, separator, suffix),
+                is("INSERT INTO x (a, b) VALUES (:a0, :b0) RETURNING id"));
+        assertThat(QueryStatementBatcher.composeTemplate(2, prefix, repeated, placeholder, separator, suffix),
+                is("INSERT INTO x (a, b) VALUES (:a0, :b0), (:a1, :b1) RETURNING id"));
     }
 
     @Test
     public void testComposeTemplateSelectWhere() {
-        QueryStatementBatcher<Void> batcher = new QueryStatementBatcher<>(
-                "SELECT a, b FROM x WHERE id IN (", ":id#", ", ", ")",
-                (row, n) -> null
-        );
+        String prefix = "SELECT a, b FROM x WHERE id IN (";
+        String repeated = ":id#";
+        String separator = ", ";
+        String placeholder = "#";
+        String suffix = ")";
 
-        assertThat(batcher.composeTemplate(1), is("SELECT a, b FROM x WHERE id IN (:id0)"));
-        assertThat(batcher.composeTemplate(2), is("SELECT a, b FROM x WHERE id IN (:id0, :id1)"));
+        assertThat(QueryStatementBatcher.composeTemplate(1, prefix, repeated, placeholder, separator, suffix),
+                is("SELECT a, b FROM x WHERE id IN (:id0)"));
+        assertThat(QueryStatementBatcher.composeTemplate(2, prefix, repeated, placeholder, separator, suffix),
+                is("SELECT a, b FROM x WHERE id IN (:id0, :id1)"));
     }
 
     @Test
     public void testCreateSubTemplates() {
         QueryStatementBatcher<Void> batcher = new QueryStatementBatcher<>(
-                "SELECT a, b FROM x WHERE id IN (", ":id#", ", ", ")",
+                "SELECT a, b FROM x WHERE id IN (", ":id#", ")",
                 (row, n) -> null,
                 21, 6, 1);
         assertThat(batcher.subTemplates, hasSize(3));

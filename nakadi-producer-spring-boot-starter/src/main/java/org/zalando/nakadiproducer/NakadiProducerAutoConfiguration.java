@@ -145,7 +145,7 @@ public class NakadiProducerAutoConfiguration {
     @Bean
     public EventLogWriter eventLogWriter(EventLogRepository eventLogRepository, ObjectMapper objectMapper,
                                          FlowIdComponent flowIdComponent, List<CompactionKeyExtractor> extractorList) {
-        return new EventLogWriterImpl(eventLogRepository, objectMapper, flowIdComponent, extractorList);
+        return new EventLogWriterImpl(eventLogRepository, objectMapper, flowIdComponent, extractorList, false);
     }
 
     @Bean

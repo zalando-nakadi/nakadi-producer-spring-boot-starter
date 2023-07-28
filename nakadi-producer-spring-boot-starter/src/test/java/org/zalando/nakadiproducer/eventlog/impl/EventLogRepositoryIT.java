@@ -1,6 +1,7 @@
 package org.zalando.nakadiproducer.eventlog.impl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 
 import javax.transaction.Transactional;
@@ -8,8 +9,11 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.zalando.nakadiproducer.BaseMockedExternalCommunicationIT;
+
+import java.util.List;
 
 @Transactional
 public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
@@ -44,12 +48,43 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
     public void setUp() {
         eventLogRepository.deleteAll();
 
+        persistTestEvent("FLOW_ID");
+    }
+
+    private void persistTestEvent(String flowId) {
         final EventLog eventLog = EventLog.builder()
                 .eventBodyData(WAREHOUSE_EVENT_BODY_DATA)
                 .eventType(WAREHOUSE_EVENT_TYPE)
                 .compactionKey(COMPACTION_KEY)
-                .flowId("FLOW_ID").build();
+                .flowId(flowId)
+                .build();
         eventLogRepository.persist(eventLog);
+    }
+
+    @Test
+    public void testDeleteMultipleEvents() {
+        persistTestEvent("second_Flow-ID");
+        persistTestEvent("third flow-ID");
+        persistTestEvent("fourth flow-ID");
+        persistTestEvent("fifth flow-ID");
+
+        List<EventLog> events = findAllEventsInDB();
+        assertThat(events, hasSize(5));
+        EventLog notDeleted = events.remove(0);
+
+        // now the actual test – delete just 4 of the 5 events from the DB
+        eventLogRepository.delete(events);
+
+        List<EventLog> remaining = findAllEventsInDB();
+        assertThat(remaining, hasSize(1));
+        assertThat(remaining.get(0).getId(), is(notDeleted.getId()));
+        assertThat(remaining.get(0).getFlowId(), is(notDeleted.getFlowId()));
+    }
+
+    private List<EventLog> findAllEventsInDB() {
+        return jdbcTemplate.query(
+                "SELECT * FROM nakadi_events.event_log",
+                new BeanPropertyRowMapper<>(EventLog.class));
     }
 
     @Test

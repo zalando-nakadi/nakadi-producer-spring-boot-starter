@@ -6,7 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.zalando.fahrschein.EventPublishingException;
 import org.zalando.fahrschein.domain.BatchItemResponse;
 import org.zalando.nakadiproducer.eventlog.impl.EventLog;
@@ -16,20 +19,23 @@ import org.zalando.nakadiproducer.util.Fixture;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.jayway.jsonpath.JsonPath.read;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -47,6 +53,8 @@ public class EventTransmissionServiceTest {
     private MockNakadiPublishingClient publishingClient;
     private ObjectMapper mapper;
     private EventLogRepository repo;
+    @Captor
+    private ArgumentCaptor<Collection<EventLog>> eventLogColCaptor;
 
     @BeforeEach
     public void setUp() {
@@ -54,6 +62,7 @@ public class EventTransmissionServiceTest {
         publishingClient = spy(new MockNakadiPublishingClient());
         mapper = spy(new ObjectMapper().registerModules(new JavaTimeModule()));
         service = new EventTransmissionService(repo, publishingClient, mapper, 600, 60);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
@@ -135,9 +144,8 @@ public class EventTransmissionServiceTest {
         assertThat(read(type2Events.get(0), "$.metadata.eid"), is("00000000-0000-0000-0000-000000000003"));
 
         // and only the successful ones have been deleted.
-        verify(repo).delete(ev1);
-        verify(repo, never()).delete(ev2);
-        verify(repo).delete(ev3);
+        List<EventLog> deletedEvents = verifyDeletionAndGetAllDeletedEvents();
+        assertThat(deletedEvents, containsInAnyOrder(ev1, ev3));
     }
 
     @Test
@@ -164,9 +172,8 @@ public class EventTransmissionServiceTest {
         assertThat(read(type2Events.get(0), "$.metadata.eid"), is("00000000-0000-0000-0000-000000000003"));
 
         // and only the successful ones have been deleted.
-        verify(repo, never()).delete(ev1);
-        verify(repo, never()).delete(ev2);
-        verify(repo).delete(ev3);
+        List<EventLog> deletedEvents = verifyDeletionAndGetAllDeletedEvents();
+        assertThat(deletedEvents, containsInAnyOrder(ev3));
     }
 
     @Test
@@ -196,9 +203,8 @@ public class EventTransmissionServiceTest {
         assertThat(read(type2Events.get(0), "$.metadata.eid"), is("00000000-0000-0000-0000-000000000003"));
 
         // and only the successful ones have been deleted.
-        verify(repo).delete(ev1);
-        verify(repo, never()).delete(ev2);
-        verify(repo).delete(ev3);
+        List<EventLog> deletedEvents = verifyDeletionAndGetAllDeletedEvents();
+        assertThat(deletedEvents, containsInAnyOrder(ev1, ev3));
     }
 
     @Test
@@ -260,4 +266,12 @@ public class EventTransmissionServiceTest {
         return any();
     }
 
+    private List<EventLog> verifyDeletionAndGetAllDeletedEvents() {
+        verify(repo, Mockito.atLeastOnce()).delete(eventLogColCaptor.capture());
+        verify(repo, never()).delete(any(EventLog.class));
+        return eventLogColCaptor.getAllValues()
+                .stream()
+                .flatMap(c -> c.stream())
+                .collect(Collectors.toList());
+    }
 }

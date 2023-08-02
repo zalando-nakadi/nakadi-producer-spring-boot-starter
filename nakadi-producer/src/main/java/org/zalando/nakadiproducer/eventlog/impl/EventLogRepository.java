@@ -10,6 +10,10 @@ public interface EventLogRepository {
 
     void delete(EventLog eventLog);
 
+    default void delete(Collection<EventLog> eventLogs) {
+        eventLogs.forEach(this::delete);
+    }
+
     void persist(EventLog eventLog);
 
     default void persist(Collection<EventLog> eventLogs) {

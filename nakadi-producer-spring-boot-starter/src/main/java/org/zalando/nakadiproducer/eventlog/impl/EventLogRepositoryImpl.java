@@ -61,11 +61,19 @@ public class EventLogRepositoryImpl implements EventLogRepository {
 
     @Override
     public void delete(EventLog eventLog) {
-        Map<String, Object> namedParameterMap = new HashMap<>();
-        namedParameterMap.put("id", eventLog.getId());
-        jdbcTemplate.update(
-            "DELETE FROM nakadi_events.event_log where id = :id",
-            namedParameterMap
+        delete(Collections.singleton(eventLog));
+    }
+
+    @Override
+    public void delete(Collection<EventLog> eventLogs) {
+        MapSqlParameterSource[] namedParameterMaps = eventLogs.stream()
+                .map(eventLog ->
+                    new MapSqlParameterSource().addValue("id", eventLog.getId())
+                ).toArray(MapSqlParameterSource[]::new);
+
+        jdbcTemplate.batchUpdate(
+                "DELETE FROM nakadi_events.event_log where id = :id",
+                namedParameterMaps
         );
     }
 

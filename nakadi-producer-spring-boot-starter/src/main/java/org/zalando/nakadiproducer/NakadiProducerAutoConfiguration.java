@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.flyway.FlywayProperties;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -47,24 +48,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 @AutoConfigureAfter(name="org.zalando.tracer.spring.TracerAutoConfiguration")
-@EnableScheduling
 @EnableConfigurationProperties({ DataSourceProperties.class, FlywayProperties.class })
 @Slf4j
 public class NakadiProducerAutoConfiguration {
 
+    @ConditionalOnProperty(name="nakadi-producer.submission-enabled", havingValue = "true", matchIfMissing = true)
     @ConditionalOnMissingBean({NakadiPublishingClient.class, NakadiClient.class})
     @Configuration
     @Import(FahrscheinWithTokensNakadiClientConfiguration.StupsTokenConfiguration.class)
     static class FahrscheinWithTokensNakadiClientConfiguration {
 
         @Bean
-        public NakadiPublishingClient nakadiProducerPublishingClient(AccessTokenProvider accessTokenProvider,
-                @Value("${nakadi-producer.nakadi-base-uri}") URI nakadiBaseUri, RequestFactory requestFactory) {
+        public NakadiPublishingClient nakadiProducerPublishingClient(
+                AccessTokenProvider accessTokenProvider,
+                @Value("${nakadi-producer.nakadi-base-uri}") URI nakadiBaseUri,
+                RequestFactory requestFactory) {
             return new FahrscheinNakadiPublishingClient(NakadiClient.builder(nakadiBaseUri, requestFactory)
                     .withAccessTokenProvider(accessTokenProvider::getAccessToken).build());
         }
 
         @ConditionalOnClass(name = "org.zalando.stups.tokens.Tokens")
+        @ConditionalOnProperty(name="nakadi-producer.submission-enabled", havingValue = "true", matchIfMissing = true)
         @ConditionalOnMissingBean({NakadiPublishingClient.class, NakadiClient.class})
         @Configuration
         static class StupsTokenConfiguration {
@@ -75,16 +79,16 @@ public class NakadiProducerAutoConfiguration {
                     @Value("${nakadi-producer.access-token-scopes:uid}") String[] accessTokenScopes) {
                 return new StupsTokenComponent(accessTokenUri, Arrays.asList(accessTokenScopes));
             }
-
         }
+
         @Bean
         @ConditionalOnMissingBean
-        RequestFactory requestFactory(@Value("${nakadi-producer.encoding:GZIP}") ContentEncoding encoding){
+        RequestFactory requestFactory(@Value("${nakadi-producer.encoding:GZIP}") ContentEncoding encoding) {
             return new SimpleRequestFactory(encoding);
         }
-
     }
 
+    @ConditionalOnProperty(name="nakadi-producer.submission-enabled", havingValue = "true", matchIfMissing = true)
     @ConditionalOnMissingBean(NakadiPublishingClient.class)
     @ConditionalOnBean(NakadiClient.class)
     @Configuration
@@ -150,27 +154,34 @@ public class NakadiProducerAutoConfiguration {
         return new EventLogRepositoryImpl(namedParameterJdbcTemplate, lockSize);
     }
 
-    @Bean
-    public EventTransmitter eventTransmitter(EventTransmissionService eventTransmissionService) {
-        return new EventTransmitter(eventTransmissionService);
-    }
+    @ConditionalOnProperty(name="nakadi-producer.submission-enabled", havingValue = "true", matchIfMissing = true)
+    @EnableScheduling
+    @Configuration
+    static class TransmissionConfiguration {
 
-    @Bean
-    public EventTransmissionScheduler eventTransmissionScheduler(EventTransmitter eventTransmitter,
-            @Value("${nakadi-producer.scheduled-transmission-enabled:true}") boolean scheduledTransmissionEnabled) {
-        return new EventTransmissionScheduler(eventTransmitter, scheduledTransmissionEnabled);
-    }
+        @Bean
+        public EventTransmitter eventTransmitter(EventTransmissionService eventTransmissionService) {
+            return new EventTransmitter(eventTransmissionService);
+        }
 
-  @Bean
-  public EventTransmissionService eventTransmissionService(
-      EventLogRepository eventLogRepository,
-      NakadiPublishingClient nakadiPublishingClient,
-      ObjectMapper objectMapper,
-      @Value("${nakadi-producer.lock-duration:600}") int lockDuration,
-      @Value("${nakadi-producer.lock-duration-buffer:60}") int lockDurationBuffer) {
-    return new EventTransmissionService(
-        eventLogRepository, nakadiPublishingClient, objectMapper, lockDuration, lockDurationBuffer);
-  }
+        @Bean
+        public EventTransmissionScheduler eventTransmissionScheduler(
+                EventTransmitter eventTransmitter,
+                @Value("${nakadi-producer.scheduled-transmission-enabled:true}") boolean scheduledTransmissionEnabled) {
+            return new EventTransmissionScheduler(eventTransmitter, scheduledTransmissionEnabled);
+        }
+
+        @Bean
+        public EventTransmissionService eventTransmissionService(
+                EventLogRepository eventLogRepository,
+                NakadiPublishingClient nakadiPublishingClient,
+                ObjectMapper objectMapper,
+                @Value("${nakadi-producer.lock-duration:600}") int lockDuration,
+                @Value("${nakadi-producer.lock-duration-buffer:60}") int lockDurationBuffer) {
+            return new EventTransmissionService(
+                    eventLogRepository, nakadiPublishingClient, objectMapper, lockDuration, lockDurationBuffer);
+        }
+    }
 
     @Bean
     public FlywayMigrator flywayMigrator() {

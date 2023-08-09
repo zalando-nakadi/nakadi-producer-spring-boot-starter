@@ -65,11 +65,18 @@ public class QueryStatementBatcherIT extends BaseMockedExternalCommunicationIT {
         return new QueryStatementBatcher<>(
                 "INSERT INTO x (a, b) VALUES ", "(:a#, :b#)", " RETURNING id",
                 ID_ROW_MAPPER,
-                51, 13, 4, 1);
+                200, 51, 13, 4, 1);
+    }
+    private static QueryStatementBatcher<Void> createInsertPairsWithoutReturningBatcher() {
+        return new QueryStatementBatcher<>(
+                "INSERT INTO x (a, b) VALUES ", "(:a#, :b#)", "",
+                null,
+                200, 51, 13, 4, 1);
     }
 
+
     @Test
-    @Disabled("Running benchmarks takes too long.")
+    //@Disabled("Running benchmarks takes too long.")
     public void benchmarkWithBatcher() {
         int totalCount = 5000;
         List<MapSqlParameterSource> inputs = prepareInputs(totalCount);
@@ -122,7 +129,7 @@ public class QueryStatementBatcherIT extends BaseMockedExternalCommunicationIT {
     }
 
     @Test
-    @Disabled("Running benchmarks takes too long.")
+    //@Disabled("Running benchmarks takes too long.")
     public void benchmarkBatchWithoutReturn() {
         int totalCount = 5000;
         List<MapSqlParameterSource> inputs = prepareInputs(totalCount);
@@ -135,4 +142,18 @@ public class QueryStatementBatcherIT extends BaseMockedExternalCommunicationIT {
         System.err.format("Inserting %s items took %s.\n", totalCount, Duration.between(before, after));
         System.out.println(Arrays.toString(results));
     }
+
+    @Test
+    //@Disabled("Running benchmarks takes too long.")
+    public void benchmarkWithBatcherWithoutReturn() {
+        int totalCount = 5000;
+        List<MapSqlParameterSource> inputs = prepareInputs(totalCount);
+        Instant before = Instant.now();
+        QueryStatementBatcher<Void> batcher = createInsertPairsWithoutReturningBatcher();
+        int updateCount = batcher.update(jdbcTemplate, inputs.stream());
+        Instant after = Instant.now();
+        System.err.format("Inserting %s items took %s.\n", totalCount, Duration.between(before, after));
+        System.out.println(updateCount);
+    }
+
 }

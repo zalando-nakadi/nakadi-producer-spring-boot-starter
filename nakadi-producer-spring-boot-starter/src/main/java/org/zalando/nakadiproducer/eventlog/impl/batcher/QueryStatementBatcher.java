@@ -162,6 +162,29 @@ public class QueryStatementBatcher<T> {
         });
     }
 
+    public int update(NamedParameterJdbcTemplate database, Stream<MapSqlParameterSource> repeatedInputs) {
+        return update(database, new MapSqlParameterSource(), repeatedInputs);
+    }
+
+    public int update(NamedParameterJdbcTemplate database,
+                      MapSqlParameterSource commonArguments,
+                      Stream<MapSqlParameterSource> repeatedInputs) {
+        return updateRecursive(database, commonArguments, repeatedInputs, 0);
+    }
+
+    private int updateRecursive(NamedParameterJdbcTemplate database, MapSqlParameterSource commonArguments, Stream<MapSqlParameterSource> repeatedInputs, int subTemplateIndex) {
+        SubTemplate firstSubTemplate = subTemplates.get(subTemplateIndex);
+
+        Stream<List<MapSqlParameterSource>> chunkedStream = chunkStream(repeatedInputs, firstSubTemplate.inputCount);
+        return chunkedStream.mapToInt(chunk -> {
+            if (chunk.size() == firstSubTemplate.inputCount) {
+                return firstSubTemplate.update(database, commonArguments, chunk);
+            } else {
+                return updateRecursive(database, commonArguments, chunk.stream(), subTemplateIndex + 1);
+            }
+        }).sum();
+    }
+
     /**
      * This nested class handles a single "batch size".
      */
@@ -180,9 +203,14 @@ public class QueryStatementBatcher<T> {
                                      MapSqlParameterSource commonArguments,
                                      List<? extends MapSqlParameterSource> repeatedInputs,
                                      RowMapper<T> mapper) {
-            checkArgument(repeatedInputs.size() == inputCount,
-                "input size = %s != %s = inputCount", repeatedInputs.size(), inputCount);
+            MapSqlParameterSource params = expandParameters(commonArguments, repeatedInputs);
 
+            return database.queryForStream(expandedTemplate, params, mapper);
+        }
+
+        private MapSqlParameterSource expandParameters(MapSqlParameterSource commonArguments, List<? extends MapSqlParameterSource> repeatedInputs) {
+            checkArgument(repeatedInputs.size() == inputCount,
+                    "input size = %s != %s = inputCount", repeatedInputs.size(), inputCount);
             MapSqlParameterSource params = new MapSqlParameterSource();
             Stream.of(commonArguments.getParameterNames())
                     .forEach(name -> copyTypeAndValue(commonArguments, name, params, name));
@@ -194,8 +222,14 @@ public class QueryStatementBatcher<T> {
                                 .forEach(name -> copyTypeAndValue(input, name,
                                         params, name.replace(namePlaceholder, textIndex)));
                     });
+            return params;
+        }
 
-            return database.queryForStream(expandedTemplate, params, mapper);
+        int update(NamedParameterJdbcTemplate database,
+                   MapSqlParameterSource commonArguments,
+                   List<? extends MapSqlParameterSource> repeatedInputs) {
+            MapSqlParameterSource params = expandParameters(commonArguments, repeatedInputs);
+            return database.update(expandedTemplate, params);
         }
 
         private static void copyTypeAndValue(MapSqlParameterSource source, String sourceName,

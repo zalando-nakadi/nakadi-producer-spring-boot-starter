@@ -7,6 +7,8 @@
 
 [Nakadi](https://github.com/zalando/nakadi) is a distributed event bus that implements a RESTful API abstraction instead of Kafka-like queues.
 
+### Concept
+
 The goal of **this** Spring Boot starter is to simplify the reliable integration between event producer and Nakadi. When we send events from a transactional application, a few recurring challenges appear:
 - we have to make sure that events from a transaction get sent, when the transaction has been committed,
 - we have to make sure that events from a transaction do not get sent, when the transaction has been rolled back,
@@ -277,6 +279,46 @@ For corner cases: You can have multiple such extractors for the same event type,
 matches the payload object (in undefined order) will be used.
 There are also some more factory methods with different signatures for more special cases, and you can also write
 your own implementation (but for the usual cases, the one shown here should be enough).
+
+
+### Fabric Event Streams Integration (optional)
+
+It is possible to use this library together with the Zalando-internal infrastructure Fabric Event Streams
+([internal link](https://fabric.docs.zalando.net/fes-overview/)). In this setup, this library will just be used to store events into the database,
+but won't send them out – they'll be sent out automatically by FES, listening on the database's logical replication
+stream.
+
+For this, the main configuration here is to just [disable any sending of events](#disable-submission-completely).
+
+See [the FES documentation](https://fabric.docs.zalando.net/fes-configuration/#postgres-from-nakadi-producer-to-generic-nakadi-event) on how to configure FES to work with our outbox table.
+
+The events in the table thus will accumulate (even though FES is sending them out).
+Depending on your load, you may have to periodically clean the table to get rid of old events.
+
+Alternatively, you can tell the library to immediately delete events after inserting them into a table:
+
+```yaml
+nakadi-producer:
+   delete-after-write: true
+```
+
+This way the outbox table will never grow, as events are deleted again before the end of each transaction.
+FES will pick up only the inserts, not the deletions, so your events will still be sent out.
+
+When migrating from sending out via this library to sending out via FES, you'll want to have a short time with both
+sending and deleting enabled, so all events still in the table from before the change are sent out properly:
+
+```yaml
+nakadi-producer:
+   delete-after-write: true
+   submission-enabled: true
+```
+
+**Note:** FES will submit events to Nakadi *in order*, and on errors will (depending on configuration) either block the
+stream (meaning no more events will be sent out until manual intervention), skip events, or send them to a dead letter
+queue.
+This is different to the ["eventual submission, possibly out of order" principle](#concept) when this library is used
+for sending out the events.
 
 ### Event snapshots (optional)
 

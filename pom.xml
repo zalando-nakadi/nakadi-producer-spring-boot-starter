@@ -15,7 +15,7 @@
 
     <artifactId>nakadi-producer-reactor</artifactId>
     <groupId>org.zalando</groupId>
-    <version>21.0.0</version>
+    <version>21.1.0-RC1</version>
     <packaging>pom</packaging>
     <name>Nakadi Event Producer Reactor</name>
 

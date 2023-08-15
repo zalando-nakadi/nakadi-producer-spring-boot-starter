@@ -74,6 +74,12 @@ If you are using Maven, include the library in your `pom.xml`:
 </dependency>
 ```
 
+In Gradle, it's just one line:
+
+```groovy
+implementation "org.zalando:nakadi-producer-spring-boot-starter:${nakadiProducerVersion}"
+```
+
 The latest available version is visible in the Maven central badge at the top of this README. 
 
 The library uses Flyway migrations to set up its own database schema `nakadi_events`.

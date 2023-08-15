@@ -1,5 +1,7 @@
 package org.zalando.nakadiproducer.snapshots;
 
+import org.springframework.lang.Nullable;
+
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -9,7 +11,9 @@ import java.util.function.Function;
  * meant to be used in a functional style.
  *
  * @see SnapshotEventGenerator
+ * @deprecated Please use the {@link SnapshotEventGenerator#of} methods instead.
  */
+@Deprecated
 public final class SimpleSnapshotEventGenerator implements SnapshotEventGenerator {
     private final String supportedEventType;
     private final BiFunction<Object, String, List<Snapshot>> getSnapshotFunction;
@@ -51,7 +55,7 @@ public final class SimpleSnapshotEventGenerator implements SnapshotEventGenerato
     }
 
     @Override
-    public List<Snapshot> generateSnapshots(Object withIdGreaterThan, String filter) {
+    public List<Snapshot> generateSnapshots(@Nullable Object withIdGreaterThan, String filter) {
         return getSnapshotFunction.apply(withIdGreaterThan, filter);
     }
 

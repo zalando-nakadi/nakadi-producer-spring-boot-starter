@@ -1,7 +1,7 @@
 package org.zalando.nakadiproducer.config;
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres;
 
+import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;

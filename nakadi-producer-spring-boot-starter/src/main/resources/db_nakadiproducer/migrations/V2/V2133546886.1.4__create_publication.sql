@@ -1,5 +1,8 @@
+-- We only need insert. Updates will happen when this library itself
+ -- tries to send things out, but that should not be published.
 CREATE PUBLICATION nakadi_producer_fes
-   FOR TABLE nakadi_events.event_log;
+   FOR TABLE nakadi_events.event_log
+   WITH (publish = 'insert');
 
 COMMENT ON PUBLICATION nakadi_producer_fes
      IS 'Publication for collecting event data data via Fabric Event Streams.'

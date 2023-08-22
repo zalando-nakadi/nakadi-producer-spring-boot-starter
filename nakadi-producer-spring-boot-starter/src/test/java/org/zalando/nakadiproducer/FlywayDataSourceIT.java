@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres;
+import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 
 @ContextConfiguration(classes=FlywayDataSourceIT.Config.class)
 public class FlywayDataSourceIT extends BaseMockedExternalCommunicationIT {

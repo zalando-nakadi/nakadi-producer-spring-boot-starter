@@ -65,6 +65,7 @@ public class NakadiProducerAutoConfiguration {
         }
 
         @ConditionalOnClass(name = "org.zalando.stups.tokens.Tokens")
+        @ConditionalOnMissingBean({NakadiPublishingClient.class, NakadiClient.class})
         @Configuration
         static class StupsTokenConfiguration {
             @Bean(destroyMethod = "stop")

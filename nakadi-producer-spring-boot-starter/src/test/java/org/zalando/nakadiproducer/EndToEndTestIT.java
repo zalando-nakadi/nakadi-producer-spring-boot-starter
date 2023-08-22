@@ -12,6 +12,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
 import org.zalando.nakadiproducer.eventlog.CompactionKeyExtractor;
@@ -39,11 +40,19 @@ public class EndToEndTestIT extends BaseMockedExternalCommunicationIT {
     @Autowired
     private MockNakadiPublishingClient nakadiClient;
 
+    @Autowired
+    ApplicationContext context;
+
     @BeforeEach
     @AfterEach
     public void clearNakadiEvents() {
         eventTransmitter.sendEvents();
         nakadiClient.clearSentEvents();
+    }
+
+    @Test
+    public void noStupsTokenBeanIsSetupWithMockPublishingClient() {
+        assertThat(context.getBeanProvider(StupsTokenComponent.class).getIfAvailable(), is(nullValue()));
     }
 
     @Test

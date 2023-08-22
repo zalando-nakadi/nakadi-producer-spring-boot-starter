@@ -7,6 +7,8 @@
 
 [Nakadi](https://github.com/zalando/nakadi) is a distributed event bus that implements a RESTful API abstraction instead of Kafka-like queues.
 
+### Concept
+
 The goal of **this** Spring Boot starter is to simplify the reliable integration between event producer and Nakadi. When we send events from a transactional application, a few recurring challenges appear:
 - we have to make sure that events from a transaction get sent, when the transaction has been committed,
 - we have to make sure that events from a transaction do not get sent, when the transaction has been rolled back,
@@ -70,6 +72,12 @@ If you are using Maven, include the library in your `pom.xml`:
     <artifactId>nakadi-producer-spring-boot-starter</artifactId>
     <version>${nakadi-producer.version}</version>
 </dependency>
+```
+
+In Gradle, it's just one line:
+
+```groovy
+implementation "org.zalando:nakadi-producer-spring-boot-starter:${nakadiProducerVersion}"
 ```
 
 The latest available version is visible in the Maven central badge at the top of this README. 
@@ -162,6 +170,23 @@ nakadi-producer:
 If you do not use the STUPS Tokens library, you can implement token retrieval yourself by defining a Spring bean of
 type [`AccessTokenProvider`](nakadi-producer-spring-boot-starter/src/main/java/org/zalando/nakadiproducer/AccessTokenProvider.java).
 The starter will detect it and call it once for each request to retrieve the token.
+
+### Disable submission completely
+
+You can disable the whole Nakadi integration completely with this property:
+
+```yaml
+nakadi-producer:
+   submission-enabled: false
+```
+
+In this case you don't need to configure anything related to the Nakadi communication ↑ (and this library won't
+set up any beans related to it).
+
+A use case for this might be that you have several components of your application connected to the same database,
+and want the submission of the events centralized in one of these components. Then for all other components you'd
+set `nakadi-producer.submission-enabled: false` (true is the default), but still can use the EventLogWriter to
+create events.
 
 ### Creating events
 
@@ -260,6 +285,46 @@ For corner cases: You can have multiple such extractors for the same event type,
 matches the payload object (in undefined order) will be used.
 There are also some more factory methods with different signatures for more special cases, and you can also write
 your own implementation (but for the usual cases, the one shown here should be enough).
+
+
+### Fabric Event Streams Integration (optional)
+
+It is possible to use this library together with the Zalando-internal infrastructure Fabric Event Streams
+([internal link](https://fabric.docs.zalando.net/fes-overview/)). In this setup, this library will just be used to store events into the database,
+but won't send them out – they'll be sent out automatically by FES, listening on the database's logical replication
+stream.
+
+For this, the main configuration here is to just [disable any sending of events](#disable-submission-completely).
+
+See [the FES documentation](https://fabric.docs.zalando.net/fes-configuration/#postgres-from-nakadi-producer-to-generic-nakadi-event) on how to configure FES to work with our outbox table.
+
+The events in the table thus will accumulate (even though FES is sending them out).
+Depending on your load, you may have to periodically clean the table to get rid of old events.
+
+Alternatively, you can tell the library to immediately delete events after inserting them into a table:
+
+```yaml
+nakadi-producer:
+   delete-after-write: true
+```
+
+This way the outbox table will never grow, as events are deleted again before the end of each transaction.
+FES will pick up only the inserts, not the deletions, so your events will still be sent out.
+
+When migrating from sending out via this library to sending out via FES, you'll want to have a short time with both
+sending and deleting enabled, so all events still in the table from before the change are sent out properly:
+
+```yaml
+nakadi-producer:
+   delete-after-write: true
+   submission-enabled: true
+```
+
+**Note:** FES will submit events to Nakadi *in order*, and on errors will (depending on configuration) either block the
+stream (meaning no more events will be sent out until manual intervention), skip events, or send them to a dead letter
+queue.
+This is different to the ["eventual submission, possibly out of order" principle](#concept) when this library is used
+for sending out the events.
 
 ### Event snapshots (optional)
 
@@ -431,7 +496,8 @@ This is a list of all the documented spring properties (in alphabetical order), 
 | [`nakadi-producer.lock-duration-buffer`](#customizing-event-locks) | Number of seconds before the expiry of a lock an event is not used. |
 | [`nakadi-producer.lock-size`](#customizing-event-locks)          | Number of events to lock (and then load into memory) at once.  |
 | [`nakadi-producer.nakadi-base-uri`](#letting-this-library-set-things-up) | The Nakadi base URI used for submitting events.  |
-| [`nakadi-producer.scheduled-transmission-enabled: false`](#test-support) | Disable event transmission scheduler.  |
+| [`nakadi-producer.scheduled-transmission-enabled: false`](#test-support) | Disable event transmission scheduler (but still set up Nakadi connection beans, so it can be used manually). |
+| [`nakadi-producer.submission-enabled: false`](#disable-submission-completely) | Disable event submission completely (including all beans for this). |
 | [`tracer.traces.X-Flow-ID: flow-id`](#x-flow-id-optional)        | Enable flow-ID support |
 
 ## Contributing

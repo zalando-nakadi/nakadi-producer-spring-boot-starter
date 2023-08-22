@@ -7,6 +7,7 @@ import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.SNAPSH
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.UPDATE;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,10 +33,13 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     private final Map<String, CompactionKeyExtractor> extractorsByEventType;
 
+    private final boolean deleteAfterWrite;
+
     public EventLogWriterImpl(EventLogRepository eventLogRepository,
                               ObjectMapper objectMapper,
                               FlowIdComponent flowIdComponent,
-                              List<CompactionKeyExtractor> keyExtractors) {
+                              List<CompactionKeyExtractor> keyExtractors,
+                              boolean deleteAfterWrite) {
         this.eventLogRepository = eventLogRepository;
         this.objectMapper = objectMapper;
         this.flowIdComponent = flowIdComponent;
@@ -43,6 +47,7 @@ public class EventLogWriterImpl implements EventLogWriter {
                 .collect(groupingBy(
                         CompactionKeyExtractor::getEventType,
                         collectingAndThen(toList(), EventLogWriterImpl::joinCompactors)));
+        this.deleteAfterWrite = deleteAfterWrite;
     }
 
     /**
@@ -72,66 +77,79 @@ public class EventLogWriterImpl implements EventLogWriter {
     @Transactional
     public void fireCreateEvent(final String eventType, final String dataType, final Object data) {
         final EventLog eventLog = createDataEventLog(eventType, CREATE, dataType, data);
-        eventLogRepository.persist(eventLog);
+        persist(eventLog);
     }
+
 
     @Override
     @Transactional
     public void fireCreateEvents(final String eventType, final String dataType, final Collection<?> data) {
-        eventLogRepository.persist(createDataEventLogs(eventType, CREATE, dataType, data));
+        persistSeveral(createDataEventLogs(eventType, CREATE, dataType, data));
     }
 
     @Override
     @Transactional
     public void fireUpdateEvent(final String eventType, final String dataType, final Object data) {
         final EventLog eventLog = createDataEventLog(eventType, UPDATE, dataType, data);
-        eventLogRepository.persist(eventLog);
+        persist(eventLog);
     }
 
     @Override
     @Transactional
     public void fireUpdateEvents(final String eventType, final String dataType, final Collection<?> data) {
-        eventLogRepository.persist(createDataEventLogs(eventType, UPDATE, dataType, data));
+        persistSeveral(createDataEventLogs(eventType, UPDATE, dataType, data));
     }
 
     @Override
     @Transactional
     public void fireDeleteEvent(final String eventType, final String dataType, final Object data) {
         final EventLog eventLog = createDataEventLog(eventType, DELETE, dataType, data);
-        eventLogRepository.persist(eventLog);
+        persist(eventLog);
     }
 
     @Override
     @Transactional
     public void fireDeleteEvents(final String eventType, final String dataType, final Collection<?> data) {
-        eventLogRepository.persist(createDataEventLogs(eventType, DELETE, dataType, data));
+        persistSeveral(createDataEventLogs(eventType, DELETE, dataType, data));
     }
 
     @Override
     @Transactional
     public void fireSnapshotEvent(final String eventType, final String dataType, final Object data) {
         final EventLog eventLog = createDataEventLog(eventType, SNAPSHOT, dataType, data);
-        eventLogRepository.persist(eventLog);
+        persist(eventLog);
     }
 
     @Override
     @Transactional
     public void fireSnapshotEvents(final String eventType, final String dataType, final Collection<?> data) {
-        eventLogRepository.persist(createDataEventLogs(eventType, SNAPSHOT, dataType, data));
+        persistSeveral(createDataEventLogs(eventType, SNAPSHOT, dataType, data));
     }
 
     @Override
     @Transactional
     public void fireBusinessEvent(final String eventType, Object payload) {
         final EventLog eventLog = createEventLog(eventType, payload, getCompactionKeyFor(eventType, payload));
-        eventLogRepository.persist(eventLog);
+        persist(eventLog);
     }
 
     @Override
     @Transactional
     public void fireBusinessEvents(final String eventType, final Collection<?> payload) {
         final Collection<EventLog> eventLogs = createBusinessEventLogs(eventType, payload);
-        eventLogRepository.persist(eventLogs);
+        persistSeveral(eventLogs);
+    }
+
+    private void persist(EventLog eventLog) {
+        persistSeveral(Collections.singleton(eventLog));
+    }
+
+    private void persistSeveral(Collection<EventLog> eventLogs) {
+        if(deleteAfterWrite) {
+            eventLogRepository.persistAndDelete(eventLogs);
+        } else {
+            eventLogRepository.persist(eventLogs);
+        }
     }
 
     private Collection<EventLog> createBusinessEventLogs(final String eventType,

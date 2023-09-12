@@ -24,6 +24,7 @@ import org.zalando.nakadiproducer.config.EmbeddedDataSourceConfig;
                 "management.security.enabled=false",
                 "zalando.team.id:alpha-local-testing",
                 "nakadi-producer.scheduled-transmission-enabled:false",
+                "nakadi-producer.lock-size:100",
                 "management.endpoints.web.exposure.include:snapshot-event-creation"
         },
         classes = {TestApplication.class, EmbeddedDataSourceConfig.class, SnapshotEventGenerationWebEndpointIT.Config.class}

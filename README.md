@@ -422,9 +422,10 @@ There are three properties for customizing this event locking on transmission:
   considered for transmission. The default is currently 60 seconds but might change in future releases.
 
 * **lock-size** (events): Defines the maximum amount of events which are loaded into memory and published in one run
-  (in one submission per event type). By default, *all* events are loaded into memory. In some future release, this
-  property will become mandatory. This should be set to a value which is not too high so out-of-memory situations
-  are avoided.
+  (in one submission per event type). **This property is mandatory** (even if you disable sending events completely).
+  This should be set to a value which is low enough so out-of-memory situations
+  are avoided (depending on your typical event sizes), and high enough to allow the needed throughput.
+  Using the value 0 will disable the limit completely, but this is not recommended.
 
 Example:
 ```yaml

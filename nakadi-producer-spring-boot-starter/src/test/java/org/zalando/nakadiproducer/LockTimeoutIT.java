@@ -27,7 +27,8 @@ import static org.hamcrest.Matchers.is;
 @SpringBootTest(properties = {
         "nakadi-producer.scheduled-transmission-enabled:false",
         "nakadi-producer.lock-duration:300",
-        "nakadi-producer.lock-duration-buffer:30"})
+        "nakadi-producer.lock-duration-buffer:30",
+        "nakadi-producer.lock-size:100"})
 public class LockTimeoutIT extends BaseMockedExternalCommunicationIT {
     private static final String MY_EVENT_TYPE = "myEventType";
 

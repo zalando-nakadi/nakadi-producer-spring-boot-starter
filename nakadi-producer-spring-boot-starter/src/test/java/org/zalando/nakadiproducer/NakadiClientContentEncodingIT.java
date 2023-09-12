@@ -18,6 +18,7 @@ import static org.hamcrest.Matchers.is;
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
         properties = {
                 "nakadi-producer.scheduled-transmission-enabled:false",
+                "nakadi-producer.lock-size:100",
                 // as we are not defining a mock nakadi client, we need to provide these properties:
                 "nakadi-producer.encoding:ZSTD",
                 "nakadi-producer.nakadi-base-uri:http://nakadi.example.com/",

@@ -1,8 +1,8 @@
 package org.zalando.nakadiproducer;
 
-import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
+import jakarta.annotation.PostConstruct;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.callback.BaseCallback;
 import org.flywaydb.core.api.callback.Context;

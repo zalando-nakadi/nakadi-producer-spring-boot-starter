@@ -39,7 +39,8 @@ public class LoadTestIT {
     public static DockerComposeContainer compose =
             new DockerComposeContainer(new File("src/test/resources/docker-compose.yaml"))
                     .withExposedService("nakadi", 8080,
-                            Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(240)));
+                            Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(240)))
+                    .withOptions("--compatibility");
 
     @Autowired
     private EventLogWriter eventLogWriter;

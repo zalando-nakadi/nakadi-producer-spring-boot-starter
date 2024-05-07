@@ -56,7 +56,7 @@ Additionally, this library was tested with:
 | nakadi-producer-spring-boot-starter | Java | Spring Boot | Flyway | |
 |---|---|---|---|---|
 | 30.0.0 | 21 | 3.2.5.RELEASE | 9 ||
-| 20.0.0 | 11 | 2.5.6.RELEASE | 7 ||
+| 21.0.0 | 11 | 2.5.6.RELEASE | 7 ||
 | 4.5.0  | 8  | 1.5.3.RELEASE | 4 |[Documentation](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/tree/spring-boot-1)|
 
 It relies on an existing configured PostgreSQL DataSource.

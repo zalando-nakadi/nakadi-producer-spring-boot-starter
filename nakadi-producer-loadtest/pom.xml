@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.zalando</groupId>
         <artifactId>nakadi-producer-reactor</artifactId>
-        <version>21.0.0</version>
+        <version>30.0.0-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -50,13 +50,13 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>1.16.0</version>
+            <version>1.19.7</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.22</version>
+            <version>1.18.30</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

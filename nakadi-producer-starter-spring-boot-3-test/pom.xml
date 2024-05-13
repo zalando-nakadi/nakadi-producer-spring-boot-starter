@@ -3,14 +3,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>nakadi-producer-starter-spring-boot-2-test</artifactId>
+    <artifactId>nakadi-producer-starter-spring-boot-3-test</artifactId>
     <groupId>org.zalando</groupId>
 
 
     <parent>
         <groupId>org.zalando</groupId>
         <artifactId>nakadi-producer-reactor</artifactId>
-        <version>21.0.0</version>
+        <version>30.0.0-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -31,18 +31,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
-            <version>2.5.6</version>
         </dependency>
         <dependency>
-            <groupId>com.opentable.components</groupId>
-            <artifactId>otj-pg-embedded</artifactId>
-            <version>0.12.0</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>postgresql</artifactId>
-                    <groupId>postgresql</groupId>
-                </exclusion>
-            </exclusions>
+            <groupId>io.zonky.test</groupId>
+            <artifactId>embedded-postgres</artifactId>
+            <version>2.0.6</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -62,13 +55,30 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
-            <version>4.4.0</version>
+            <version>5.4.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-xml</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>--add-opens java.base/java.util=ALL-UNNAMED</argLine>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>

@@ -10,7 +10,7 @@ import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
 import org.zalando.nakadiproducer.transmission.NakadiPublishingClient;
 import org.zalando.nakadiproducer.transmission.impl.EventBatcher.BatchItem;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import java.io.IOException;
 import java.time.Clock;

@@ -1,8 +1,8 @@
 package org.zalando.nakadiproducer.eventlog;
 
 import java.util.Collection;
-import javax.transaction.Transactional;
 
+import jakarta.transaction.Transactional;
 import org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator;
 
 /**

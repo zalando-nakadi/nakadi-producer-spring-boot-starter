@@ -2,8 +2,10 @@ package org.zalando.nakadiproducer.eventlog.impl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.CREATE;
 import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
 
 import java.util.*;
@@ -11,6 +13,7 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +23,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mockito;
 import org.zalando.nakadiproducer.eventlog.CompactionKeyExtractor;
-import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 
@@ -76,7 +78,7 @@ public abstract class EventLogWriterTest {
     private EventLogRepository eventLogRepository;
 
     @Mock
-    private FlowIdComponent flowIdComponent;
+    private EventLogMapper eventLogMapper;
 
     @Captor
     private ArgumentCaptor<EventLog> eventLogCapture;
@@ -91,6 +93,8 @@ public abstract class EventLogWriterTest {
     private MockPayload eventPayload3;
 
     private static final String TRACE_ID = "TRACE_ID";
+    private static final UUID EID = UUID.fromString("558a8fe5-330e-4d89-ae6c-d58432b2dde0");
+
 
     private static final String EVENT_BODY_DATA_1 =
         ("{'id':1,"
@@ -143,7 +147,7 @@ public abstract class EventLogWriterTest {
 
     @BeforeEach
     public void setUp() {
-        Mockito.reset(eventLogRepository, flowIdComponent);
+        Mockito.reset(eventLogRepository, eventLogMapper);
 
         eventPayload1 = Fixture.mockPayload(1, "mockedcode1", true,
             Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
@@ -154,14 +158,13 @@ public abstract class EventLogWriterTest {
         eventPayload3 = Fixture.mockPayload(3, "mockedcode3", true,
             Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
 
-        when(flowIdComponent.getXFlowIdValue()).thenReturn(TRACE_ID);
-
-        eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(),
-            flowIdComponent, extractorList);
+        eventLogWriter = new EventLogWriterImpl(eventLogRepository, eventLogMapper, extractorList);
     }
 
     @Test
     public void testFireCreateEvent() {
+        mockCreateEventLog(eventPayload1, null, CREATE);
+
         eventLogWriter.fireCreateEvent(PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE_1, eventPayload1);
 
         verifyPersistedDataEventLog("C");
@@ -296,7 +299,30 @@ public abstract class EventLogWriterTest {
         assertThat(eventLog.getFlowId(), is(TRACE_ID));
         assertThat(eventLog.getLockedBy(), is(nullValue()));
         assertThat(eventLog.getLockedUntil(), is(nullValue()));
+        assertThat(eventLog.getEid(), is(EID));
         keyAsserter.accept(eventLog.getCompactionKey(), expectedBody);
+    }
+
+    private void mockCreateEventLog(Object payload,
+                                    String compactionKey,
+                                    EventDataOperation dataOp) {
+        when(
+            eventLogMapper.createEventLog(
+                eq(PUBLISHER_EVENT_TYPE),
+                eq(new DataChangeEventEnvelope(dataOp.toString(), PUBLISHER_DATA_TYPE_1, payload)),
+                eq(compactionKey))
+        ).thenReturn(getEventLog(payload, compactionKey));
+    }
+
+    @SneakyThrows
+    private EventLog getEventLog(Object payloadString, String compactionKey) {
+        return EventLog.builder()
+            .eventType(PUBLISHER_EVENT_TYPE)
+            .eventBodyData(OBJECT_MAPPER.writeValueAsString(payloadString))
+            .flowId(TRACE_ID)
+            .compactionKey(compactionKey)
+            .eid(EID)
+            .build();
     }
 
 }

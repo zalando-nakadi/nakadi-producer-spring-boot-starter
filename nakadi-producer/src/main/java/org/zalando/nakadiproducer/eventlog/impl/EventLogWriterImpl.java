@@ -13,13 +13,9 @@ import java.util.Optional;
 
 import org.zalando.fahrschein.Preconditions;
 import org.zalando.nakadiproducer.eventlog.CompactionKeyExtractor;
-import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 
 import javax.transaction.Transactional;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class EventLogWriterImpl implements EventLogWriter {
 
@@ -27,18 +23,15 @@ public class EventLogWriterImpl implements EventLogWriter {
             CompactionKeyExtractor.ofOptional("doesn't matter", o -> Optional.empty());
     private final EventLogRepository eventLogRepository;
 
-    private final ObjectMapper objectMapper;
-    private final FlowIdComponent flowIdComponent;
+    private final EventLogMapper eventLogMapper;
 
     private final Map<String, CompactionKeyExtractor> extractorsByEventType;
 
     public EventLogWriterImpl(EventLogRepository eventLogRepository,
-                              ObjectMapper objectMapper,
-                              FlowIdComponent flowIdComponent,
+                              EventLogMapper eventLogMapper,
                               List<CompactionKeyExtractor> keyExtractors) {
         this.eventLogRepository = eventLogRepository;
-        this.objectMapper = objectMapper;
-        this.flowIdComponent = flowIdComponent;
+        this.eventLogMapper = eventLogMapper;
         this.extractorsByEventType = keyExtractors.stream()
                 .collect(groupingBy(
                         CompactionKeyExtractor::getEventType,
@@ -123,7 +116,7 @@ public class EventLogWriterImpl implements EventLogWriter {
     @Override
     @Transactional
     public void fireBusinessEvent(final String eventType, Object payload) {
-        final EventLog eventLog = createEventLog(eventType, payload, getCompactionKeyFor(eventType, payload));
+        final EventLog eventLog = eventLogMapper.createEventLog(eventType, payload, getCompactionKeyFor(eventType, payload));
         eventLogRepository.persist(eventLog);
     }
 
@@ -138,7 +131,7 @@ public class EventLogWriterImpl implements EventLogWriter {
                                                      final Collection<?> eventPayloads) {
         CompactionKeyExtractor extractor = getKeyExtractorFor(eventType);
         return eventPayloads.stream()
-                .map(payload -> createEventLog(eventType, payload,
+                .map(payload -> eventLogMapper.createEventLog(eventType, payload,
                         extractor.getKeyOrNull(payload)))
                 .collect(toList());
     }
@@ -152,7 +145,7 @@ public class EventLogWriterImpl implements EventLogWriter {
         CompactionKeyExtractor extractor = getKeyExtractorFor(eventType);
         String dataOp = eventDataOperation.toString();
         return data.stream()
-                .map(payload -> createEventLog(
+                .map(payload -> eventLogMapper.createEventLog(
                         eventType,
                         new DataChangeEventEnvelope(dataOp, dataType, payload),
                         extractor.getKeyOrNull(payload)))
@@ -160,7 +153,7 @@ public class EventLogWriterImpl implements EventLogWriter {
     }
 
     private EventLog createDataEventLog(String eventType, EventDataOperation dataOp, String dataType, Object data) {
-        return createEventLog(eventType,
+        return eventLogMapper.createEventLog(eventType,
                 new DataChangeEventEnvelope(dataOp.toString(), dataType, data),
                 getCompactionKeyFor(eventType, data));
     }
@@ -171,19 +164,5 @@ public class EventLogWriterImpl implements EventLogWriter {
 
     private CompactionKeyExtractor getKeyExtractorFor(String eventType) {
         return extractorsByEventType.getOrDefault(eventType, NOOP_EXTRACTOR);
-    }
-
-    private EventLog createEventLog(final String eventType, final Object eventPayload, String compactionKey) {
-        final EventLog eventLog = new EventLog();
-        eventLog.setEventType(eventType);
-        try {
-            eventLog.setEventBodyData(objectMapper.writeValueAsString(eventPayload));
-        } catch (final JsonProcessingException e) {
-            throw new IllegalStateException("could not map object to json: " + eventPayload.toString(), e);
-        }
-
-        eventLog.setCompactionKey(compactionKey);
-        eventLog.setFlowId(flowIdComponent.getXFlowIdValue());
-        return eventLog;
     }
 }

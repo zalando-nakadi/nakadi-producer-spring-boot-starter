@@ -9,6 +9,9 @@ import org.springframework.context.annotation.Primary;
 import java.io.IOException;
 
 import javax.sql.DataSource;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Configuration
 public class EmbeddedDataSourceConfig {
@@ -22,5 +25,13 @@ public class EmbeddedDataSourceConfig {
     @Bean
     public EmbeddedPostgres embeddedPostgres() throws IOException {
         return EmbeddedPostgres.start();
+    }
+
+    @Bean
+    public TransactionTemplate requiresNewTransactionTemplate(
+        PlatformTransactionManager transactionManager) {
+        TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+        transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        return transactionTemplate;
     }
 }

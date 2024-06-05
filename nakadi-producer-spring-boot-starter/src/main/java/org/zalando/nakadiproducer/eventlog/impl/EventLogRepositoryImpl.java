@@ -1,20 +1,16 @@
 package org.zalando.nakadiproducer.eventlog.impl;
 
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import java.util.UUID;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.SqlParameterValue;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.transaction.annotation.Transactional;
 
 public class EventLogRepositoryImpl implements EventLogRepository {
 
@@ -110,7 +106,8 @@ public class EventLogRepositoryImpl implements EventLogRepository {
               "    nakadi_events.event_log " +
               "    (event_type, event_body_data, flow_id, created, last_modified, locked_by, locked_until, compaction_key, eid)" +
               "VALUES " +
-              "    (:eventType, :eventBodyData, :flowId, :created, :lastModified, :lockedBy, :lockedUntil, :compactionKey, coalesce(:eid, CAST(LPAD(TO_HEX(currval('nakadi_events.event_log_id_seq')), 32, '0') AS UUID)))",
+              "    (:eventType, :eventBodyData, :flowId, :created, :lastModified, :lockedBy, :lockedUntil, :compactionKey, " +
+              "     coalesce(:eid, CAST(LPAD(TO_HEX(currval('nakadi_events.event_log_id_seq')), 32, '0') AS UUID)))",
           namedParameterMaps
       );
     }

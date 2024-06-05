@@ -112,6 +112,16 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
         assertEvent(actual, expected);
     }
 
+    @Test
+    @Transactional
+    public void testInsertEventWithDefinedEid() {
+        EventLog testEvent = buildEventLog("flow-id", 1, UUID.randomUUID());
+        eventLogRepository.persist(testEvent);
+
+        EventLog actual = findAllEventsInDB().get(0);
+        assertEvent(actual, testEvent);
+    }
+
     /**
      * This test checks that the default eid is generated correctly when multiple transactions are running in parallel.
      * The test creates three events in two parallel transactions.

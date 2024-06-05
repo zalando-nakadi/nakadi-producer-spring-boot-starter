@@ -6,6 +6,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.CREATE;
+import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.DELETE;
+import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.SNAPSHOT;
+import static org.zalando.nakadiproducer.eventlog.impl.EventDataOperation.UPDATE;
 import static org.zalando.nakadiproducer.util.Fixture.PUBLISHER_EVENT_TYPE;
 
 import java.util.*;
@@ -163,7 +166,7 @@ public abstract class EventLogWriterTest {
 
     @Test
     public void testFireCreateEvent() {
-        mockCreateEventLog(eventPayload1, null, CREATE);
+        mockCreateEventLog(eventPayload1, CREATE);
 
         eventLogWriter.fireCreateEvent(PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE_1, eventPayload1);
 
@@ -172,6 +175,10 @@ public abstract class EventLogWriterTest {
 
     @Test
     public void testFireCreateEvents() {
+        mockCreateEventLog(eventPayload1, CREATE);
+        mockCreateEventLog(eventPayload2, CREATE);
+        mockCreateEventLog(eventPayload3, CREATE);
+
         eventLogWriter.fireCreateEvents(
             PUBLISHER_EVENT_TYPE,
             PUBLISHER_DATA_TYPE_1,
@@ -182,6 +189,8 @@ public abstract class EventLogWriterTest {
 
     @Test
     public void testFireUpdateEvent() {
+        mockCreateEventLog(eventPayload1, UPDATE);
+
         eventLogWriter.fireUpdateEvent(PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE_1, eventPayload1);
 
         verifyPersistedDataEventLog("U");
@@ -189,6 +198,10 @@ public abstract class EventLogWriterTest {
 
     @Test
     public void testFireUpdateEvents() {
+        mockCreateEventLog(eventPayload1, UPDATE);
+        mockCreateEventLog(eventPayload2, UPDATE);
+        mockCreateEventLog(eventPayload3, UPDATE);
+
         eventLogWriter.fireUpdateEvents(
             PUBLISHER_EVENT_TYPE,
             PUBLISHER_DATA_TYPE_1,
@@ -199,6 +212,8 @@ public abstract class EventLogWriterTest {
 
     @Test
     public void testFireDeleteEvent() {
+        mockCreateEventLog(eventPayload1, DELETE);
+
         eventLogWriter.fireDeleteEvent(PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE_1, eventPayload1);
 
         verifyPersistedDataEventLog("D");
@@ -206,6 +221,10 @@ public abstract class EventLogWriterTest {
 
     @Test
     public void testFireDeleteEvents() {
+        mockCreateEventLog(eventPayload1, DELETE);
+        mockCreateEventLog(eventPayload2, DELETE);
+        mockCreateEventLog(eventPayload3, DELETE);
+
         eventLogWriter.fireDeleteEvents(
             PUBLISHER_EVENT_TYPE,
             PUBLISHER_DATA_TYPE_1,
@@ -215,6 +234,8 @@ public abstract class EventLogWriterTest {
 
     @Test
     public void testFireSnapshotEvent() throws Exception {
+        mockCreateEventLog(eventPayload1, SNAPSHOT);
+
         eventLogWriter.fireSnapshotEvent(PUBLISHER_EVENT_TYPE, PUBLISHER_DATA_TYPE_1,
             eventPayload1);
 
@@ -223,6 +244,10 @@ public abstract class EventLogWriterTest {
 
     @Test
     public void testFireSnapshotEvents() {
+        mockCreateEventLog(eventPayload1, SNAPSHOT);
+        mockCreateEventLog(eventPayload2, SNAPSHOT);
+        mockCreateEventLog(eventPayload3, SNAPSHOT);
+
         eventLogWriter.fireSnapshotEvents(
             PUBLISHER_EVENT_TYPE,
             PUBLISHER_DATA_TYPE_1,
@@ -234,6 +259,8 @@ public abstract class EventLogWriterTest {
     public void testFireBusinessEvent() throws Exception {
         MockPayload mockPayload = Fixture.mockPayload(1, "mockedcode1", true,
             Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
+
+        mockCreateBusinessEventLog(mockPayload);
 
         eventLogWriter.fireBusinessEvent(PUBLISHER_EVENT_TYPE, mockPayload);
 
@@ -248,6 +275,9 @@ public abstract class EventLogWriterTest {
             Fixture.mockSubClass("some info 1_0"), Fixture.mockSubList(2, "some detail 1_2"));
         MockPayload mockPayload2 = Fixture.mockPayload(2, "mockedcode2", true,
             Fixture.mockSubClass("some info 2_0"), Fixture.mockSubList(2, "some detail 2_1"));
+
+        mockCreateBusinessEventLog(mockPayload1);
+        mockCreateBusinessEventLog(mockPayload2);
 
         eventLogWriter.fireBusinessEvents(PUBLISHER_EVENT_TYPE,
             Stream.of(mockPayload1, mockPayload2).collect(Collectors.toList()));
@@ -303,13 +333,27 @@ public abstract class EventLogWriterTest {
         keyAsserter.accept(eventLog.getCompactionKey(), expectedBody);
     }
 
+    private void mockCreateBusinessEventLog(Object payload) {
+        String compactionKey = extractorList.isEmpty() ? null : extractorList.get(0).getKeyOrNull(payload);
+
+        mockCreateEventLog(payload, compactionKey);
+    }
     private void mockCreateEventLog(Object payload,
-                                    String compactionKey,
                                     EventDataOperation dataOp) {
+        String compactionKey = extractorList.isEmpty() ? null : extractorList.get(0).getKeyOrNull(payload);
+
+        DataChangeEventEnvelope payloadData =
+            new DataChangeEventEnvelope(dataOp.toString(), PUBLISHER_DATA_TYPE_1, payload);
+
+        mockCreateEventLog(payloadData, compactionKey);
+    }
+
+    private void mockCreateEventLog(Object payload, String compactionKey) {
+
         when(
             eventLogMapper.createEventLog(
                 eq(PUBLISHER_EVENT_TYPE),
-                eq(new DataChangeEventEnvelope(dataOp.toString(), PUBLISHER_DATA_TYPE_1, payload)),
+                eq(payload),
                 eq(compactionKey))
         ).thenReturn(getEventLog(payload, compactionKey));
     }

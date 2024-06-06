@@ -107,7 +107,7 @@ public class EventLogRepositoryImpl implements EventLogRepository {
               "    (event_type, event_body_data, flow_id, created, last_modified, locked_by, locked_until, compaction_key, eid)" +
               "VALUES " +
               "    (:eventType, :eventBodyData, :flowId, :created, :lastModified, :lockedBy, :lockedUntil, :compactionKey, " +
-              "     coalesce(:eid, CAST(LPAD(TO_HEX(currval('nakadi_events.event_log_id_seq')), 32, '0') AS UUID)))",
+              "     COALESCE(:eid, CAST(LPAD(TO_HEX(CAST(CURRVAL('nakadi_events.event_log_id_seq') as BIGINT)), 32, '0') AS UUID)))",
           namedParameterMaps
       );
     }

@@ -39,4 +39,17 @@ public class EventLog {
     private Instant lockedUntil;
     private String compactionKey;
     private UUID eid;
+
+    /**
+     * This is only needed for backward compatibility.
+     *
+     * <p>For instance 213 will be converted to "00000000-0000-0000-0000-0000000000d5"</p>
+     */
+    public UUID getEid() {
+        if (eid == null) {
+            return new UUID(0, id);
+        }
+
+        return eid;
+    }
 }

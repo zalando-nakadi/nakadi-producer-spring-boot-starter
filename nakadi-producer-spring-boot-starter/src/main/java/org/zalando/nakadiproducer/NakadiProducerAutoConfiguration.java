@@ -33,7 +33,6 @@ import org.zalando.nakadiproducer.eventlog.impl.EventLogMapper;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepositoryImpl;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogWriterImpl;
-import org.zalando.nakadiproducer.eventlog.impl.eidgenerator.NoOpEidGeneratorStrategy;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.flowid.NoopFlowIdComponent;
 import org.zalando.nakadiproducer.flowid.TracerFlowIdComponent;
@@ -127,7 +126,7 @@ public class NakadiProducerAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(EidGeneratorStrategy.class)
     public EidGeneratorStrategy eidGeneratorStrategy() {
-        return new NoOpEidGeneratorStrategy();
+        return EidGeneratorStrategy.noop();
     }
 
     @Bean

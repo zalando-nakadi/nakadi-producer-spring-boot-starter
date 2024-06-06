@@ -26,12 +26,4 @@ public class EmbeddedDataSourceConfig {
     public EmbeddedPostgres embeddedPostgres() throws IOException {
         return EmbeddedPostgres.start();
     }
-
-    @Bean
-    public TransactionTemplate requiresNewTransactionTemplate(
-        PlatformTransactionManager transactionManager) {
-        TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
-        transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        return transactionTemplate;
-    }
 }

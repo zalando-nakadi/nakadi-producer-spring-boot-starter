@@ -334,13 +334,16 @@ public abstract class EventLogWriterTest {
     }
 
     private void mockCreateBusinessEventLog(Object payload) {
-        String compactionKey = extractorList.isEmpty() ? null : extractorList.get(0).getKeyOrNull(payload);
+        String compactionKey =
+            extractorList.isEmpty() ? null : extractorList.get(0).getKeyOrNull(payload);
 
         mockCreateEventLog(payload, compactionKey);
     }
+
     private void mockCreateEventLog(Object payload,
                                     EventDataOperation dataOp) {
-        String compactionKey = extractorList.isEmpty() ? null : extractorList.get(0).getKeyOrNull(payload);
+        String compactionKey =
+            extractorList.isEmpty() ? null : extractorList.get(0).getKeyOrNull(payload);
 
         DataChangeEventEnvelope payloadData =
             new DataChangeEventEnvelope(dataOp.toString(), PUBLISHER_DATA_TYPE_1, payload);

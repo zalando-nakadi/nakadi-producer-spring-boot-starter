@@ -31,7 +31,7 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private TransactionTemplate requiresNewTransactionTemplate;
+    private TransactionTemplate transactionTemplate;
 
     private static final String WAREHOUSE_EVENT_BODY_DATA =
             ("{'self':'http://WAREHOUSE_DOMAIN',"
@@ -122,6 +122,20 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
         assertEvent(actual, testEvent);
     }
 
+    @Test
+    @Transactional
+    public void testInsertEventWithNegativeId() {
+        jdbcTemplate.execute("ALTER SEQUENCE nakadi_events.event_log_id_seq " +
+            " MINVALUE " + Integer.MIN_VALUE +
+            " START " + Integer.MIN_VALUE +
+            " RESTART " + Integer.MIN_VALUE);
+        persistTestEvent("FLOW_ID");
+        EventLog actual = findAllEventsInDB().get(0);
+
+        EventLog expected = buildEventLog("FLOW_ID", Integer.MIN_VALUE, buildEid(Integer.MIN_VALUE));
+        assertEvent(actual, expected);
+    }
+
     /**
      * This test checks that the default eid is generated correctly when multiple transactions are running in parallel.
      * The test creates three events in two parallel transactions.
@@ -139,7 +153,7 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
         CountDownLatch latchOutsideTransaction = new CountDownLatch(1);
 
         CompletableFuture<Void> future = CompletableFuture.runAsync(() ->
-            requiresNewTransactionTemplate.executeWithoutResult(
+            transactionTemplate.executeWithoutResult(
                 (s) -> {
                     // We persist first event with default eid in the start of first transaction
                     // It should be first event in the table.
@@ -164,7 +178,7 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
         latchInsideTransaction.await(1, TimeUnit.SECONDS);
 
         // We persist third event in the second transaction.
-        requiresNewTransactionTemplate.executeWithoutResult(
+        transactionTemplate.executeWithoutResult(
             (s) -> persistTestEvent("second flow-id")
         );
         // We check that the first and third events haven't visible yet
@@ -199,6 +213,7 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
     private EventLog buildEventLog(String flowId) {
         return buildEventLog(flowId, null, null);
     }
+
     private EventLog buildEventLog(String flowId, Integer id, UUID eid) {
         return EventLog.builder()
             .id(id)

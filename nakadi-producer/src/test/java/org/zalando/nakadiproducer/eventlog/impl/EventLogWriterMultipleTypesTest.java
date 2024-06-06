@@ -18,8 +18,6 @@ import org.zalando.nakadiproducer.util.MockPayload;
 import java.util.Collection;
 import java.util.List;
 
-import static java.time.Instant.now;
-import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -136,21 +134,17 @@ public class EventLogWriterMultipleTypesTest {
                 eq(PUBLISHER_EVENT_TYPE),
                 eq(new DataChangeEventEnvelope(EventDataOperation.CREATE.toString(), "", payload)),
                 eq(compactionKey))
-        ).thenReturn(getEventLog(payload, compactionKey));
+        ).thenReturn(buildEventLog(payload, compactionKey));
     }
 
     @SneakyThrows
-    private EventLog getEventLog(Object payloadString, String compactionKey) {
-        return new EventLog(1,
-            "type1",
-            objectMapper.writeValueAsString(payloadString),
-            "TRACE_ID",
-            now(),
-            now(),
-            null,
-            now().plus(5, MINUTES),
-            compactionKey,
-            UUID.fromString("558a8fe5-330e-4d89-ae6c-d58432b2dde0")
-        );
+    private EventLog buildEventLog(Object payloadString, String compactionKey) {
+        return EventLog.builder()
+            .eventType("type1")
+            .eventBodyData(objectMapper.writeValueAsString(payloadString))
+            .flowId("TRACE_ID")
+            .compactionKey(compactionKey)
+            .eid(UUID.fromString("558a8fe5-330e-4d89-ae6c-d58432b2dde0"))
+            .build();
     }
 }

@@ -1,7 +1,6 @@
 package org.zalando.nakadiproducer.eventlog.impl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -41,7 +40,7 @@ public class EventLogMapperTest {
     public void testCreateEventLog() throws Exception {
         // given
         when(flowIdComponent.getXFlowIdValue()).thenReturn(TRACE_ID);
-        when(eidGeneratorStrategy.generateEid(any())).thenReturn(EID);
+        when(eidGeneratorStrategy.generateEid()).thenReturn(EID);
 
         Object eventPayload = Fixture.mockPayload(42, "bla");
 
@@ -49,9 +48,9 @@ public class EventLogMapperTest {
         EventLog actual = eventLogMapper.createEventLog(EVENT_TYPE, eventPayload, COMPACTION_KEY);
         EventLog expected = getEventLog(eventPayload);
         // then
-        assertThat(actual, Matchers.equalTo(expected));
+        assertThat(actual, Matchers.samePropertyValuesAs(expected));
         verify(flowIdComponent).getXFlowIdValue();
-        verify(eidGeneratorStrategy).generateEid(any());
+        verify(eidGeneratorStrategy).generateEid();
     }
 
     private EventLog getEventLog(Object eventPayload) throws JsonProcessingException {

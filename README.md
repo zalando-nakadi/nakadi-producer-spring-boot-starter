@@ -313,6 +313,15 @@ public SnapshotEventGenerator snapshotEventGenerator(MyService service) {
 }
 ```
 
+### EID generation strategy (optional)
+EID - is unique identifier for nakadi events. We must provide it for each event. By default, the library generates EID based on id of the event in the database.
+
+You can implement your own strategy for EID generation by implementing [`EidGeneratorStrategy`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/eventlog/EidGeneratorStrategy.java) interface and providing it as a bean in your application context.
+The library provides some implementations of this interface out of the box:
+1. [`EidGeneratorStrategy.noop()`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/eventlog/EidGeneratorStrategy.java#L17) - generates EID based on id of the event in the database. This is default strategy.
+2. [`EidGeneratorStrategy.random()`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/eventlog/EidGeneratorStrategy.java#L26) - generates random UUID value for EID field.
+
+
 ### X-Flow-ID (optional)
 
 This library supports [tracer-spring-boot-starter](https://github.com/zalando/tracer) (another library from Zalando) that provides a support of `X-Flow-ID` header.

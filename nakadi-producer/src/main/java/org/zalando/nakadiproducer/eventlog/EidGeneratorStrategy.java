@@ -1,7 +1,6 @@
 package org.zalando.nakadiproducer.eventlog;
 
 import java.util.UUID;
-import org.zalando.nakadiproducer.eventlog.impl.EventLog;
 
 /**
  * Strategy for generating EIDs.
@@ -16,7 +15,7 @@ public interface EidGeneratorStrategy {
      * (This is the default strategy, and equivalent to the behavior before this interface was introduced.)
      */
     static EidGeneratorStrategy noop() {
-        return (EventLog eventLog) -> null;
+        return () -> null;
     }
 
     /**
@@ -25,8 +24,8 @@ public interface EidGeneratorStrategy {
      * of events.
      */
     static EidGeneratorStrategy random() {
-        return (EventLog eventLog) -> UUID.randomUUID();
+        return () -> UUID.randomUUID();
     }
 
-    UUID generateEid(EventLog eventLog);
+    UUID generateEid();
 }

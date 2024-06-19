@@ -24,7 +24,7 @@ public class EventLogMapper {
         eventLog.setEventBodyData(getEventBodyData(eventPayload));
         eventLog.setCompactionKey(compactionKey);
         eventLog.setFlowId(flowIdComponent.getXFlowIdValue());
-        eventLog.setEid(eidGeneratorStrategy.generateEid(eventLog));
+        eventLog.setEid(eidGeneratorStrategy.generateEid());
         return eventLog;
     }
 

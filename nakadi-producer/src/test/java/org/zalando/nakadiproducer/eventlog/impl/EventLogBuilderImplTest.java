@@ -19,7 +19,7 @@ import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.util.Fixture;
 
 @ExtendWith(MockitoExtension.class)
-public class EventLogMapperTest {
+public class EventLogBuilderImplTest {
 
     private static final String TRACE_ID = "TRACE_ID";
     private static final UUID EID = UUID.fromString("558a8fe5-330e-4d89-ae6c-d58432b2dde0");
@@ -34,7 +34,7 @@ public class EventLogMapperTest {
     private EidGeneratorStrategy eidGeneratorStrategy;
 
     @InjectMocks
-    private EventLogMapper eventLogMapper;
+    private EventLogBuilderImpl eventLogBuilder;
 
     @Test
     public void testCreateEventLog() throws Exception {
@@ -45,7 +45,7 @@ public class EventLogMapperTest {
         Object eventPayload = Fixture.mockPayload(42, "bla");
 
         // when
-        EventLog actual = eventLogMapper.createEventLog(EVENT_TYPE, eventPayload, COMPACTION_KEY);
+        EventLog actual = eventLogBuilder.buildEventLog(EVENT_TYPE, eventPayload, COMPACTION_KEY);
         EventLog expected = getEventLog(eventPayload);
         // then
         assertThat(actual, Matchers.samePropertyValuesAs(expected));

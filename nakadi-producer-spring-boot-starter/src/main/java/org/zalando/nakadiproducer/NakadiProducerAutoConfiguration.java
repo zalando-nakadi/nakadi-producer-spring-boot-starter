@@ -28,8 +28,9 @@ import org.zalando.fahrschein.http.api.RequestFactory;
 import org.zalando.fahrschein.http.simple.SimpleRequestFactory;
 import org.zalando.nakadiproducer.eventlog.CompactionKeyExtractor;
 import org.zalando.nakadiproducer.eventlog.EidGeneratorStrategy;
+import org.zalando.nakadiproducer.eventlog.EventLogBuilder;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
-import org.zalando.nakadiproducer.eventlog.impl.EventLogMapper;
+import org.zalando.nakadiproducer.eventlog.impl.EventLogBuilderImpl;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepositoryImpl;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogWriterImpl;
@@ -147,9 +148,10 @@ public class NakadiProducerAutoConfiguration {
     }
 
     @Bean
-    public EventLogWriter eventLogWriter(EventLogRepository eventLogRepository, EventLogMapper eventLogMapper,
+    public EventLogWriter eventLogWriter(EventLogRepository eventLogRepository,
+                                         EventLogBuilder eventLogBuilder,
                                          List<CompactionKeyExtractor> extractorList) {
-        return new EventLogWriterImpl(eventLogRepository, eventLogMapper, extractorList);
+        return new EventLogWriterImpl(eventLogRepository, eventLogBuilder, extractorList);
     }
 
     @Bean
@@ -186,8 +188,9 @@ public class NakadiProducerAutoConfiguration {
     }
 
     @Bean
-    public EventLogMapper eventLogMapper(ObjectMapper objectMapper, FlowIdComponent flowIdComponent,
-                                         EidGeneratorStrategy eidGeneratorStrategy) {
-        return new EventLogMapper(objectMapper, flowIdComponent, eidGeneratorStrategy);
+    @ConditionalOnMissingBean
+    public EventLogBuilder eventLogMapper(ObjectMapper objectMapper, FlowIdComponent flowIdComponent,
+                                          EidGeneratorStrategy eidGeneratorStrategy) {
+        return new EventLogBuilderImpl(objectMapper, flowIdComponent, eidGeneratorStrategy);
     }
 }

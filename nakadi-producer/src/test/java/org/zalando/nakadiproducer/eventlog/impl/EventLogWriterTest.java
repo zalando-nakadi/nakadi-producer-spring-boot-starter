@@ -26,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mockito;
 import org.zalando.nakadiproducer.eventlog.CompactionKeyExtractor;
+import org.zalando.nakadiproducer.eventlog.EventLogBuilder;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 
@@ -81,7 +82,7 @@ public abstract class EventLogWriterTest {
     private EventLogRepository eventLogRepository;
 
     @Mock
-    private EventLogMapper eventLogMapper;
+    private EventLogBuilder eventLogBuilder;
 
     @Captor
     private ArgumentCaptor<EventLog> eventLogCapture;
@@ -150,7 +151,7 @@ public abstract class EventLogWriterTest {
 
     @BeforeEach
     public void setUp() {
-        Mockito.reset(eventLogRepository, eventLogMapper);
+        Mockito.reset(eventLogRepository, eventLogBuilder);
 
         eventPayload1 = Fixture.mockPayload(1, "mockedcode1", true,
             Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
@@ -161,7 +162,7 @@ public abstract class EventLogWriterTest {
         eventPayload3 = Fixture.mockPayload(3, "mockedcode3", true,
             Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
 
-        eventLogWriter = new EventLogWriterImpl(eventLogRepository, eventLogMapper, extractorList);
+        eventLogWriter = new EventLogWriterImpl(eventLogRepository, eventLogBuilder, extractorList);
     }
 
     @Test
@@ -354,7 +355,7 @@ public abstract class EventLogWriterTest {
     private void mockCreateEventLog(Object payload, String compactionKey) {
 
         when(
-            eventLogMapper.createEventLog(
+            eventLogBuilder.buildEventLog(
                 eq(PUBLISHER_EVENT_TYPE),
                 eq(payload),
                 eq(compactionKey))

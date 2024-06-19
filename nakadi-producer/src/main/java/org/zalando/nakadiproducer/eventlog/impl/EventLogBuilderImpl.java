@@ -3,22 +3,23 @@ package org.zalando.nakadiproducer.eventlog.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.zalando.nakadiproducer.eventlog.EidGeneratorStrategy;
+import org.zalando.nakadiproducer.eventlog.EventLogBuilder;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 
-public class EventLogMapper {
+public class EventLogBuilderImpl implements EventLogBuilder {
 
     private final ObjectMapper objectMapper;
     private final FlowIdComponent flowIdComponent;
     private final EidGeneratorStrategy eidGeneratorStrategy;
 
-    public EventLogMapper(ObjectMapper objectMapper, FlowIdComponent flowIdComponent,
-                          EidGeneratorStrategy eidGeneratorStrategy) {
+    public EventLogBuilderImpl(ObjectMapper objectMapper, FlowIdComponent flowIdComponent,
+                               EidGeneratorStrategy eidGeneratorStrategy) {
         this.objectMapper = objectMapper;
         this.flowIdComponent = flowIdComponent;
         this.eidGeneratorStrategy = eidGeneratorStrategy;
     }
 
-    public EventLog createEventLog(String eventType, Object eventPayload, String compactionKey) {
+    public EventLog buildEventLog(String eventType, Object eventPayload, String compactionKey) {
         EventLog eventLog = new EventLog();
         eventLog.setEventType(eventType);
         eventLog.setEventBodyData(getEventBodyData(eventPayload));

@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.zalando.nakadiproducer.eventlog.CompactionKeyExtractor;
+import org.zalando.nakadiproducer.eventlog.EventLogBuilder;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 
@@ -38,7 +39,7 @@ public class EventLogWriterMultipleTypesTest {
     private EventLogRepository eventLogRepository;
 
     @Mock
-    private EventLogMapper eventLogMapper;
+    private EventLogBuilder eventLogBuilder;
 
     @Captor
     private ArgumentCaptor<Collection<EventLog>> eventLogsCapture;
@@ -52,7 +53,7 @@ public class EventLogWriterMultipleTypesTest {
 
     @BeforeEach
     public void setUp() {
-        Mockito.reset(eventLogRepository, eventLogMapper);
+        Mockito.reset(eventLogRepository, eventLogBuilder);
 
         eventPayload1 = Fixture.mockPayload(1, "mockedcode1", true,
                 Fixture.mockSubClass("some info"), Fixture.mockSubList(2, "some detail"));
@@ -68,7 +69,7 @@ public class EventLogWriterMultipleTypesTest {
         mockCreateEventLog(eventPayload2, null);
         mockCreateEventLog(eventPayload3, null);
 
-        eventLogWriter = new EventLogWriterImpl(eventLogRepository, eventLogMapper, List.of());
+        eventLogWriter = new EventLogWriterImpl(eventLogRepository, eventLogBuilder, List.of());
 
         eventLogWriter.fireCreateEvents(PUBLISHER_EVENT_TYPE, "",
                 asList(eventPayload1, eventPayload2, eventPayload3));
@@ -82,7 +83,8 @@ public class EventLogWriterMultipleTypesTest {
         mockCreateEventLog(eventPayload2, null);
         mockCreateEventLog(eventPayload3, null);
 
-        eventLogWriter = new EventLogWriterImpl(eventLogRepository, eventLogMapper, List.of(CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "Hello")));
+        eventLogWriter = new EventLogWriterImpl(eventLogRepository,
+            eventLogBuilder, List.of(CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "Hello")));
         eventLogWriter.fireCreateEvents(PUBLISHER_EVENT_TYPE, "",
                 asList(eventPayload1, eventPayload2, eventPayload3));
         List<String> compactionKeys = getPersistedCompactionKeys();
@@ -95,7 +97,7 @@ public class EventLogWriterMultipleTypesTest {
         mockCreateEventLog(eventPayload2, "World");
         mockCreateEventLog(eventPayload3, null);
 
-        eventLogWriter = new EventLogWriterImpl(eventLogRepository, eventLogMapper,
+        eventLogWriter = new EventLogWriterImpl(eventLogRepository, eventLogBuilder,
                 List.of(CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "Hello"),
                         CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.SubClass.class, m -> "World")));
         eventLogWriter.fireCreateEvents(PUBLISHER_EVENT_TYPE, "",
@@ -110,7 +112,7 @@ public class EventLogWriterMultipleTypesTest {
         mockCreateEventLog(eventPayload2, "World");
         mockCreateEventLog(eventPayload3, "List?");
 
-        eventLogWriter = new EventLogWriterImpl(eventLogRepository, eventLogMapper,
+        eventLogWriter = new EventLogWriterImpl(eventLogRepository, eventLogBuilder,
                 List.of(CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "Hello"),
                         CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.SubClass.class, m -> "World"),
                         CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, List.class, m -> "List?")));
@@ -130,7 +132,7 @@ public class EventLogWriterMultipleTypesTest {
 
     private void mockCreateEventLog(Object payload, String compactionKey) {
         when(
-            eventLogMapper.createEventLog(
+            eventLogBuilder.buildEventLog(
                 eq(PUBLISHER_EVENT_TYPE),
                 eq(new DataChangeEventEnvelope(EventDataOperation.CREATE.toString(), "", payload)),
                 eq(compactionKey))

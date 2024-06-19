@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import org.zalando.fahrschein.Preconditions;
 import org.zalando.nakadiproducer.eventlog.CompactionKeyExtractor;
+import org.zalando.nakadiproducer.eventlog.EventLogBuilder;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 
 import javax.transaction.Transactional;
@@ -23,15 +24,15 @@ public class EventLogWriterImpl implements EventLogWriter {
             CompactionKeyExtractor.ofOptional("doesn't matter", o -> Optional.empty());
     private final EventLogRepository eventLogRepository;
 
-    private final EventLogMapper eventLogMapper;
+    private final EventLogBuilder eventLogBuilder;
 
     private final Map<String, CompactionKeyExtractor> extractorsByEventType;
 
     public EventLogWriterImpl(EventLogRepository eventLogRepository,
-                              EventLogMapper eventLogMapper,
+                              EventLogBuilder eventLogBuilder,
                               List<CompactionKeyExtractor> keyExtractors) {
         this.eventLogRepository = eventLogRepository;
-        this.eventLogMapper = eventLogMapper;
+        this.eventLogBuilder = eventLogBuilder;
         this.extractorsByEventType = keyExtractors.stream()
                 .collect(groupingBy(
                         CompactionKeyExtractor::getEventType,
@@ -116,7 +117,7 @@ public class EventLogWriterImpl implements EventLogWriter {
     @Override
     @Transactional
     public void fireBusinessEvent(final String eventType, Object payload) {
-        final EventLog eventLog = eventLogMapper.createEventLog(eventType, payload, getCompactionKeyFor(eventType, payload));
+        final EventLog eventLog = eventLogBuilder.buildEventLog(eventType, payload, getCompactionKeyFor(eventType, payload));
         eventLogRepository.persist(eventLog);
     }
 
@@ -131,7 +132,7 @@ public class EventLogWriterImpl implements EventLogWriter {
                                                      final Collection<?> eventPayloads) {
         CompactionKeyExtractor extractor = getKeyExtractorFor(eventType);
         return eventPayloads.stream()
-                .map(payload -> eventLogMapper.createEventLog(eventType, payload,
+                .map(payload -> eventLogBuilder.buildEventLog(eventType, payload,
                         extractor.getKeyOrNull(payload)))
                 .collect(toList());
     }
@@ -145,7 +146,7 @@ public class EventLogWriterImpl implements EventLogWriter {
         CompactionKeyExtractor extractor = getKeyExtractorFor(eventType);
         String dataOp = eventDataOperation.toString();
         return data.stream()
-                .map(payload -> eventLogMapper.createEventLog(
+                .map(payload -> eventLogBuilder.buildEventLog(
                         eventType,
                         new DataChangeEventEnvelope(dataOp, dataType, payload),
                         extractor.getKeyOrNull(payload)))
@@ -153,7 +154,7 @@ public class EventLogWriterImpl implements EventLogWriter {
     }
 
     private EventLog createDataEventLog(String eventType, EventDataOperation dataOp, String dataType, Object data) {
-        return eventLogMapper.createEventLog(eventType,
+        return eventLogBuilder.buildEventLog(eventType,
                 new DataChangeEventEnvelope(dataOp.toString(), dataType, data),
                 getCompactionKeyFor(eventType, data));
     }

@@ -51,7 +51,7 @@ public class EventLog {
      * <p>For instance 213 will be converted to "00000000-0000-0000-0000-0000000000d5"</p>
      */
     public UUID getEid() {
-        if (eid == null) {
+        if (eid == null && id != null) {
             eid = new UUID(0, id);
         }
 

@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,7 +83,7 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
 
         List<EventLog> remaining = findAllEventsInDB();
         assertThat(remaining, hasSize(1));
-        assertThat(remaining.get(0), equalTo(notDeleted));
+        assertThat(remaining.get(0), Matchers.samePropertyValuesAs(notDeleted));
     }
 
     private List<EventLog> findAllEventsInDB() {

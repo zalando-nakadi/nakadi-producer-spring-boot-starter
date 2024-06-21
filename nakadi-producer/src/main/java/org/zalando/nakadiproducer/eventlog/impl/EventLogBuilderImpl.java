@@ -3,7 +3,6 @@ package org.zalando.nakadiproducer.eventlog.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.zalando.nakadiproducer.eventlog.EidGeneratorStrategy;
-import org.zalando.nakadiproducer.eventlog.EventLogBuilder;
 import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 
 public class EventLogBuilderImpl implements EventLogBuilder {

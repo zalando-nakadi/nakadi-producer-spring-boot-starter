@@ -45,13 +45,14 @@ public class EventLog {
     private UUID eid;
 
     /**
-     * This is only needed for backward compatibility.
+     * Returns the eid to be used for submitting the event.
+     * If none was stored, we'll convert it from the DB-ID.
      *
      * <p>For instance 213 will be converted to "00000000-0000-0000-0000-0000000000d5"</p>
      */
     public UUID getEid() {
         if (eid == null) {
-            return new UUID(0, id);
+            eid = new UUID(0, id);
         }
 
         return eid;

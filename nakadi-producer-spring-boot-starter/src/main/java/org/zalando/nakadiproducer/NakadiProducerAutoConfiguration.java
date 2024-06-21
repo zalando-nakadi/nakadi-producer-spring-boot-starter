@@ -28,7 +28,7 @@ import org.zalando.fahrschein.http.api.RequestFactory;
 import org.zalando.fahrschein.http.simple.SimpleRequestFactory;
 import org.zalando.nakadiproducer.eventlog.CompactionKeyExtractor;
 import org.zalando.nakadiproducer.eventlog.EidGeneratorStrategy;
-import org.zalando.nakadiproducer.eventlog.EventLogBuilder;
+import org.zalando.nakadiproducer.eventlog.impl.EventLogBuilder;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogBuilderImpl;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
@@ -189,7 +189,7 @@ public class NakadiProducerAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public EventLogBuilder eventLogMapper(ObjectMapper objectMapper, FlowIdComponent flowIdComponent,
+    public EventLogBuilder eventLogBuilder(ObjectMapper objectMapper, FlowIdComponent flowIdComponent,
                                           EidGeneratorStrategy eidGeneratorStrategy) {
         return new EventLogBuilderImpl(objectMapper, flowIdComponent, eidGeneratorStrategy);
     }

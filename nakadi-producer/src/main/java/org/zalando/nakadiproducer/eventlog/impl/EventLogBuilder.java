@@ -1,6 +1,4 @@
-package org.zalando.nakadiproducer.eventlog;
-
-import org.zalando.nakadiproducer.eventlog.impl.EventLog;
+package org.zalando.nakadiproducer.eventlog.impl;
 
 public interface EventLogBuilder {
 

@@ -13,7 +13,6 @@ import java.util.Optional;
 
 import org.zalando.fahrschein.Preconditions;
 import org.zalando.nakadiproducer.eventlog.CompactionKeyExtractor;
-import org.zalando.nakadiproducer.eventlog.EventLogBuilder;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 
 import javax.transaction.Transactional;

@@ -87,7 +87,7 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
 
     private List<EventLog> findAllEventsInDB() {
         return jdbcTemplate.query(
-                "SELECT * FROM nakadi_events.event_log",
+                "SELECT * FROM nakadi_events.event_log ORDER BY id ASC",
                 new BeanPropertyRowMapper<>(EventLog.class));
     }
 
@@ -104,22 +104,71 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
 
     @Test
     @Transactional
-    public void testInsertEventWithDefaultEid() {
-        persistTestEvent("FLOW_ID");
-        EventLog actual = findAllEventsInDB().get(0);
+    public void testInsertSingleEventsWithDefaultEid() {
+        persistTestEvent("FLOW_ID_1");
+        persistTestEvent("FLOW_ID_2");
 
-        EventLog expected = buildEventLog("FLOW_ID", 1, buildEid(1));
-        assertEvent(actual, expected);
+        List<EventLog> eventLogs = findAllEventsInDB();
+
+        EventLog actual1 = eventLogs.get(0);
+        EventLog actual2 = eventLogs.get(1);
+        EventLog expected1 = buildEventLog("FLOW_ID_1", 1, buildEid(1));
+        EventLog expected2 = buildEventLog("FLOW_ID_2", 2, buildEid(2));
+
+        assertEvent(actual1, expected1);
+        assertEvent(actual2, expected2);
+    }
+    @Test
+    @Transactional
+    public void testBulkInsertEventWithDefaultEid() {
+        List<EventLog> eventLogsToPersist = List.of(
+            buildEventLog("FLOW_ID_1"),
+            buildEventLog("FLOW_ID_2")
+        );
+
+        eventLogRepository.persist(eventLogsToPersist);
+
+        List<EventLog> eventLogsFound = findAllEventsInDB();
+        EventLog actual1 = eventLogsFound.get(0);
+        EventLog actual2 = eventLogsFound.get(1);
+        EventLog expected1 = buildEventLog("FLOW_ID_1", 1, buildEid(1));
+        EventLog expected2 = buildEventLog("FLOW_ID_2", 2, buildEid(2));
+
+        assertEvent(actual1, expected1);
+        assertEvent(actual2, expected2);
     }
 
     @Test
     @Transactional
-    public void testInsertEventWithDefinedEid() {
-        EventLog testEvent = buildEventLog("flow-id", 1, UUID.randomUUID());
-        eventLogRepository.persist(testEvent);
+    public void testInsertSingleEventsWithDefinedEid() {
+        EventLog expected1 = buildEventLog("FLOW_ID_1", 1, UUID.randomUUID());
+        EventLog expected2 = buildEventLog("FLOW_ID_2", 2, UUID.randomUUID());
 
-        EventLog actual = findAllEventsInDB().get(0);
-        assertEvent(actual, testEvent);
+        eventLogRepository.persist(expected1);
+        eventLogRepository.persist(expected2);
+
+        List<EventLog> eventLogsFound = findAllEventsInDB();
+        EventLog actual1 = eventLogsFound.get(0);
+        EventLog actual2 = eventLogsFound.get(1);
+
+        assertEvent(actual1, expected1);
+        assertEvent(actual2, expected2);
+    }
+
+    @Test
+    @Transactional
+    public void testBulkInsertEventWithDefinedEid() {
+        EventLog expected1 = buildEventLog("FLOW_ID_1", 1, UUID.randomUUID());
+        EventLog expected2 = buildEventLog("FLOW_ID_2", 2, UUID.randomUUID());
+
+        eventLogRepository.persist(List.of(expected1, expected2));
+
+        List<EventLog> eventLogsFound = findAllEventsInDB();
+        EventLog actual1 = eventLogsFound.get(0);
+        EventLog actual2 = eventLogsFound.get(1);
+
+        assertEvent(actual1, expected1);
+        assertEvent(actual2, expected2);
     }
 
     @Test

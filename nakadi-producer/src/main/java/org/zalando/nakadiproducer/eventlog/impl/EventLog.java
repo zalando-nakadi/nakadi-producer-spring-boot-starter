@@ -43,18 +43,4 @@ public class EventLog {
     private Instant lockedUntil;
     private String compactionKey;
     private UUID eid;
-
-    /**
-     * Returns the eid to be used for submitting the event.
-     * If none was stored, we'll convert it from the DB-ID.
-     *
-     * <p>For instance 213 will be converted to "00000000-0000-0000-0000-0000000000d5"</p>
-     */
-    public UUID getEid() {
-        if (eid == null && id != null) {
-            eid = new UUID(0, id);
-        }
-
-        return eid;
-    }
 }

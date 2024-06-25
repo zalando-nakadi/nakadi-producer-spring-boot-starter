@@ -56,7 +56,7 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
     @BeforeEach
     public void setUp() {
         eventLogRepository.deleteAll();
-        jdbcTemplate.execute("alter sequence nakadi_events.event_log_id_seq restart with 1");
+        jdbcTemplate.execute("ALTER SEQUENCE nakadi_events.event_log_id_seq RESTART WITH 1");
     }
 
     private void persistTestEvent(String flowId) {
@@ -112,8 +112,8 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
 
         EventLog actual1 = eventLogs.get(0);
         EventLog actual2 = eventLogs.get(1);
-        EventLog expected1 = buildEventLog("FLOW_ID_1", 1, buildEid(1));
-        EventLog expected2 = buildEventLog("FLOW_ID_2", 2, buildEid(2));
+        EventLog expected1 = buildEventLog("FLOW_ID_1", 1, null);
+        EventLog expected2 = buildEventLog("FLOW_ID_2", 2, null);
 
         assertEvent(actual1, expected1);
         assertEvent(actual2, expected2);
@@ -131,8 +131,8 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
         List<EventLog> eventLogsFound = findAllEventsInDB();
         EventLog actual1 = eventLogsFound.get(0);
         EventLog actual2 = eventLogsFound.get(1);
-        EventLog expected1 = buildEventLog("FLOW_ID_1", 1, buildEid(1));
-        EventLog expected2 = buildEventLog("FLOW_ID_2", 2, buildEid(2));
+        EventLog expected1 = buildEventLog("FLOW_ID_1", 1, null);
+        EventLog expected2 = buildEventLog("FLOW_ID_2", 2, null);
 
         assertEvent(actual1, expected1);
         assertEvent(actual2, expected2);
@@ -181,7 +181,7 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
         persistTestEvent("FLOW_ID");
         EventLog actual = findAllEventsInDB().get(0);
 
-        EventLog expected = buildEventLog("FLOW_ID", Integer.MIN_VALUE, buildEid(Integer.MIN_VALUE));
+        EventLog expected = buildEventLog("FLOW_ID", Integer.MIN_VALUE, null);
         assertEvent(actual, expected);
     }
 
@@ -194,9 +194,9 @@ public class EventLogRepositoryIT extends BaseMockedExternalCommunicationIT {
      */
     @Test
     public void testInsertEventWithDefaultEidWithParallelTransactions() throws Exception {
-        EventLog firstExpected = buildEventLog("first flow-id", 1, buildEid(1));
-        EventLog secondExpected = buildEventLog("second flow-id", 2, buildEid(2));
-        EventLog thirdExpected = buildEventLog("third flow-id", 3, buildEid(3));
+        EventLog firstExpected = buildEventLog("first flow-id", 1, null);
+        EventLog secondExpected = buildEventLog("second flow-id", 2, null);
+        EventLog thirdExpected = buildEventLog("third flow-id", 3, null);
 
         CountDownLatch latchInsideTransaction = new CountDownLatch(1);
         CountDownLatch latchOutsideTransaction = new CountDownLatch(1);

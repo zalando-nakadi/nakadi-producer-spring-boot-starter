@@ -157,7 +157,7 @@ public abstract class EventLogWriterTest {
         when(flowIdComponent.getXFlowIdValue()).thenReturn(TRACE_ID);
 
         eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(),
-            flowIdComponent, extractorList);
+            flowIdComponent, extractorList, false);
     }
 
     @Test

@@ -163,6 +163,23 @@ If you do not use the STUPS Tokens library, you can implement token retrieval yo
 type [`AccessTokenProvider`](nakadi-producer-spring-boot-starter/src/main/java/org/zalando/nakadiproducer/AccessTokenProvider.java).
 The starter will detect it and call it once for each request to retrieve the token.
 
+### Disable submission completely
+
+You can disable the whole Nakadi integration completely with this property:
+
+```yaml
+nakadi-producer:
+   submission-enabled: false
+```
+
+In this case you don't need to configure anything related to the Nakadi communication ↑ (and this library won't
+set up any beans related to it).
+
+A use case for this might be that you have several components of your application connected to the same database,
+and want the submission of the events centralized in one of these components. Then for all other components you'd
+set `nakadi-producer.submission-enabled: false` (true is the default), but still can use the EventLogWriter to
+create events.
+
 ### Creating events
 
 The typical use case for this library is to publish events like creating or updating of some objects.
@@ -431,7 +448,8 @@ This is a list of all the documented spring properties (in alphabetical order), 
 | [`nakadi-producer.lock-duration-buffer`](#customizing-event-locks) | Number of seconds before the expiry of a lock an event is not used. |
 | [`nakadi-producer.lock-size`](#customizing-event-locks)          | Number of events to lock (and then load into memory) at once.  |
 | [`nakadi-producer.nakadi-base-uri`](#letting-this-library-set-things-up) | The Nakadi base URI used for submitting events.  |
-| [`nakadi-producer.scheduled-transmission-enabled: false`](#test-support) | Disable event transmission scheduler.  |
+| [`nakadi-producer.scheduled-transmission-enabled: false`](#test-support) | Disable event transmission scheduler (but still set up Nakadi connection beans, so it can be used manually). |
+| [`nakadi-producer.submission-enabled: false`](#disable-submission-completely) | Disable event submission completely (including all beans for this). |
 | [`tracer.traces.X-Flow-ID: flow-id`](#x-flow-id-optional)        | Enable flow-ID support |
 
 ## Contributing

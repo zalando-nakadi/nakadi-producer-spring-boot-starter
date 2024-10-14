@@ -113,7 +113,7 @@ public class EventTransmissionService {
             successfulEvents =
                     batch.stream()
                             .map(BatchItem::getEventLogEntry)
-                            .filter(rawEvent -> !failedEids.contains(convertToUUID(rawEvent.getId())));
+                            .filter(rawEvent -> !failedEids.contains(getEid(rawEvent)));
         }
 
         eventLogRepository.delete(successfulEvents.collect(Collectors.toList()));
@@ -134,7 +134,7 @@ public class EventTransmissionService {
         final NakadiEvent nakadiEvent = new NakadiEvent();
 
         final NakadiMetadata metadata = new NakadiMetadata();
-        metadata.setEid(convertToUUID(event.getId()));
+        metadata.setEid(getEid(event));
         metadata.setOccuredAt(event.getCreated());
         metadata.setFlowId(event.getFlowId());
         metadata.setPartitionCompactionKey(event.getCompactionKey());
@@ -156,12 +156,16 @@ public class EventTransmissionService {
     }
 
     /**
-     * Converts a number in UUID format.
+     * Returns the eid to be used for submitting the event. If none was stored, we'll convert it from the DB-ID.
      *
      * <p>For instance 213 will be converted to "00000000-0000-0000-0000-0000000000d5"</p>
      */
-    private String convertToUUID(final int number) {
-        return new UUID(0, number).toString();
+    private String getEid(final EventLog event) {
+        if (event.getEid() == null) {
+            return new UUID(0, event.getId()).toString();
+        }
+
+        return event.getEid().toString();
     }
 
 }

@@ -150,7 +150,7 @@ public class NakadiProducerAutoConfiguration {
 
     @Bean
     public EventLogRepository eventLogRepository(NamedParameterJdbcTemplate namedParameterJdbcTemplate,
-        @Value("${nakadi-producer.lock-size:0}") int lockSize) {
+        @Value("${nakadi-producer.lock-size:1000}") int lockSize) {
         return new EventLogRepositoryImpl(namedParameterJdbcTemplate, lockSize);
     }
 

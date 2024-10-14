@@ -21,7 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 // no "test" profile, as this would include the mock client.
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = {"nakadi-producer.submission-enabled:false"},
+        properties = {"nakadi-producer.submission-enabled:false", "nakadi-producer.lock-size:100"},
         classes = { TestApplication.class, EmbeddedDataSourceConfig.class }
 )
 public class SubmissionDisabledIT  {

@@ -23,6 +23,7 @@
         <module>nakadi-producer</module>
         <module>nakadi-producer-spring-boot-starter</module>
         <module>nakadi-producer-starter-spring-boot-2-test</module>
+        <module>nakadi-producer-starter-spring-boot-3-test</module>
         <module>nakadi-producer-loadtest</module>
     </modules>
 

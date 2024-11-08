@@ -1,11 +1,13 @@
 package org.zalando.nakadiproducer;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.eventlog.impl.EventLog;
+import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
 import org.zalando.nakadiproducer.transmission.MockNakadiPublishingClient;
 import org.zalando.nakadiproducer.transmission.impl.EventTransmissionService;
 import org.zalando.nakadiproducer.transmission.impl.EventTransmitter;
@@ -21,6 +23,7 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+@Slf4j
 public class LockingIT extends BaseMockedExternalCommunicationIT {
     private static final String MY_EVENT_TYPE = "myEventType";
 
@@ -36,11 +39,13 @@ public class LockingIT extends BaseMockedExternalCommunicationIT {
     @Autowired
     private MockNakadiPublishingClient nakadiClient;
 
+    @Autowired
+    private EventLogRepository repository;
+
     @BeforeEach
     @AfterEach
     public void clearNakadiEvents() {
-        eventTransmitter.sendEvents();
-        nakadiClient.clearSentEvents();
+        repository.deleteAll();
     }
 
     @Test

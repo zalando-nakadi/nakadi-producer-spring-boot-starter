@@ -2,6 +2,7 @@ package org.zalando.nakadiproducer.transmission.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nakadi.EventMetadata;
 import org.junit.jupiter.api.Test;
 import org.zalando.nakadiproducer.eventlog.impl.EventLog;
 import org.zalando.nakadiproducer.transmission.impl.EventBatcher.BatchItem;
@@ -14,10 +15,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class EventBatcherTest {
     private final ObjectMapper objectMapper = mock(ObjectMapper.class);
@@ -129,8 +127,8 @@ public class EventBatcherTest {
     }
 
     private NakadiEvent nakadiEvent(String eid) {
-        NakadiMetadata metadata = new NakadiMetadata();
-        metadata.setEid(eid);
+        EventMetadata metadata = new EventMetadata();
+        metadata.eid(eid);
         NakadiEvent nakadiEvent = new NakadiEvent();
         nakadiEvent.setMetadata(metadata);
         return nakadiEvent;

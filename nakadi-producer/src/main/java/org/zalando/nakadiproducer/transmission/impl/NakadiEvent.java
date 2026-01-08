@@ -2,14 +2,13 @@ package org.zalando.nakadiproducer.transmission.impl;
 
 import com.fasterxml.jackson.annotation.*;
 import lombok.Data;
-import nakadi.Event;
 import nakadi.EventMetadata;
 import nakadi.WithEventMetadata;
 
 import java.util.HashMap;
 
 @Data
-public class NakadiEvent implements Event, WithEventMetadata {
+public class NakadiEvent implements WithEventMetadata {
     @JsonIgnore
     private HashMap<String, Object> data;
 
@@ -25,6 +24,6 @@ public class NakadiEvent implements Event, WithEventMetadata {
 
     @Override
     public EventMetadata metadata() {
-        return null;
+        return metadata;
     }
 }

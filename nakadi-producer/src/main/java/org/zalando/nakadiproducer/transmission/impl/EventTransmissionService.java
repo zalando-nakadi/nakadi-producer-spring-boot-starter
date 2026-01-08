@@ -3,6 +3,7 @@ package org.zalando.nakadiproducer.transmission.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import nakadi.EventMetadata;
 import org.zalando.fahrschein.EventPublishingException;
 import org.zalando.fahrschein.domain.BatchItemResponse;
 import org.zalando.nakadiproducer.eventlog.impl.EventLog;
@@ -15,6 +16,8 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -133,12 +136,14 @@ public class EventTransmissionService {
     private NakadiEvent mapToNakadiEvent(final EventLog event) throws IOException {
         final NakadiEvent nakadiEvent = new NakadiEvent();
 
-        final NakadiMetadata metadata = new NakadiMetadata();
-        metadata.setEid(convertToUUID(event.getId()));
-        metadata.setOccuredAt(event.getCreated());
-        metadata.setFlowId(event.getFlowId());
-        metadata.setPartitionCompactionKey(event.getCompactionKey());
-        nakadiEvent.setMetadata(metadata);
+        // Uses the EventMetadata from nakadi-java
+        final EventMetadata eventMetadata = new EventMetadata();
+        eventMetadata.eid(convertToUUID(event.getId()));
+        // TODO froske: Is using UTC as ZoneOffset correct?
+        eventMetadata.occurredAt(OffsetDateTime.ofInstant(event.getCreated(), ZoneOffset.UTC));
+        eventMetadata.flowId(event.getFlowId());
+        eventMetadata.partitionCompactionKey(event.getCompactionKey());
+        nakadiEvent.setMetadata(eventMetadata);
 
         LinkedHashMap<String, Object> payloadDTO = objectMapper.readValue(event.getEventBodyData(), new TypeReference<LinkedHashMap<String, Object>>() { });
 

@@ -1,6 +1,7 @@
 package org.zalando.nakadiproducer.transmission.impl;
 
 import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 import nakadi.EventMetadata;
 import nakadi.WithEventMetadata;
@@ -13,6 +14,7 @@ public class NakadiEvent implements WithEventMetadata {
     private HashMap<String, Object> data;
 
     @JsonProperty("metadata")
+    @JsonSerialize(using = EventMetadataSerializer.class)
     private EventMetadata metadata;
 
     // "any getter" needed for serialization - we use it to extract the properties of the data object and put them in

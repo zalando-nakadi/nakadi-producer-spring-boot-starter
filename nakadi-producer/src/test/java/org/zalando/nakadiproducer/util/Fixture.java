@@ -1,9 +1,9 @@
 package org.zalando.nakadiproducer.util;
 
+import org.zalando.nakadiproducer.snapshots.Snapshot;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.zalando.nakadiproducer.snapshots.Snapshot;
 
 public class Fixture {
 

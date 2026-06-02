@@ -1,7 +1,6 @@
 package org.zalando.nakadiproducer;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.inOrder;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 

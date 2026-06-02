@@ -45,10 +45,23 @@ You may of course always setup a fresh system with the newest version.
 
 ## Prerequisites
 
-This library was tested with Java 11 (starting with 21.0.0), Spring Boot 2.5.6.RELEASE and Flyway 7.
-It relies on an existing configured PostgreSQL DataSource. 
-**If you are still using Spring Boot 1.x, please use versions < 20.0.0, they are still actively maintained ([Documentation](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/tree/spring-boot-1)).**
+Your Spring Boot version must be compatible with the version of this library you want to use.
 
+| Spring Boot | nakadi-producer-spring-boot-starter |
+|---|---|
+| 3.x | >= 30.0.0 |
+| 2.x | >= 20.0.0 but < 30.0.0 |
+| 1.x | < 20.0.0 |
+
+Additionally, this library was tested with:
+
+| nakadi-producer-spring-boot-starter | Java | Spring Boot | Flyway | |
+|---|---|---|---|---|
+| 30.0.0 | 21 | 3.2.5.RELEASE | 9 ||
+| 21.0.0 | 11 | 2.5.6.RELEASE | 7 ||
+| 4.5.0  | 8  | 1.5.3.RELEASE | 4 |[Documentation](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/tree/spring-boot-1)|
+
+It relies on an existing configured PostgreSQL DataSource.
 This library also uses:
 
 * flyway-core
@@ -363,18 +376,18 @@ your `application.properties` includes
 ``` 
 management.endpoints.web.exposure.include=snapshot-event-creation,your-other-endpoints,...`
 ```
-and if one or more Spring Beans implement the `org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator` interface.
+and if one or more Spring Beans implement the [`org.zalando.nakadiproducer.snapshots.SnapshotEventGenerator`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/snapshots/SnapshotEventGenerator.java) interface.
 (Note that this will automatically work together with the compaction key feature mentioned above,
  if you have registered a compaction key extractor matching the type of the data objects in your snapshots.)
 
 The optional filter specifier of the trigger request will be passed as a string parameter to the
 SnapshotEventGenerator's `generateSnapshots` method and may be null, if none is given.
 
-We provide a `SimpleSnapshotEventGenerator` to ease bean creation using a more functional style:
+The `SnapshotEventGenerator` has static `of` methods to ease bean creation using a more functional style:
 ```java
 @Bean
 public SnapshotEventGenerator snapshotEventGenerator(MyService service) {
-    return new SimpleSnapshotEventGenerator("event type", service::createSnapshotEvents);
+    return SnapshotEventGenerator.of("event type", service::createSnapshotEvents);
 }
 ```
 
@@ -532,7 +545,7 @@ We (the [maintainers](MAINTAINERS)) want to thank our main contributors:
 
 * Alexander Libin (@qlibin), who created a similar predecessor library (tarbela-producer-spring-boot-starter,
   now not public anymore), from which this one was forked.
-* Lucas Medeiros de Azevedo (@wormangel), who added support for business events.
+* Lucas Medeiros de Azevedo (@wormangel), who added support for business events and support for Spring Boot 3.
 * Benjamin Gehrels (@BGehrels), who co-maintained this project from its inception in 2017 until 2019, contributing many features and ideas.
 
 ### Contact

@@ -1,12 +1,25 @@
 package org.zalando.nakadiproducer.snapshots;
 
+
+import org.springframework.lang.Nullable;
+
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * The {@code SnapshotEventGenerator} interface should be implemented by any
  * event producer that wants to support the snapshot events feature. The class
  * must define a method {@link #generateSnapshots}, as well as
  * {@link #getSupportedEventType()}.
+ *
+ * The {@link #of} methods can be used for creating an implementation from method references or lambdas:
+ * <pre>{@code
+ *  @Bean
+ *  public SnapshotEventGenerator snapshotEventGenerator(MyService service) {
+ *     return SnapshotEventGenerator.of("event type", service::createSnapshotEvents);
+ *  }
+ * }</pre>
  */
 public interface SnapshotEventGenerator {
 
@@ -51,10 +64,44 @@ public interface SnapshotEventGenerator {
      * @return list of elements (wrapped in Snapshot objects) ordered by their
      *         ID.
      */
-    List<Snapshot> generateSnapshots(Object withIdGreaterThan, String filter);
+    List<Snapshot> generateSnapshots(@Nullable Object withIdGreaterThan, String filter);
 
     /**
      * The name of the event type supported by this snapshot generator.
      */
     String getSupportedEventType();
+
+    /**
+     * Creates a SnapshotEventGenerator for an event type, which doesn't support
+     * filtering.
+     *
+     * @param eventType
+     *            the eventType that this SnapShotEventProvider will support.
+     * @param generator
+     *            a snapshot event factory function conforming to the
+     *            specification of
+     *            {@link SnapshotEventGenerator#generateSnapshots(Object, String)}
+     *            (but without the filter parameter). Any filter provided by the
+     *            caller will be thrown away.
+     * @since 21.1.0
+     */
+    static SnapshotEventGenerator of(String eventType, Function<Object, List<Snapshot>> generator) {
+        return new SimpleSnapshotEventGenerator(eventType, generator);
+    }
+
+    /**
+     * Creates a SnapshotEventGenerator for an event type, with filtering
+     * support.
+     *
+     * @param eventType
+     *            the eventType that this SnapShotEventProvider will support.
+     * @param generator
+     *            a snapshot event factory function conforming to the
+     *            specification of
+     *            {@link SnapshotEventGenerator#generateSnapshots(Object, String)}.
+     * @since 21.1.0
+     */
+    static SnapshotEventGenerator of(String eventType, BiFunction<Object, String, List<Snapshot>> generator) {
+        return new SimpleSnapshotEventGenerator(eventType, generator);
+    }
 }

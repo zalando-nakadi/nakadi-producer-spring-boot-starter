@@ -15,7 +15,7 @@ import org.zalando.fahrschein.Preconditions;
 import org.zalando.nakadiproducer.eventlog.CompactionKeyExtractor;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 public class EventLogWriterImpl implements EventLogWriter {
 
@@ -51,9 +51,9 @@ public class EventLogWriterImpl implements EventLogWriter {
         Preconditions.checkArgument(!list.isEmpty());
         if(list.size() == 1) {
             // the most common case: just one extractor per event type.
-            return list.get(0);
+            return list.getFirst();
         } else {
-            return CompactionKeyExtractor.ofOptional(list.get(0).getEventType(),
+            return CompactionKeyExtractor.ofOptional(list.getFirst().getEventType(),
                     o -> list.stream()
                             .flatMap(ex -> ex.tryGetKeyFor(o).stream())
                             .findAny()

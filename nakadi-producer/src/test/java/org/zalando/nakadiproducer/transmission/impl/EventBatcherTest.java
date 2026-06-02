@@ -1,7 +1,7 @@
 package org.zalando.nakadiproducer.transmission.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.zalando.nakadiproducer.eventlog.impl.EventLog;
 import org.zalando.nakadiproducer.transmission.impl.EventBatcher.BatchItem;
@@ -32,7 +32,7 @@ public class EventBatcherTest {
     }
 
     @Test
-    public void shouldPublishNonFilledBatchOnFinish() throws JsonProcessingException {
+    public void shouldPublishNonFilledBatchOnFinish() throws JacksonException {
         EventLog eventLogEntry = eventLogEntry(1, "type");
         NakadiEvent nakadiEvent = nakadiEvent("1");
 
@@ -46,7 +46,7 @@ public class EventBatcherTest {
     }
 
     @Test
-    public void shouldPublishNonFilledBatchOnEventTypeChange() throws JsonProcessingException {
+    public void shouldPublishNonFilledBatchOnEventTypeChange() throws JacksonException {
         EventLog eventLogEntry1 = eventLogEntry(1, "type1");
         EventLog eventLogEntry2 = eventLogEntry(2, "type2");
         NakadiEvent nakadiEvent1 = nakadiEvent("1");
@@ -60,7 +60,7 @@ public class EventBatcherTest {
     }
 
     @Test
-    public void shouldPublishFilledBatchOnSubmissionOfNewEvent() throws JsonProcessingException {
+    public void shouldPublishFilledBatchOnSubmissionOfNewEvent() throws JacksonException {
         EventLog eventLogEntry1 = eventLogEntry(1, "type1");
         EventLog eventLogEntry2 = eventLogEntry(2, "type1");
         EventLog eventLogEntry3 = eventLogEntry(3, "type1");
@@ -85,7 +85,7 @@ public class EventBatcherTest {
     }
 
     @Test
-    public void shouldTryPublishEventsIndividuallyWhenTheyExceedBatchThresholdThe() throws JsonProcessingException {
+    public void shouldTryPublishEventsIndividuallyWhenTheyExceedBatchThresholdThe() throws JacksonException {
         EventLog eventLogEntry1 = eventLogEntry(1, "type1");
         EventLog eventLogEntry2 = eventLogEntry(2, "type1");
         NakadiEvent nakadiEvent1 = nakadiEvent("1");
@@ -104,7 +104,7 @@ public class EventBatcherTest {
     }
 
     @Test
-    public void willGracefullySkipNonSerializableEvents() throws JsonProcessingException {
+    public void willGracefullySkipNonSerializableEvents() throws JacksonException {
         EventLog eventLogEntry1 = eventLogEntry(1, "type1");
         EventLog eventLogEntry2 = eventLogEntry(2, "type1");
         NakadiEvent nakadiEvent1 = nakadiEvent("1");

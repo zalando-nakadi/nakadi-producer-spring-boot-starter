@@ -15,8 +15,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.flyway.FlywayProperties;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.flyway.autoconfigure.FlywayProperties;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,7 +26,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.zalando.fahrschein.NakadiClient;
 import org.zalando.fahrschein.http.api.ContentEncoding;
 import org.zalando.fahrschein.http.api.RequestFactory;
-import org.zalando.fahrschein.http.simple.SimpleRequestFactory;
+import org.zalando.fahrschein.http.jdk11.JavaNetRequestFactory;
 import org.zalando.nakadiproducer.eventlog.CompactionKeyExtractor;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
@@ -44,7 +44,7 @@ import org.zalando.nakadiproducer.transmission.impl.EventTransmitter;
 import org.zalando.nakadiproducer.transmission.impl.FahrscheinNakadiPublishingClient;
 import org.zalando.tracer.Tracer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 @Configuration
 @AutoConfigureAfter(name="org.zalando.tracer.spring.TracerAutoConfiguration")
@@ -84,7 +84,7 @@ public class NakadiProducerAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean
         RequestFactory requestFactory(@Value("${nakadi-producer.encoding:GZIP}") ContentEncoding encoding) {
-            return new SimpleRequestFactory(encoding);
+            return new JavaNetRequestFactory(java.net.http.HttpClient.newHttpClient(), java.util.Optional.empty(), encoding);
         }
     }
 

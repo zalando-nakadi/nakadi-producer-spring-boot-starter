@@ -5,7 +5,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zalando.fahrschein.http.api.ContentEncoding;
 import org.zalando.fahrschein.http.api.RequestFactory;
 import org.zalando.nakadiproducer.config.EmbeddedDataSourceConfig;
@@ -28,7 +28,7 @@ public class NakadiClientContentEncodingIT {
 
     // Avoid errors in the logs from the AccessTokenRefresher. As we are not actually submitting
     // to Nakadi, this will never be used.
-    @MockBean
+    @MockitoBean
     private AccessTokenProvider tokenProvider;
 
     @Autowired

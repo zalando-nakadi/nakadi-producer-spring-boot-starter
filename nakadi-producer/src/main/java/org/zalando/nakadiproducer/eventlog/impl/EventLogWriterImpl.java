@@ -18,8 +18,8 @@ import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 
 import jakarta.transaction.Transactional;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 public class EventLogWriterImpl implements EventLogWriter {
 
@@ -178,7 +178,7 @@ public class EventLogWriterImpl implements EventLogWriter {
         eventLog.setEventType(eventType);
         try {
             eventLog.setEventBodyData(objectMapper.writeValueAsString(eventPayload));
-        } catch (final JsonProcessingException e) {
+        } catch (final JacksonException e) {
             throw new IllegalStateException("could not map object to json: " + eventPayload.toString(), e);
         }
 

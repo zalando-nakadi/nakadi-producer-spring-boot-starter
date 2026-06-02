@@ -24,7 +24,8 @@ import org.zalando.nakadiproducer.flowid.FlowIdComponent;
 import org.zalando.nakadiproducer.util.Fixture;
 import org.zalando.nakadiproducer.util.MockPayload;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * With JUnit4, this would have been a parameterized test.
@@ -130,7 +131,7 @@ public abstract class EventLogWriterTest {
         PUBLISHER_DATA_TYPE_1 + "','data':" + EVENT_BODY_DATA_3
         + "}").replace('\'', '"');
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder().build();
 
 
     private List<CompactionKeyExtractor> extractorList;
@@ -156,7 +157,7 @@ public abstract class EventLogWriterTest {
 
         when(flowIdComponent.getXFlowIdValue()).thenReturn(TRACE_ID);
 
-        eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(),
+        eventLogWriter = new EventLogWriterImpl(eventLogRepository, JsonMapper.builder().build(),
             flowIdComponent, extractorList);
     }
 

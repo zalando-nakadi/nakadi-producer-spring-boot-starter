@@ -7,15 +7,15 @@ import static org.mockito.Mockito.verify;
 import java.sql.Connection;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.annotation.DirtiesContext;
 
 public class NakadiProducerFlywayCallbackIT extends BaseMockedExternalCommunicationIT {
 
-    @MockBean
+    @MockitoBean
     private NakadiProducerFlywayCallback flywayCallback;
 
-    @MockBean
+    @MockitoBean
     private ConfigurationAwareNakadiProducerFlywayCallback configurationAwareNakadiProducerFlywayCallback;
 
     @Test

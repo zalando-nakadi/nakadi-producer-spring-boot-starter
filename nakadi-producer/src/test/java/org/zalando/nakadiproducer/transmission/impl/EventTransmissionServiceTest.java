@@ -1,16 +1,16 @@
 package org.zalando.nakadiproducer.transmission.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.zalando.fahrschein.RawEventPersistenceException;
+import org.zalando.fahrschein.EventValidationException;
 import org.zalando.fahrschein.domain.BatchItemResponse;
 import org.zalando.nakadiproducer.eventlog.impl.EventLog;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
@@ -60,13 +60,13 @@ public class EventTransmissionServiceTest {
     public void setUp() {
         repo = mock(EventLogRepository.class);
         publishingClient = spy(new MockNakadiPublishingClient());
-        mapper = spy(new ObjectMapper().registerModules(new JavaTimeModule()));
+        mapper = spy(JsonMapper.builder().build());
         service = new EventTransmissionService(repo, publishingClient, mapper, 600, 60);
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testWithFlowId() throws JsonProcessingException {
+    public void testWithFlowId() throws JacksonException {
         String flowId = "XYZ";
         String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
         EventLog ev = new EventLog(27, "type", payloadString, flowId, now(), now(), null, now().plus(5, MINUTES), null);
@@ -79,7 +79,7 @@ public class EventTransmissionServiceTest {
     }
 
     @Test
-    public void testWithoutFlowId() throws JsonProcessingException {
+    public void testWithoutFlowId() throws JacksonException {
         String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
         EventLog ev = new EventLog(27, "type", payloadString, null, now(), now(), null, now().plus(5, MINUTES), null);
 
@@ -91,7 +91,7 @@ public class EventTransmissionServiceTest {
     }
 
     @Test
-    public void testWithCompactionKey() throws JsonProcessingException {
+    public void testWithCompactionKey() throws JacksonException {
         String compactionKey = "XYZ";
         String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
         EventLog ev = new EventLog(27, "type", payloadString, null, now(), now(), null, now().plus(5, MINUTES), compactionKey);
@@ -104,7 +104,7 @@ public class EventTransmissionServiceTest {
     }
 
     @Test
-    public void testWithoutCompactionKey() throws JsonProcessingException {
+    public void testWithoutCompactionKey() throws JacksonException {
         String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
         EventLog ev = new EventLog(27, "type", payloadString, null, now(), now(), null, now().plus(5, MINUTES), null);
 
@@ -183,7 +183,7 @@ public class EventTransmissionServiceTest {
         EventLog ev2 = new EventLog(2, "type1", payloadString, null, now(), now(), null, now().plus(5, MINUTES), null);
         EventLog ev3 = new EventLog(3, "type2", payloadString, null, now(), now(), null, now().plus(5, MINUTES), null);
 
-        doThrow(new RawEventPersistenceException(new BatchItemResponse[]{
+        doThrow(new EventValidationException(new BatchItemResponse[]{
                 new BatchItemResponse("00000000-0000-0000-0000-000000000002", BatchItemResponse.PublishingStatus.ABORTED, BatchItemResponse.Step.ENRICHING, "Something went wrong")
         }))
                 .when(publishingClient).publish(eq("type1"), any());
@@ -208,7 +208,7 @@ public class EventTransmissionServiceTest {
     }
 
     @Test
-    public void testWithMultipleEvents() throws JsonProcessingException {
+    public void testWithMultipleEvents() throws JacksonException {
         String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
         EventLog ev1 = new EventLog(1, "type1", payloadString, null, now(), now(), null, now().plus(5, MINUTES), null);
         EventLog ev2 = new EventLog(2, "type1", payloadString, null, now(), now(), null, now().plus(5, MINUTES), null);
@@ -227,7 +227,7 @@ public class EventTransmissionServiceTest {
     }
 
     @Test
-    public void shouldNotSendEventsCloseToLockExpiry() throws JsonProcessingException {
+    public void shouldNotSendEventsCloseToLockExpiry() throws JacksonException {
         // given an event...
         String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
         // ... whose lock expires in the next minute
@@ -245,7 +245,7 @@ public class EventTransmissionServiceTest {
     }
 
     @Test
-    public void shouldNotSendEventsWithExpiredLock() throws JsonProcessingException {
+    public void shouldNotSendEventsWithExpiredLock() throws JacksonException {
         // given an event...
         String payloadString = mapper.writeValueAsString(Fixture.mockPayload(42, "bla"));
         // ... whose lock expires already expired

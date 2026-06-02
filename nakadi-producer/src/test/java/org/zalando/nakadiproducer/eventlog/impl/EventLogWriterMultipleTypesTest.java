@@ -1,6 +1,6 @@
 package org.zalando.nakadiproducer.eventlog.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,7 +65,7 @@ public class EventLogWriterMultipleTypesTest {
 
     @Test
     public void noCompactionExtractors() {
-        eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(),
+        eventLogWriter = new EventLogWriterImpl(eventLogRepository, JsonMapper.builder().build(),
                 flowIdComponent, List.of());
 
         eventLogWriter.fireCreateEvents(PUBLISHER_EVENT_TYPE, "",
@@ -76,7 +76,7 @@ public class EventLogWriterMultipleTypesTest {
 
     @Test
     public void oneCompactionExtractor() {
-        eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(),
+        eventLogWriter = new EventLogWriterImpl(eventLogRepository, JsonMapper.builder().build(),
                 flowIdComponent, List.of(CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "Hello")));
         eventLogWriter.fireCreateEvents(PUBLISHER_EVENT_TYPE, "",
                 asList(eventPayload1, eventPayload2, eventPayload3));
@@ -86,7 +86,7 @@ public class EventLogWriterMultipleTypesTest {
 
     @Test
     public void twoCompactionExtractors() {
-        eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(),
+        eventLogWriter = new EventLogWriterImpl(eventLogRepository, JsonMapper.builder().build(),
                 flowIdComponent,
                 List.of(CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "Hello"),
                         CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.SubClass.class, m -> "World")));
@@ -98,7 +98,7 @@ public class EventLogWriterMultipleTypesTest {
 
     @Test
     public void threeCompactionExtractors() {
-        eventLogWriter = new EventLogWriterImpl(eventLogRepository, new ObjectMapper(),
+        eventLogWriter = new EventLogWriterImpl(eventLogRepository, JsonMapper.builder().build(),
                 flowIdComponent,
                 List.of(CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.class, m -> "Hello"),
                         CompactionKeyExtractor.of(PUBLISHER_EVENT_TYPE, MockPayload.SubClass.class, m -> "World"),

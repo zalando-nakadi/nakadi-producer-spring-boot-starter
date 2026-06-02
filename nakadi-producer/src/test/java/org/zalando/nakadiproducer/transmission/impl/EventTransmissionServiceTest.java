@@ -10,7 +10,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.zalando.fahrschein.EventPublishingException;
+import org.zalando.fahrschein.RawEventPersistenceException;
 import org.zalando.fahrschein.domain.BatchItemResponse;
 import org.zalando.nakadiproducer.eventlog.impl.EventLog;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
@@ -183,7 +183,7 @@ public class EventTransmissionServiceTest {
         EventLog ev2 = new EventLog(2, "type1", payloadString, null, now(), now(), null, now().plus(5, MINUTES), null);
         EventLog ev3 = new EventLog(3, "type2", payloadString, null, now(), now(), null, now().plus(5, MINUTES), null);
 
-        doThrow(new EventPublishingException(new BatchItemResponse[]{
+        doThrow(new RawEventPersistenceException(new BatchItemResponse[]{
                 new BatchItemResponse("00000000-0000-0000-0000-000000000002", BatchItemResponse.PublishingStatus.ABORTED, BatchItemResponse.Step.ENRICHING, "Something went wrong")
         }))
                 .when(publishingClient).publish(eq("type1"), any());

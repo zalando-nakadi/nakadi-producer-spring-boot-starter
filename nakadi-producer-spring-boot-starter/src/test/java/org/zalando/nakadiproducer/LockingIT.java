@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
 import org.zalando.nakadiproducer.eventlog.impl.EventLog;
+import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
 import org.zalando.nakadiproducer.transmission.MockNakadiPublishingClient;
 import org.zalando.nakadiproducer.transmission.impl.EventTransmissionService;
 import org.zalando.nakadiproducer.transmission.impl.EventTransmitter;
@@ -31,6 +32,9 @@ public class LockingIT extends BaseMockedExternalCommunicationIT {
     private EventTransmitter eventTransmitter;
 
     @Autowired
+    private EventLogRepository eventLogRepository;
+
+    @Autowired
     private EventTransmissionService eventTransmissionService;
 
     @Autowired
@@ -41,6 +45,7 @@ public class LockingIT extends BaseMockedExternalCommunicationIT {
     public void clearNakadiEvents() {
         eventTransmitter.sendEvents();
         nakadiClient.clearSentEvents();
+        eventLogRepository.deleteAll();
     }
 
     @Test

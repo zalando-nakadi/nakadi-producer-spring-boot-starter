@@ -163,9 +163,9 @@ public class EventTransmissionService {
     private String getEid(final EventLog event) {
         if (event.getEid() == null) {
             return new UUID(0, event.getId()).toString();
+        } else {
+            return event.getEid().toString();
         }
-
-        return event.getEid().toString();
     }
 
 }

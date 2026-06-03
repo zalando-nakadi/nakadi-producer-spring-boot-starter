@@ -350,9 +350,29 @@ The `eid` is a unique identifier for Nakadi events, which is required by Nakadi 
 By default, the library generates eid based on a database sequence (which is also used internally to identify the event log entries before sending them out).
 
 You can implement your own strategy for EID generation by implementing [`EidGeneratorStrategy`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/eventlog/EidGeneratorStrategy.java) interface and providing it as a bean in your application context.
+
+Example:
+
+```java
+package ...;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.zalando.nakadiproducer.eventlog.EidGeneratorStrategy;
+
+@Configuration
+public class NakadiConfiguration {
+
+    @Bean
+    public EidGeneratorStrategy eidGeneratorStrategy() {
+        return EidGeneratorStrategy.random();
+    }
+}
+```
+
 The library provides some implementations of this interface out of the box:
 
-1. [`EidGeneratorStrategy.noop()`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/eventlog/EidGeneratorStrategy.java#L17) - generates EID based on id of the event in the database. This is default strategy.
+1. [`EidGeneratorStrategy.noop()`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/eventlog/EidGeneratorStrategy.java#L17) - generates EID based on the (auto-incremented) id of the event in the database. This is default strategy.
     This will lead to overlapping IDs to other producing applications, so you should not use this if multiple applications/components submit events to the same event type.
 
 2. [`EidGeneratorStrategy.random()`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/eventlog/EidGeneratorStrategy.java#L26) - generates random UUID value (UUID version 4) for the EID field. This will generally avoid conflicts altogether.

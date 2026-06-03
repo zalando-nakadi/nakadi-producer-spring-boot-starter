@@ -1,5 +1,6 @@
 package org.zalando.nakadiproducer.transmission.impl;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import java.time.Instant;
@@ -21,6 +22,7 @@ public class NakadiMetadata {
     private String flowId;
 
     @JsonProperty("partition_compaction_key")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String partitionCompactionKey;
 
 }

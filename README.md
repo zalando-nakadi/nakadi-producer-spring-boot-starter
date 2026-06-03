@@ -438,7 +438,7 @@ There are three properties for customizing this event locking on transmission:
   (in one submission per event type). By default, up to 1000 events are loaded into memory, but this default might
   change in some future release. This should be set to a value which is low enough so out-of-memory situations
   are avoided (depending on your typical event sizes), and high enough to allow the needed throughput.
-  Using the value 0 will disable the limit completely, but this is not recommended.
+  Using the value 0 will disable the limit completely, but this is not recommended (it already led to an incident).
 
 Example:
 ```yaml

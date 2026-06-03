@@ -23,9 +23,9 @@ public class EventLogRepositoryImpl implements EventLogRepository {
 
     private final static QueryStatementBatcher<Integer> INSERT_RETURNING_BATCHER = new QueryStatementBatcher<>(
             "INSERT INTO nakadi_events.event_log " +
-                    "    (event_type, event_body_data, flow_id, created, last_modified, locked_by, locked_until, compaction_key)" +
+                    "    (event_type, event_body_data, flow_id, created, last_modified, locked_by, locked_until, compaction_key, eid)" +
                     " VALUES ",
-            "  (:eventType#, :eventBodyData#, :flowId#, :created#, :lastModified#, :lockedBy#, :lockedUntil#, :compactionKey#)",
+            "  (:eventType#, :eventBodyData#, :flowId#, :created#, :lastModified#, :lockedBy#, :lockedUntil#, :compactionKey#, :eid#)",
             " RETURNING id",
             (row, n) -> row.getInt("id")
     );
@@ -106,11 +106,11 @@ public class EventLogRepositoryImpl implements EventLogRepository {
         jdbcTemplate.batchUpdate(
                 "INSERT INTO nakadi_events.event_log " +
                         "    ( event_type, event_body_data,  flow_id,   created," +
-                        "      last_modified,  locked_by,  locked_until, compaction_key)" +
+                        "      last_modified,  locked_by,  locked_until, compaction_key, eid)" +
                         " VALUES " +
                         // the parameter names here need to match the names in toSqlParameterSource
                         "    (:eventType#, :eventBodyData#, :flowId#, :created#," +
-                        "     :lastModified#, :lockedBy#, :lockedUntil#, :compactionKey#)",
+                        "     :lastModified#, :lockedBy#, :lockedUntil#, :compactionKey#, :eid#)",
                 namedParameterMaps);
     }
 
@@ -150,7 +150,8 @@ public class EventLogRepositoryImpl implements EventLogRepository {
                 .addValue("lastModified#", now)
                 .addValue("lockedBy#", eventLog.getLockedBy())
                 .addValue("lockedUntil#", eventLog.getLockedUntil())
-                .addValue("compactionKey#", eventLog.getCompactionKey());
+                .addValue("compactionKey#", eventLog.getCompactionKey())
+                .addValue("eid#", eventLog.getEid());
     }
 
     private Timestamp toSqlTimestamp(Instant now) {

@@ -28,7 +28,10 @@ import org.zalando.fahrschein.http.api.ContentEncoding;
 import org.zalando.fahrschein.http.api.RequestFactory;
 import org.zalando.fahrschein.http.simple.SimpleRequestFactory;
 import org.zalando.nakadiproducer.eventlog.CompactionKeyExtractor;
+import org.zalando.nakadiproducer.eventlog.EidGeneratorStrategy;
+import org.zalando.nakadiproducer.eventlog.impl.EventLogBuilder;
 import org.zalando.nakadiproducer.eventlog.EventLogWriter;
+import org.zalando.nakadiproducer.eventlog.impl.EventLogBuilderImpl;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepository;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogRepositoryImpl;
 import org.zalando.nakadiproducer.eventlog.impl.EventLogWriterImpl;
@@ -126,6 +129,12 @@ public class NakadiProducerAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(EidGeneratorStrategy.class)
+    public EidGeneratorStrategy eidGeneratorStrategy() {
+        return EidGeneratorStrategy.noop();
+    }
+
+    @Bean
     @ConditionalOnMissingBean
     public SnapshotEventCreationEndpoint snapshotEventCreationEndpoint(
             SnapshotCreationService snapshotCreationService, FlowIdComponent flowIdComponent) {
@@ -143,10 +152,11 @@ public class NakadiProducerAutoConfiguration {
     }
 
     @Bean
-    public EventLogWriter eventLogWriter(EventLogRepository eventLogRepository, ObjectMapper objectMapper,
-                                         FlowIdComponent flowIdComponent, List<CompactionKeyExtractor> extractorList,
+    public EventLogWriter eventLogWriter(EventLogRepository eventLogRepository,
+                                         EventLogBuilder eventLogBuilder,
+                                         List<CompactionKeyExtractor> extractorList,
                                          @Value("${nakadi-producer.delete-after-write:false}") boolean deleteAfterWrite) {
-        return new EventLogWriterImpl(eventLogRepository, objectMapper, flowIdComponent, extractorList, deleteAfterWrite);
+        return new EventLogWriterImpl(eventLogRepository, eventLogBuilder, extractorList, deleteAfterWrite);
     }
 
     @Bean
@@ -187,5 +197,12 @@ public class NakadiProducerAutoConfiguration {
     @Bean
     public FlywayMigrator flywayMigrator() {
         return new FlywayMigrator();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public EventLogBuilder eventLogBuilder(ObjectMapper objectMapper, FlowIdComponent flowIdComponent,
+                                          EidGeneratorStrategy eidGeneratorStrategy) {
+        return new EventLogBuilderImpl(objectMapper, flowIdComponent, eidGeneratorStrategy);
     }
 }

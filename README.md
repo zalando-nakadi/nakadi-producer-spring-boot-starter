@@ -20,7 +20,9 @@ There are already [multiple clients for the Nakadi REST API](https://zalando.git
 
 We solved them by persisting new events in a log table as part of the producing JDBC transaction. They will then be sent asynchronously to Nakadi after the transaction completed. If the transaction is rolled back, the events will vanish too. As a result, events will always be sent if and only if the transaction succeeded.
 
-The Transmitter generates a strictly monotonically increasing event id that can be used for ordering the events during retrieval. It is not guaranteed, that events will be sent to Nakadi in the order they have been produced. If an event could not be sent to Nakadi, the library will periodically retry the transmission.
+Unless a different [EID generation strategy](#eid-generation-strategy-optional) is used, the Transmitter generates a strictly monotonically increasing event id that can be used for ordering the events during retrieval.
+
+It is not guaranteed, that events will be sent to Nakadi in the order they have been produced. If an event could not be sent to Nakadi, the library will periodically retry the transmission.
 
 This project is mature, used in production in some services at Zalando, and in active development.
 
@@ -390,6 +392,43 @@ public SnapshotEventGenerator snapshotEventGenerator(MyService service) {
     return SnapshotEventGenerator.of("event type", service::createSnapshotEvents);
 }
 ```
+
+### EID generation strategy (optional)
+The `eid` is a unique identifier for Nakadi events, which is required by Nakadi for each event on submission.
+By default, the library generates eid based on a database sequence (which is also used internally to identify the event log entries before sending them out).
+
+You can implement your own strategy for EID generation by implementing [`EidGeneratorStrategy`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/eventlog/EidGeneratorStrategy.java) interface and providing it as a bean in your application context.
+
+Example:
+
+```java
+package ...;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.zalando.nakadiproducer.eventlog.EidGeneratorStrategy;
+
+@Configuration
+public class NakadiConfiguration {
+
+    @Bean
+    public EidGeneratorStrategy eidGeneratorStrategy() {
+        return EidGeneratorStrategy.random();
+    }
+}
+```
+
+The library provides some implementations of this interface out of the box:
+
+1. [`EidGeneratorStrategy.noop()`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/eventlog/EidGeneratorStrategy.java#L17) - generates EID based on the (auto-incremented) id of the event in the database. This is default strategy.
+    This will lead to overlapping IDs to other producing applications, so you should not use this if multiple applications/components submit events to the same event type.
+
+2. [`EidGeneratorStrategy.random()`](nakadi-producer/src/main/java/org/zalando/nakadiproducer/eventlog/EidGeneratorStrategy.java#L26) - generates random UUID value (UUID version 4) for the EID field. This will generally avoid conflicts altogether.
+
+If you already use Java 26+, you could use e.g. `() -> UUID.ofEpochMillis(System.currentTimeMillis())` to get a [time-based version 7 UUID](https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/util/UUID.html#ofEpochMillis(long)). (There is no built-in factory method for this, as this library depends only on Java 21+.) This will create increasing UUIDs as long as the timestamp increases, but out-of-order eids could occur if multiple events are created in the same millisecond (possibly across multiple producer instances).
+
+Changing between these strategies needs to be done carefully – if your consumers depend on the ordering, you should generally use the id-based generation (or the version 7 ones). Otherwise, for Nakadi-submission it's only required that events submitted together should have different eids, but generally consumers also expect that different events (at least on the same event type) have different eids.
+
 
 ### X-Flow-ID (optional)
 

@@ -18,7 +18,7 @@ public class EventLockSizeDefaultIT extends BaseMockedExternalCommunicationIT {
     private EventTransmissionService eventTransmissionService;
 
     @Test
-    public void defaultEventLockSizeIsUsed() {
+    public void smallNumberOfEventsAreAllLockedTogether() {
 
         for (int i = 1; i <= 8; i++) {
             eventLogWriter.fireBusinessEvent("myEventType", Fixture.mockPayload(i, "code123"));
@@ -27,4 +27,14 @@ public class EventLockSizeDefaultIT extends BaseMockedExternalCommunicationIT {
         assertThat(eventTransmissionService.lockSomeEvents(), hasSize(8));
     }
 
+    @Test
+    public void moreThan1000EventsAreNotLockedTogether() {
+
+        for (int i = 1; i <= 1010; i++) {
+            eventLogWriter.fireBusinessEvent("myEventType", Fixture.mockPayload(i, "code123"));
+        }
+
+        assertThat(eventTransmissionService.lockSomeEvents(), hasSize(1000));
+        assertThat(eventTransmissionService.lockSomeEvents(), hasSize(10));
+    }
 }

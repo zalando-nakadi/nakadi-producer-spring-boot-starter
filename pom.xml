@@ -15,7 +15,7 @@
 
     <artifactId>nakadi-producer-reactor</artifactId>
     <groupId>org.zalando</groupId>
-    <version>30.0.0-SNAPSHOT</version>
+    <version>30.0.0</version>
     <packaging>pom</packaging>
     <name>Nakadi Event Producer Reactor</name>
 
@@ -54,14 +54,12 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.13</version>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.9.0</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    <publishingServerId>central</publishingServerId>
                 </configuration>
             </plugin>
         </plugins>

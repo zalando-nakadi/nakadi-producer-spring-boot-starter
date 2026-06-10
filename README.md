@@ -1,4 +1,14 @@
-[![build status badge](https://img.shields.io/travis/zalando-nakadi/nakadi-producer-spring-boot-starter.svg?label=Travis%20Build)](https://travis-ci.org/zalando-nakadi/nakadi-producer-spring-boot-starter/branches)
+
+
+# Nakadi Producer will not be continued here.
+
+The library is an interface to Nakadi, which was publicly archived in June 2024, and using the Fahrschein
+library, which was publicly archived in May 2024. As far as we know, it was never used outside of Zalando.
+That's why we decided to also move this library's development internally, which makes things a bit easier
+for us. This last state (the source of version 30.0.0) will stay here archived.
+
+If you are a Zalando engineer, have a look at the [internal repository](https://github.com/zalando-engineering-community/nakadi-producer-spring-boot-starter).
+
 [![last Github release badge](https://img.shields.io/github/release/zalando-nakadi/nakadi-producer-spring-boot-starter.svg?label=Last%20Release)](https://github.com/zalando-nakadi/nakadi-producer-spring-boot-starter/releases)
 ![last maven central release badge](https://img.shields.io/maven-central/v/org.zalando/nakadi-producer-spring-boot-starter.svg)
 [![MIT license](https://img.shields.io/github/license/zalando-nakadi/nakadi-producer-spring-boot-starter.svg)](LICENSE)
